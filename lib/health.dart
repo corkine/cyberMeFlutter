@@ -1,54 +1,11 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:math';
-import 'package:flutter/services.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hello_flutter/place.dart';
 import 'package:sprintf/sprintf.dart';
 
 import 'package:flutter/material.dart';
 
-class Info {
-  String name;
-  String id;
-  String lastTestTime;
-  String testInfo;
-  String lastVaccineDate;
-  int vaccineTimes;
-
-  Info(
-      {required this.name,
-      required this.id,
-      required this.lastTestTime,
-      required this.testInfo,
-      required this.lastVaccineDate,
-      required this.vaccineTimes});
-
-  @override
-  String toString() {
-    return 'Info{name: $name, id: $id, lastTestTime: $lastTestTime, testInfo: $testInfo, lastVaccineDate: $lastVaccineDate, vaccineTimes: $vaccineTimes}';
-  }
-
-  static savingData(Info info) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString("name", info.name);
-    prefs.setString("id", info.id);
-    prefs.setString("lastTestTime", info.lastTestTime);
-    prefs.setString("testInfo", info.testInfo);
-    prefs.setString("lastVaccineDate", info.lastVaccineDate);
-    prefs.setInt("vaccineTimes", info.vaccineTimes);
-  }
-
-  static Future<Info> readData() {
-    var f = SharedPreferences.getInstance().then((prefs) => Info(
-        name: prefs.getString("name") ?? "张三",
-        id: prefs.getString("id") ?? "122333444555553321",
-        lastTestTime: prefs.getString("lastTestTime") ?? "2022-04-23 00:39",
-        testInfo: prefs.getString("testInfo") ?? "48小时阴性",
-        lastVaccineDate: prefs.getString("lastVaccineDate") ?? "2022-04-01",
-        vaccineTimes: prefs.getInt("vaccineTimes") ?? 3));
-    return f;
-  }
-}
+import 'data.dart';
 
 class HealthCard extends StatefulWidget {
   final Info info;
@@ -78,24 +35,6 @@ class HealthCard extends StatefulWidget {
 }
 
 class _HealthCardState extends State<HealthCard> {
-  Color blue = const Color.fromRGBO(88, 145, 235, 1);
-
-  TextStyle normalStyle = const TextStyle(
-      fontSize: 17,
-      color: Colors.white,
-      fontWeight: FontWeight.w400,
-      fontFamily: ".SF UI Text");
-  TextStyle titleStyle = const TextStyle(
-      fontSize: 17,
-      color: Colors.white,
-      fontWeight: FontWeight.w600,
-      fontFamily: ".SF UI Text");
-  TextStyle nameStyle = const TextStyle(
-      fontSize: 19,
-      color: Colors.white,
-      fontWeight: FontWeight.w600,
-      fontFamily: ".SF UI Text");
-
   @override
   void initState() {
     super.initState();
@@ -105,9 +44,9 @@ class _HealthCardState extends State<HealthCard> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: buildTitleBar(titleStyle),
+        title: buildTitleBar(Info.titleStyle),
         elevation: 0,
-        backgroundColor: blue,
+        backgroundColor: Info.blue,
       ),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
@@ -132,7 +71,7 @@ class _HealthCardState extends State<HealthCard> {
         right: 0,
         child: Container(
           height: 180,
-          color: blue,
+          color: Info.blue,
         ));
   }
 
@@ -150,7 +89,7 @@ class _HealthCardState extends State<HealthCard> {
             children: [
               Text(
                 "姓名",
-                style: normalStyle,
+                style: Info.normalStyle,
               ),
               const SizedBox(
                 height: 10,
@@ -159,7 +98,7 @@ class _HealthCardState extends State<HealthCard> {
                 List.generate(widget.info.name.length - 1, (index) => "*")
                         .reduce((value, element) => value + element) +
                     widget.info.name[widget.info.name.length - 1],
-                style: nameStyle,
+                style: Info.nameStyle,
               ),
             ],
           ),
@@ -173,7 +112,7 @@ class _HealthCardState extends State<HealthCard> {
                 padding: const EdgeInsets.only(bottom: 2),
                 child: Text(
                   "身份证号",
-                  style: normalStyle,
+                  style: Info.normalStyle,
                 ),
               ),
               const SizedBox(
@@ -183,7 +122,7 @@ class _HealthCardState extends State<HealthCard> {
                 List.generate(widget.info.id.length - 4, (index) => "*")
                         .reduce((value, element) => value + element) +
                     widget.info.id.substring(widget.info.id.length - 4),
-                style: nameStyle,
+                style: Info.nameStyle,
               ),
             ],
           ),
@@ -283,6 +222,20 @@ class _HealthCardState extends State<HealthCard> {
                             : "输入一个整数",
                         onSaved: (e) =>
                             widget.info.vaccineTimes = int.parse(e!),
+                      ),
+                      TextFormField(
+                        decoration: const InputDecoration(
+                          labelText: "检查地址",
+                          hintText: "天安门广场",
+                          hintStyle: TextStyle(color: Colors.grey),
+                        ),
+                        initialValue: widget.info.checkPlace.toString(),
+                        validator: (v) => (v != null &&
+                            v.isNotEmpty)
+                            ? null
+                            : "输入一个地址",
+                        onSaved: (e) =>
+                        widget.info.checkPlace = e!,
                       )
                     ],
                   )),
@@ -317,10 +270,18 @@ class _HealthCardState extends State<HealthCard> {
     return Stack(
       alignment: Alignment.center,
       children: [
-        Center(
-          child: Text(
-            "湖北健康码",
-            style: titleStyle,
+        GestureDetector(
+          onTap: () {
+            Navigator.push(context, MaterialPageRoute(
+            fullscreenDialog: false,builder: (c) {
+              return HealthCheck(info: widget.info);
+            }));
+          },
+          child: Center(
+            child: Text(
+              "湖北健康码",
+              style: titleStyle,
+            ),
           ),
         ),
         const Positioned(
@@ -516,17 +477,17 @@ class _HealthInfoState extends State<HealthInfo> {
                     children: [
                       Padding(
                         padding: const EdgeInsets.only(right: 3),
-                        child: widget.info.testInfo.contains("48") ?
-                        Image.asset(
-                          "images/refresh3.png",
-                          width: 19,
-                          height: 19,
-                        ) :
-                        Image.asset(
-                          "images/refresh.png",
-                          width: 19,
-                          height: 19,
-                        ),
+                        child: widget.info.testInfo.contains("48")
+                            ? Image.asset(
+                                "images/refresh3.png",
+                                width: 19,
+                                height: 19,
+                              )
+                            : Image.asset(
+                                "images/refresh.png",
+                                width: 19,
+                                height: 19,
+                              ),
                       ),
                       const Text(
                         "核酸检测",
