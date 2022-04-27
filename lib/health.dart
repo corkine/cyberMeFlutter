@@ -59,14 +59,14 @@ class HealthCard extends StatefulWidget {
       bool justBeforeSeconds = false}) {
     var now = DateTime.now().toLocal();
     if (justDate) {
-      return sprintf("%s-%s-%s", [now.year, now.month, now.day]);
+      return sprintf("%04d-%02d-%02d", [now.year, now.month, now.day]);
     } else if (justSeconds) {
       return sprintf("%02d", [now.second]);
     } else if (justBeforeSeconds) {
-      return sprintf("%s-%s-%s %s:%s:",
+      return sprintf("%02d-%02d-%02d %02d:%02d:",
           [now.year, now.month, now.day, now.hour, now.minute]);
     } else {
-      return sprintf("%s-%s-%s %s:%s",
+      return sprintf("%02d-%02d-%02d %02d:%02d",
           [now.year, now.month, now.day, now.hour, now.minute]);
     }
   }

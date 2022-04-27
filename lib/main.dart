@@ -2,11 +2,21 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:hello_flutter/async.dart';
+import 'package:hello_flutter/game.dart';
 import 'package:hello_flutter/health.dart';
 import 'package:http/http.dart' as http;
 
 void main() {
-  runApp(const MyApp());
+  //runApp(const MyApp());
+  //runApp(LearnAsync());
+  /*var some = Future.delayed(Duration(seconds: 10), () {
+    print("HELLO");
+    return 10;
+  });*/
+  runApp(const MaterialApp(
+    home: Game(),
+  ));
 }
 
 class MyApp extends StatefulWidget {
