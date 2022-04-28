@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:hello_flutter/place.dart';
 import 'package:hello_flutter/util.dart';
 
@@ -224,11 +223,6 @@ class _HealthCardState extends State<HealthCard> {
                   )),
               ButtonBar(
                 children: [
-                  TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pop(0);
-                      },
-                      child: const Text('取消')),
                   TextButton(
                       onPressed: () {
                         if (formKey.currentState != null &&

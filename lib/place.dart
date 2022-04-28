@@ -72,7 +72,8 @@ class _HealthCheckState extends State<HealthCheck> {
                         ),
                         GestureDetector(
                           onTap: () {
-                            exit(0);
+                            Navigator.of(context).pop();
+                            //exit(0);
                           },
                           child: const Icon(
                             Icons.adjust,
