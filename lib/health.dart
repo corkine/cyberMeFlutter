@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:hello_flutter/place.dart';
-import 'package:sprintf/sprintf.dart';
+import 'package:hello_flutter/util.dart';
 
 import 'package:flutter/material.dart';
 
@@ -10,25 +10,10 @@ import 'data.dart';
 class HealthCard extends StatefulWidget {
   final Info info;
 
-  static String clock(
-      {bool justDate = false,
-      bool justSeconds = false,
-      bool justBeforeSeconds = false}) {
-    var now = DateTime.now().toLocal();
-    if (justDate) {
-      return sprintf("%04d-%02d-%02d", [now.year, now.month, now.day]);
-    } else if (justSeconds) {
-      return sprintf("%02d", [now.second]);
-    } else if (justBeforeSeconds) {
-      return sprintf("%02d-%02d-%02d %02d:%02d:",
-          [now.year, now.month, now.day, now.hour, now.minute]);
-    } else {
-      return sprintf("%02d-%02d-%02d %02d:%02d",
-          [now.year, now.month, now.day, now.hour, now.minute]);
-    }
-  }
+  StreamController scoreEvent;
 
-  const HealthCard({Key? key, required this.info}) : super(key: key);
+  HealthCard({Key? key, required this.info, required this.scoreEvent})
+      : super(key: key);
 
   @override
   State<HealthCard> createState() => _HealthCardState();
@@ -47,6 +32,7 @@ class _HealthCardState extends State<HealthCard> {
         title: buildTitleBar(Info.titleStyle),
         elevation: 0,
         backgroundColor: Info.blue,
+        automaticallyImplyLeading: false,
       ),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
@@ -230,12 +216,9 @@ class _HealthCardState extends State<HealthCard> {
                           hintStyle: TextStyle(color: Colors.grey),
                         ),
                         initialValue: widget.info.checkPlace.toString(),
-                        validator: (v) => (v != null &&
-                            v.isNotEmpty)
-                            ? null
-                            : "输入一个地址",
-                        onSaved: (e) =>
-                        widget.info.checkPlace = e!,
+                        validator: (v) =>
+                            (v != null && v.isNotEmpty) ? null : "输入一个地址",
+                        onSaved: (e) => widget.info.checkPlace = e!,
                       )
                     ],
                   )),
@@ -243,7 +226,7 @@ class _HealthCardState extends State<HealthCard> {
                 children: [
                   TextButton(
                       onPressed: () {
-                        Navigator.of(context).pop(null);
+                        Navigator.of(context).pop(0);
                       },
                       child: const Text('取消')),
                   TextButton(
@@ -272,10 +255,13 @@ class _HealthCardState extends State<HealthCard> {
       children: [
         GestureDetector(
           onTap: () {
-            Navigator.push(context, MaterialPageRoute(
-            fullscreenDialog: false,builder: (c) {
-              return HealthCheck(info: widget.info);
-            }));
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    fullscreenDialog: false,
+                    builder: (c) {
+                      return HealthCheck(info: widget.info);
+                    }));
           },
           child: Center(
             child: Text(
@@ -322,7 +308,10 @@ class _HealthCardState extends State<HealthCard> {
                     ),
                     GestureDetector(
                       onTap: () {
-                        exit(0);
+                        Info.needShow = false;
+                        widget.scoreEvent.add("reset!");
+                        Navigator.of(context).pop();
+                        //exit(0);
                       },
                       child: const Icon(
                         Icons.adjust,
@@ -671,30 +660,31 @@ class _HealthInfoState extends State<HealthInfo> {
 
   @override
   initState() {
-    Timer.periodic(const Duration(seconds: 1), (timer) {
+    timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {});
     });
     super.initState();
   }
 
   Stack buildMainInfo() {
+    var pickTime = Util.pickTime();
     return Stack(
       alignment: Alignment.topCenter,
       children: [
         //白色卡片
-        Container(height: 310),
+        Container(height: pickTime == null ? 270 : 310),
         Positioned(
             top: 17,
             child: RichText(
                 text: TextSpan(
-                    text: HealthCard.clock(justBeforeSeconds: true),
+                    text: Util.clock(justBeforeSeconds: true),
                     style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w600,
                         color: Colors.black),
                     children: [
                   TextSpan(
-                      text: HealthCard.clock(justSeconds: true),
+                      text: Util.clock(justSeconds: true),
                       style: const TextStyle(fontSize: 27))
                 ]))),
         Positioned(
@@ -704,26 +694,30 @@ class _HealthInfoState extends State<HealthInfo> {
               width: 220,
               height: 220,
             )),
-        Positioned(
-          top: 275,
-          child: RichText(
-              text: TextSpan(
-                  text: "核酸 ",
-                  style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w400,
-                      color: Color.fromRGBO(28, 148, 77, 1)),
-                  children: [
-                const TextSpan(
-                    text: "已采样",
-                    style:
-                        TextStyle(fontSize: 23, fontWeight: FontWeight.w600)),
-                TextSpan(
-                    text: " " + HealthCard.clock(justDate: true),
-                    style: const TextStyle(
-                        fontSize: 19, fontWeight: FontWeight.w400))
-              ])),
-        )
+        pickTime != null
+            ? Positioned(
+                top: 275,
+                child: RichText(
+                    text: TextSpan(
+                        text: "核酸 ",
+                        style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w400,
+                            color: Color.fromRGBO(28, 148, 77, 1)),
+                        children: [
+                      const TextSpan(
+                          text: "已采样",
+                          style: TextStyle(
+                              fontSize: 23, fontWeight: FontWeight.w600)),
+                      TextSpan(
+                          text: " " + Util.clock(justDate: true),
+                          style: const TextStyle(
+                              fontSize: 19, fontWeight: FontWeight.w400))
+                    ])),
+              )
+            : const SizedBox(
+                height: 0,
+              )
       ],
     );
   }

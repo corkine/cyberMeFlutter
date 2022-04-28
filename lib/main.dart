@@ -38,7 +38,7 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     Info.readData().then((value) => {
       setState(() {
-        ww = HealthCard(info: value);
+        ww = Game(info: value);
       })
     });
     super.initState();

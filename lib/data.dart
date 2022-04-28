@@ -19,6 +19,8 @@ class Info {
       required this.vaccineTimes,
       required this.checkPlace});
 
+  static bool needShow = false;
+
   static String middleStarName(Info info) {
     int len = info.name.length;
     if (len == 0 || len == 1) return info.name;

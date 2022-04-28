@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:hello_flutter/data.dart';
+import 'package:hello_flutter/util.dart';
 
 import 'health.dart';
 
@@ -86,20 +87,20 @@ class _HealthCheckState extends State<HealthCheck> {
           ],
         ),
       ),
-      body: Stack(
-        children: [
-          Positioned(
-              //蓝色背景
-              top: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                height: 113,
-                color: Info.blue,
-              )),
-          SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            child: Padding(
+      body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: Stack(
+          children: [
+            Positioned(
+                //蓝色背景
+                top: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  height: 113,
+                  color: Info.blue,
+                )),
+            Padding(
               padding: const EdgeInsets.only(left: 20, right: 20, top: 10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -132,9 +133,9 @@ class _HealthCheckState extends State<HealthCheck> {
                   buildLastButton()
                 ],
               ),
-            ),
-          )
-        ],
+            )
+          ],
+        ),
       ),
     );
   }
@@ -456,11 +457,11 @@ class _HealthCheckState extends State<HealthCheck> {
             "扫码时间",
             style: TextStyle(color: Info.grey, fontSize: 14),
           ),
-           Padding(
+          Padding(
             padding: const EdgeInsets.only(top: 6),
             child: Text(
-              HealthCard.clock(justBeforeSeconds:  true) +
-              HealthCard.clock(justSeconds:  true),
+              Util.clock(justBeforeSeconds: true) +
+                  Util.clock(justSeconds: true),
               style: const TextStyle(color: Colors.black, fontSize: 17),
             ),
           )
@@ -563,17 +564,19 @@ class _HealthCheckState extends State<HealthCheck> {
                   ),
                 ),
               ),
-              Padding(
-                  padding: const EdgeInsets.only(
-                      left: 20, right: 10, top: 1, bottom: 17),
-                  child: Text(
-                    "核酸 已采样 ${HealthCard.clock(justDate: true)}",
-                    style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Color.fromRGBO(0, 135, 66, 1)),
-                  ))
               //健康码
+              Util.pickTime() == null
+                  ? const SizedBox(height: 4, width: 0,)
+                  : Padding(
+                      padding: const EdgeInsets.only(
+                          left: 20, right: 10, top: 1, bottom: 17),
+                      child: Text(
+                        "核酸 已采样 ${Util.pickTime()}",
+                        style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: Color.fromRGBO(0, 135, 66, 1)),
+                      ))
             ],
           ),
           Padding(

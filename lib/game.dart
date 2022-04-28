@@ -2,9 +2,14 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:hello_flutter/data.dart';
+
+import 'health.dart';
 
 class Game extends StatefulWidget {
-  const Game({Key? key}) : super(key: key);
+  final Info info;
+
+  const Game({Key? key, required this.info}) : super(key: key);
 
   @override
   State<Game> createState() => _GameState();
@@ -15,17 +20,38 @@ class _GameState extends State<Game> {
   StreamController scoreEvent = StreamController.broadcast();
 
   @override
+  void dispose() {
+    typedEvent.close();
+    scoreEvent.close();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: StreamBuilder(
-          stream: scoreEvent.stream.transform(ReduceAdd()),
-          builder: (c, s) {
-            if (s.connectionState == ConnectionState.active) {
-              return Text("Score: ${s.data}");
+        title: GestureDetector(
+          onTap: () {
+            if (Info.needShow) {
+              Info.needShow = false;
+              Navigator.of(context).push(MaterialPageRoute(builder: (c) {
+                return HealthCard(info: widget.info, scoreEvent: scoreEvent);
+              }));
             }
-            return const Text("Type to Play!");
           },
+          child: StreamBuilder(
+            stream: scoreEvent.stream.transform(ReduceAdd()),
+            builder: (c, s) {
+              if (s.connectionState == ConnectionState.active) {
+                if (s.data != null && s.data as num > 30 && !Info.needShow) {
+                  Info.needShow = true;
+                  print("reset needShow to ${Info.needShow}");
+                }
+                return Text("Score: ${s.data}");
+              }
+              return const Text("Type to Play!");
+            },
+          ),
         ),
       ),
       body: Stack(
@@ -77,7 +103,8 @@ class Puzzle extends StatefulWidget {
   State<Puzzle> createState() => _PuzzleState();
 }
 
-class _PuzzleState extends State<Puzzle> with SingleTickerProviderStateMixin {
+class _PuzzleState extends State<Puzzle>
+    with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   late int a, b;
   late double x;
   late Color color;
@@ -97,6 +124,8 @@ class _PuzzleState extends State<Puzzle> with SingleTickerProviderStateMixin {
     //用于控制 AnimatedBuilder 实现位置移动
     controller =
         AnimationController(vsync: this, duration: const Duration(seconds: 1));
+    reset();
+    controller.forward(from: Random().nextDouble());
     //当动画完毕后，重新 forward 到顶部
     controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
@@ -111,8 +140,6 @@ class _PuzzleState extends State<Puzzle> with SingleTickerProviderStateMixin {
         widget.scoreEvent.sink.add(10);
       }
     });
-    reset();
-    controller.forward(from: Random().nextDouble());
     super.initState();
   }
 
@@ -124,6 +151,7 @@ class _PuzzleState extends State<Puzzle> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return AnimatedBuilder(
         animation: controller,
         builder: (c, child) => Positioned(
@@ -143,6 +171,9 @@ class _PuzzleState extends State<Puzzle> with SingleTickerProviderStateMixin {
               ),
             ));
   }
+
+  @override
+  bool get wantKeepAlive => false;
 }
 
 class ReduceAdd extends StreamTransformerBase {
@@ -152,6 +183,10 @@ class ReduceAdd extends StreamTransformerBase {
   @override
   Stream bind(Stream stream) {
     stream.listen((event) {
+      if (event == "reset!") {
+        sum = 0;
+        controller.add(sum);
+      }
       if (event is int) {
         sum += event;
         controller.add(sum);
