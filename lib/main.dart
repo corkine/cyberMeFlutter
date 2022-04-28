@@ -6,12 +6,13 @@ import 'package:hello_flutter/async.dart';
 import 'package:hello_flutter/game.dart';
 import 'package:hello_flutter/health.dart';
 import 'package:hello_flutter/place.dart';
+import 'package:hello_flutter/snh.dart';
 import 'package:http/http.dart' as http;
 
 import 'data.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const SNHApp());
   //runApp(LearnAsync());
   /*var some = Future.delayed(Duration(seconds: 10), () {
     print("HELLO");
