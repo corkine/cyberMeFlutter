@@ -2,7 +2,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'learn/animated.dart';
 import 'health/health.dart';
+import 'game.dart';
+import 'snh.dart';
 
 import 'data.dart';
 
@@ -13,7 +16,8 @@ void main() {
     print("HELLO");
     return 10;
   });*/
-  runApp(const MyApp());
+  //runApp(const MyApp());
+  runApp(const LearnAnimation());
 }
 
 class MyApp extends StatefulWidget {
@@ -32,8 +36,8 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     Info.readData().then((value) => {
       setState(() {
-        //ww = Game(info: value);
-        ww = HealthCard(info: value, scoreEvent: StreamController());
+        ww = Game(info: value);
+        //ww = HealthCard(info: value, scoreEvent: StreamController());
       })
     });
     super.initState();
