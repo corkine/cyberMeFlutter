@@ -4,7 +4,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:hello_flutter/data.dart';
 
-import 'health.dart';
+import 'health/health.dart';
 
 class Game extends StatefulWidget {
   final Info info;

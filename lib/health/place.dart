@@ -1,10 +1,6 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:hello_flutter/data.dart';
-import 'package:hello_flutter/util.dart';
-
-import 'health.dart';
+import '../data.dart';
+import '../util.dart';
 
 class HealthCheck extends StatefulWidget {
   final Info info;
