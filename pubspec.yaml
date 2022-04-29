@@ -37,6 +37,7 @@ dependencies:
   http: ^0.13.4
   sprintf: ^6.0.0
   shared_preferences: ^2.0.13
+  rive: ^0.8.4
 
 dev_dependencies:
   flutter_test:
