@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../data.dart';
+import '../learn/data.dart';
 import '../util.dart';
 
 class HealthCheck extends StatefulWidget {

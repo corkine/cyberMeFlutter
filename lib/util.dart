@@ -1,12 +1,12 @@
+import 'package:flutter/material.dart';
 import 'package:sprintf/sprintf.dart';
 
 class Util {
-
   /// 返回常用的时间信息
   static String clock(
       {bool justDate = false,
-        bool justSeconds = false,
-        bool justBeforeSeconds = false}) {
+      bool justSeconds = false,
+      bool justBeforeSeconds = false}) {
     var now = DateTime.now().toLocal();
     if (justDate) {
       return sprintf("%04d-%02d-%02d", [now.year, now.month, now.day]);
@@ -30,4 +30,16 @@ class Util {
       return null;
     }
   }
+
+  static Widget waiting = Center(
+      child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: const [
+        CircularProgressIndicator(),
+        Padding(
+          padding: EdgeInsets.all(18.0),
+          child: Text('正在检索数据'),
+        )
+      ]));
 }

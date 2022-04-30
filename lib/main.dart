@@ -2,12 +2,13 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:hello_flutter/pocket/main.dart';
 import 'learn/animated.dart';
 import 'health/health.dart';
-import 'game.dart';
-import 'snh.dart';
+import 'learn/game.dart';
+import 'learn/snh.dart';
 
-import 'data.dart';
+import 'learn/data.dart';
 
 void main() {
   //runApp(const SNHApp());
@@ -17,7 +18,8 @@ void main() {
     return 10;
   });*/
   //runApp(const MyApp());
-  runApp(const LearnAnimation());
+  //runApp(const LearnAnimation());
+  CMPocket.run();
 }
 
 class MyApp extends StatefulWidget {
