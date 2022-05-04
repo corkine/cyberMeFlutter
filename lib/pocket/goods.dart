@@ -109,8 +109,13 @@ class _GoodListState extends State<GoodList> {
             physics: const BouncingScrollPhysics(),
             itemExtent: 90,
             buildDefaultDragHandles: true,
-            itemBuilder: (c, i) =>
-                buildDismissible(i, context, _controller, config, goods),
+            itemBuilder: (c, i) => GoodCard(
+                key: ValueKey(goods[i].id),
+                controller: config.controller,
+                config: config,
+                goods: goods,
+                i: i,
+                onDismiss: () => goods.removeAt(i)),
             itemCount: goods.length,
             scrollController: _controller,
             onReorder: (int o, int n) {
@@ -132,14 +137,36 @@ class _GoodListState extends State<GoodList> {
             itemExtent: 90,
             controller: _controller,
             itemCount: goods.length,
-            itemBuilder: (c, i) =>
-                buildDismissible(i, context, _controller, config, goods));
+            itemBuilder: (c, i) => GoodCard(
+                key: ValueKey(goods[i].id),
+                controller: config.controller,
+                config: config,
+                goods: goods,
+                i: i,
+                onDismiss: () => goods.removeAt(i)));
   }
+}
 
-  Dismissible buildDismissible(int i, BuildContext context,
-      ScrollController _controller, Config config, List<Good> goods) {
+class GoodCard extends StatelessWidget {
+  final ScrollController controller;
+  final Config config;
+  final List<Good> goods;
+  final int i;
+  final Function onDismiss;
+
+  const GoodCard(
+      {required Key key,
+      required this.controller,
+      required this.config,
+      required this.goods,
+      required this.i,
+      required this.onDismiss})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
     return Dismissible(
-      key: Key(goods[i].id),
+      key: key!,
       background: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: const [
@@ -162,9 +189,9 @@ class _GoodListState extends State<GoodList> {
           ],
         ),
       ),
-      confirmDismiss: (d) => _handleDismiss(d, goods[i], context),
+      confirmDismiss: (d) => handleDismiss(d, goods[i], context),
       onDismissed: (DismissDirection d) {
-        setState(() => goods.removeAt(i));
+        onDismiss();
       },
       child: Card(
         margin: const EdgeInsets.only(bottom: 1, top: 1),
@@ -188,7 +215,12 @@ class _GoodListState extends State<GoodList> {
             ),
           ),
           config.useReorderableListView
-              ? InkWell(child: buildContainer(goods, i, config))
+              ? InkWell(
+                  child: GoodItem(
+                  key: ValueKey(goods[i].id),
+                  good: goods[i],
+                  showUpdateButNotCreateTime: config.showUpdateButNotCreateTime,
+                ))
               : InkWell(
                   onTap: () {
                     final config = Provider.of<Config>(context, listen: false);
@@ -203,79 +235,25 @@ class _GoodListState extends State<GoodList> {
                   },
                   onLongPress: () {
                     final config = Provider.of<Config>(context, listen: false);
-                    config.position = _controller.offset;
+                    config.position = controller.offset;
                     Navigator.of(context).push(
                         MaterialPageRoute(builder: (BuildContext context) {
                       return GoodAdd(goods[i]);
                     }));
                   },
-                  child: buildContainer(goods, i, config),
+                  child: GoodItem(
+                    key: ValueKey(goods[i].id),
+                    good: goods[i],
+                    showUpdateButNotCreateTime:
+                        config.showUpdateButNotCreateTime,
+                  ),
                 )
         ]),
       ),
     );
   }
 
-  Container buildContainer(List<Good> goods, int i, Config config) {
-    return Container(
-      alignment: Alignment.center,
-      width: double.infinity,
-      height: 100,
-      child: ListTile(
-        tileColor: Colors.transparent,
-        leading: Padding(
-          padding: const EdgeInsets.only(top: 5, right: 9),
-          child: CircleAvatar(
-            backgroundColor: Colors.blueGrey.shade200,
-            foregroundColor: Colors.white,
-            child: Text(goods[i].name.substring(0, 1).toUpperCase()),
-          ),
-        ),
-        horizontalTitleGap: 0,
-        title: RichText(
-            text: TextSpan(
-                text: goods[i].name,
-                style: const TextStyle(color: Colors.black, fontSize: 18),
-                children: [
-              TextSpan(
-                  text: '  ' +
-                      DateFormat('yy/M/d').format(
-                          config.showUpdateButNotCreateTime
-                              ? goods[i].updateTime
-                              : goods[i].addTime),
-                  style: const TextStyle(color: Colors.grey, fontSize: 12))
-            ])),
-        subtitle: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  color: Colors.white54),
-              padding:
-                  const EdgeInsets.only(left: 6, right: 6, top: 1, bottom: 1),
-              child: Text(goods[i].importance! + ' | ' + goods[i].currentState),
-            ),
-            const SizedBox(
-              width: 7,
-            ),
-            Expanded(
-              child: Text(
-                goods[i].description ?? '',
-                softWrap: true,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(color: Colors.grey.shade700, fontSize: 13),
-              ),
-            )
-          ],
-        ),
-        trailing: null,
-      ),
-    );
-  }
-
-  Future<bool> _handleDismiss(
+  static Future<bool> handleDismiss(
       DismissDirection direction, Good good, BuildContext context) async {
     final config = Provider.of<Config>(context, listen: false);
     if (direction == DismissDirection.startToEnd) return false;
@@ -320,6 +298,76 @@ class _GoodListState extends State<GoodList> {
         return false;
       }
     });
+  }
+}
+
+class GoodItem extends StatelessWidget {
+  const GoodItem({
+    Key? key,
+    required this.good,
+    required this.showUpdateButNotCreateTime,
+  }) : super(key: key);
+
+  final Good good;
+  final bool showUpdateButNotCreateTime;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      alignment: Alignment.center,
+      width: double.infinity,
+      height: 100,
+      child: ListTile(
+        tileColor: Colors.transparent,
+        leading: Padding(
+          padding: const EdgeInsets.only(top: 5, right: 9),
+          child: CircleAvatar(
+            backgroundColor: Colors.blueGrey.shade200,
+            foregroundColor: Colors.white,
+            child: Text(good.name.substring(0, 1).toUpperCase()),
+          ),
+        ),
+        horizontalTitleGap: 0,
+        title: RichText(
+            text: TextSpan(
+                text: good.name,
+                style: const TextStyle(color: Colors.black, fontSize: 18),
+                children: [
+              TextSpan(
+                  text: '  ' +
+                      DateFormat('yy/M/d').format(showUpdateButNotCreateTime
+                          ? good.updateTime
+                          : good.addTime),
+                  style: const TextStyle(color: Colors.grey, fontSize: 12))
+            ])),
+        subtitle: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  color: Colors.white54),
+              padding:
+                  const EdgeInsets.only(left: 6, right: 6, top: 1, bottom: 1),
+              child: Text(good.importance! + ' | ' + good.currentState),
+            ),
+            const SizedBox(
+              width: 7,
+            ),
+            Expanded(
+              child: Text(
+                good.description ?? '',
+                softWrap: true,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(color: Colors.grey.shade700, fontSize: 13),
+              ),
+            )
+          ],
+        ),
+        trailing: null,
+      ),
+    );
   }
 }
 

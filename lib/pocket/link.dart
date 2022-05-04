@@ -27,7 +27,9 @@ class _QuickLinkPageState extends State<QuickLinkPage> {
   }
 
   Future<List<EntityLog>> fetchData(Config config, int limit) async {
-    return http.get(Uri.parse(config.dataURL(limit))).then((value) {
+    var url = Uri.parse(config.dataURL(limit));
+    print("fetching from $url");
+    return http.get(url).then((value) {
       var data = jsonDecode(const Utf8Codec().decode(value.bodyBytes));
       return (data as List).map((e) => EntityLog.fromJSON(e)).toList();
     });
@@ -54,78 +56,77 @@ class _QuickLinkPageState extends State<QuickLinkPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<Config>(
-      builder: (BuildContext context, Config config, Widget? w) {
-        _data = fetchData(config, config.shortURLShowLimit);
-        return FutureBuilder(
-            future: _data,
-            builder: (b, s) {
-              if (s.connectionState != ConnectionState.done) {
-                return Util.waiting;
-              }
-              if (s.hasError) {
-                return InkWell(
-                    radius: 20,
-                    onTap: () => _retry(config, config.shortURLShowLimit),
-                    child: const Center(child: Text('检索出错，点击重试')));
-              }
-              if (s.hasData) {
-                Map<String, List<EntityLog>> map =
-                    _count(s.data as List<EntityLog>);
-                List<EntityLog> logs;
-                config.filterDuplicate
-                    ? logs = map.values.map((e) => e[0]).toList()
-                    : logs = s.data as List<EntityLog>;
-                return ListView.builder(
-                    physics: const BouncingScrollPhysics(),
-                    itemCount: logs.length,
-                    itemExtent: 65,
-                    itemBuilder: (c, i) => ListTile(
-                          onTap: () => launchUrl(Uri.parse(logs[i].url)),
-                          leading: Padding(
-                            padding: const EdgeInsets.only(top: 5, right: 9),
-                            child: CircleAvatar(
-                              backgroundColor: Colors.blueGrey.shade200,
-                              foregroundColor: Colors.white,
-                              child: Text(logs[i]
-                                  .keyword
-                                  .substring(0, 1)
-                                  .toUpperCase()),
-                            ),
-                          ),
-                          horizontalTitleGap: 0,
-                          title: RichText(
-                              text: TextSpan(
-                                  text: logs[i].keyword,
-                                  style: const TextStyle(
-                                      color: Colors.black, fontSize: 18),
-                                  children: [
-                                TextSpan(
-                                    text: '  ' +
-                                        DateFormat('yy/M/d HH:mm')
-                                            .format(logs[i].actionTime),
-                                    style: const TextStyle(
-                                        color: Colors.grey, fontSize: 12))
-                              ])),
-                          subtitle: Text(
-                            logs[i].iPInfo,
-                            style: TextStyle(
-                                color: Colors.grey.shade700, fontSize: 13),
-                          ),
-                          trailing: config.filterDuplicate
-                              ? Chip(
-                                  backgroundColor: Colors.grey.shade200,
-                                  label: Text(
-                                      map[logs[i].keyword]!.length.toString()))
-                              : null,
-                        ));
-              }
-              return const Center(
-                child: Text('没有数据'),
-              );
-            });
-      },
-    );
+    //这里 Config 变更所有 Child 节点都需要重绘，因此没必要使用 Consumer
+    final config = Provider.of<Config>(context, listen: true);
+    _data = fetchData(config, config.shortURLShowLimit);
+    return FutureBuilder(
+        future: _data,
+        builder: (b, s) {
+          if (s.connectionState != ConnectionState.done) {
+            return Util.waiting;
+          }
+          if (s.hasError) {
+            return InkWell(
+                radius: 20,
+                onTap: () => _retry(config, config.shortURLShowLimit),
+                child: const Center(child: Text('检索出错，点击重试')));
+          }
+          if (s.hasData) {
+            Map<String, List<EntityLog>> map =
+            _count(s.data as List<EntityLog>);
+            List<EntityLog> logs;
+            config.filterDuplicate
+                ? logs = map.values.map((e) => e[0]).toList()
+                : logs = s.data as List<EntityLog>;
+            return ListView.builder(
+                physics: const BouncingScrollPhysics(),
+                itemCount: logs.length,
+                itemExtent: 65,
+                itemBuilder: (c, i) => ListTile(
+                  key: ValueKey(logs[i].entityId),
+                  onTap: () => launchUrl(Uri.parse(logs[i].url)),
+                  leading: Padding(
+                    padding: const EdgeInsets.only(top: 5, right: 9),
+                    child: CircleAvatar(
+                      backgroundColor: Colors.blueGrey.shade200,
+                      foregroundColor: Colors.white,
+                      child: Text(logs[i]
+                          .keyword
+                          .substring(0, 1)
+                          .toUpperCase()),
+                    ),
+                  ),
+                  horizontalTitleGap: 0,
+                  title: RichText(
+                      text: TextSpan(
+                          text: logs[i].keyword,
+                          style: const TextStyle(
+                              color: Colors.black, fontSize: 18),
+                          children: [
+                            TextSpan(
+                                text: '  ' +
+                                    DateFormat('yy/M/d HH:mm')
+                                        .format(logs[i].actionTime),
+                                style: const TextStyle(
+                                    color: Colors.grey, fontSize: 12))
+                          ])),
+                  subtitle: Text(
+                    logs[i].iPInfo,
+                    style: TextStyle(
+                        color: Colors.grey.shade700, fontSize: 13),
+                  ),
+                  trailing: config.filterDuplicate
+                      ? Chip(
+                      backgroundColor: Colors.grey.shade200,
+                      label: Text(
+                          map[logs[i].keyword]!.length.toString()))
+                      : null,
+                ));
+          }
+          return const Center(
+            child: Text('没有数据'),
+          );
+        });
   }
 }
 

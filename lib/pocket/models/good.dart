@@ -66,6 +66,13 @@ class Good {
       default:
         return res;
     }
+
+
+  }
+
+  @override
+  String toString() {
+    return 'Good{id: $id}';
   }
 
   static compare(Config c, Good a, Good b) {
