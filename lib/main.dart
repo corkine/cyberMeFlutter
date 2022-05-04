@@ -1,10 +1,10 @@
-﻿
-import 'dart:async';
+﻿import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:hello_flutter/learn/test.dart';
 import 'package:hello_flutter/pocket/main.dart';
 import 'learn/animated.dart';
-import 'health/health.dart';
+import 'health/health_v2.dart';
 import 'learn/game.dart';
 import 'learn/snh.dart';
 
@@ -17,9 +17,9 @@ void main() {
     print("HELLO");
     return 10;
   });*/
-  //runApp(const MyApp());
+  runApp(const MyApp());
   //runApp(const LearnAnimation());
-  CMPocket.run();
+  //CMPocket.run();
 }
 
 class MyApp extends StatefulWidget {
@@ -31,17 +31,22 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   Widget ww = const Scaffold(
-    body: Center(child: Text("正在加载...", style: TextStyle(fontSize: 20),),),
+    body: Center(
+      child: Text(
+        "正在加载...",
+        style: TextStyle(fontSize: 20),
+      ),
+    ),
   );
 
   @override
   void initState() {
     Info.readData().then((value) => {
-      setState(() {
-        ww = Game(info: value);
-        //ww = HealthCard(info: value, scoreEvent: StreamController());
-      })
-    });
+          setState(() {
+            ww = Game(info: value);
+            //ww = HealthCard(info: value, scoreEvent: StreamController());
+          })
+        });
     super.initState();
   }
 

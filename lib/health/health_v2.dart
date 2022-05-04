@@ -3,6 +3,7 @@ import 'dart:async';
 import 'place.dart';
 import '../util.dart';
 import '../learn/data.dart';
+import 'animate.dart' as go;
 
 class HealthCard extends StatefulWidget {
   final Info info;
@@ -16,10 +17,22 @@ class HealthCard extends StatefulWidget {
   State<HealthCard> createState() => _HealthCardState();
 }
 
-class _HealthCardState extends State<HealthCard> {
+class _HealthCardState extends State<HealthCard>
+    with SingleTickerProviderStateMixin {
+  late AnimationController controller;
+
   @override
   void initState() {
+    controller = AnimationController(vsync: this)
+      ..duration = const Duration(seconds: 100)
+      ..repeat();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
   }
 
   @override
@@ -46,16 +59,107 @@ class _HealthCardState extends State<HealthCard> {
     );
   }
 
-  Positioned buildBlue() {
-    return Positioned(
-      //蓝色背景
-        top: 0,
-        left: 0,
-        right: 0,
-        child: Container(
-          height: 180,
-          color: Info.blue,
-        ));
+  Widget buildBlue() {
+    print(controller.value);
+    return AnimatedBuilder(
+        animation: controller,
+        builder: (context, child) {
+          return Positioned(
+              //蓝色背景
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Stack(alignment: Alignment.topCenter, children: [
+                Container(
+                  height: 580,
+                  decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                        Color.fromRGBO(88, 145, 235, 1),
+                        Color.fromRGBO(88, 145, 235, 1),
+                        Color.fromRGBO(88, 145, 235, 0.9),
+                        Color.fromRGBO(88, 145, 235, 0.7),
+                        Color.fromRGBO(88, 145, 235, 0.2),
+                        Color.fromRGBO(88, 145, 235, 0),
+                      ],
+                          stops: [
+                        0,
+                        0.6,
+                        0.7,
+                        0.84,
+                        0.95,
+                        1
+                      ])),
+                ),
+                Positioned(
+                  left: 0,
+                  top: -1 * controller.value * 30 * 200 + 30,
+                  child: Transform.translate(
+                    offset: const Offset(-10, 0),
+                    child: const go.GoEachSide(
+                      arrowCount: 170,
+                      arrowColor:
+                          Color.fromRGBO(255, 255, 255, 0.30196078431372547),
+                      arrowHeight: 50,
+                      arrowPadding: 7,
+                    ),
+                  ),
+                ),
+                Positioned(
+                  right: 0,
+                  top: -1 * controller.value * 30 * 200 + 30,
+                  child: Transform.translate(
+                    offset: const Offset(12, 0),
+                    child: const go.GoEachSide(
+                      arrowCount: 170,
+                      arrowColor:
+                          Color.fromRGBO(255, 255, 255, 0.30196078431372547),
+                      arrowHeight: 50,
+                      arrowPadding: 7,
+                    ),
+                  ),
+                ),
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  height: 130,
+                  child: Container(
+                    decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                            end: Alignment.topCenter,
+                            begin: Alignment.bottomCenter,
+                            colors: [
+                          const Color.fromRGBO(88, 145, 235, 1).withOpacity(0),
+                          const Color.fromRGBO(88, 145, 235, 1).withOpacity(0.1)
+                        ])),
+                  ),
+                ),
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: 150,
+                  child: Container(
+                      decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                        const Color.fromRGBO(88, 145, 235, 1).withOpacity(1),
+                        const Color.fromRGBO(88, 145, 235, 1).withOpacity(0.9),
+                        const Color.fromRGBO(88, 145, 235, 1).withOpacity(0.3),
+                      ],
+                              stops: const [
+                        0,
+                        0.8,
+                        1
+                      ]))),
+                ),
+              ]));
+        });
   }
 
   Widget buildUserInfo() {
@@ -79,7 +183,7 @@ class _HealthCardState extends State<HealthCard> {
               ),
               Text(
                 List.generate(widget.info.name.length - 1, (index) => "*")
-                    .reduce((value, element) => value + element) +
+                        .reduce((value, element) => value + element) +
                     widget.info.name[widget.info.name.length - 1],
                 style: Info.nameStyle,
               ),
@@ -103,7 +207,7 @@ class _HealthCardState extends State<HealthCard> {
               ),
               Text(
                 List.generate(widget.info.id.length - 4, (index) => "*")
-                    .reduce((value, element) => value + element) +
+                        .reduce((value, element) => value + element) +
                     widget.info.id.substring(widget.info.id.length - 4),
                 style: Info.nameStyle,
               ),
@@ -135,9 +239,9 @@ class _HealthCardState extends State<HealthCard> {
                             hintStyle: TextStyle(color: Colors.grey)),
                         initialValue: widget.info.name,
                         validator: (v) =>
-                        (v != null && v.isNotEmpty && v.length >= 2)
-                            ? null
-                            : "需要输入名字",
+                            (v != null && v.isNotEmpty && v.length >= 2)
+                                ? null
+                                : "需要输入名字",
                         onSaved: (e) => widget.info.name = e!,
                       ),
                       TextFormField(
@@ -147,9 +251,9 @@ class _HealthCardState extends State<HealthCard> {
                             hintStyle: TextStyle(color: Colors.grey)),
                         initialValue: widget.info.id,
                         validator: (v) =>
-                        (v != null && v.isNotEmpty && v.length == 18)
-                            ? null
-                            : "需要输入完整身份证号",
+                            (v != null && v.isNotEmpty && v.length == 18)
+                                ? null
+                                : "需要输入完整身份证号",
                         onSaved: (e) => widget.info.id = e!,
                       ),
                       TextFormField(
@@ -160,9 +264,9 @@ class _HealthCardState extends State<HealthCard> {
                         ),
                         initialValue: widget.info.lastTestTime,
                         validator: (v) =>
-                        (v != null && v.isNotEmpty && v.length >= 10)
-                            ? null
-                            : "输入非法",
+                            (v != null && v.isNotEmpty && v.length >= 10)
+                                ? null
+                                : "输入非法",
                         onSaved: (e) => widget.info.lastTestTime = e!,
                       ),
                       TextFormField(
@@ -173,9 +277,9 @@ class _HealthCardState extends State<HealthCard> {
                         ),
                         initialValue: widget.info.testInfo,
                         validator: (v) =>
-                        (v != null && v.isNotEmpty && v.length >= 2)
-                            ? null
-                            : "输入非法",
+                            (v != null && v.isNotEmpty && v.length >= 2)
+                                ? null
+                                : "输入非法",
                         onSaved: (e) => widget.info.testInfo = e!,
                       ),
                       TextFormField(
@@ -186,9 +290,9 @@ class _HealthCardState extends State<HealthCard> {
                         ),
                         initialValue: widget.info.lastVaccineDate,
                         validator: (v) =>
-                        (v != null && v.isNotEmpty && v.length >= 2)
-                            ? null
-                            : "输入非法",
+                            (v != null && v.isNotEmpty && v.length >= 2)
+                                ? null
+                                : "输入非法",
                         onSaved: (e) => widget.info.lastVaccineDate = e!,
                       ),
                       TextFormField(
@@ -199,12 +303,12 @@ class _HealthCardState extends State<HealthCard> {
                         ),
                         initialValue: widget.info.vaccineTimes.toString(),
                         validator: (v) => (v != null &&
-                            v.isNotEmpty &&
-                            int.tryParse(v) != null)
+                                v.isNotEmpty &&
+                                int.tryParse(v) != null)
                             ? null
                             : "输入一个整数",
                         onSaved: (e) =>
-                        widget.info.vaccineTimes = int.parse(e!),
+                            widget.info.vaccineTimes = int.parse(e!),
                       ),
                       TextFormField(
                         decoration: const InputDecoration(
@@ -214,7 +318,7 @@ class _HealthCardState extends State<HealthCard> {
                         ),
                         initialValue: widget.info.checkPlace.toString(),
                         validator: (v) =>
-                        (v != null && v.isNotEmpty) ? null : "输入一个地址",
+                            (v != null && v.isNotEmpty) ? null : "输入一个地址",
                         onSaved: (e) => widget.info.checkPlace = e!,
                       )
                     ],
@@ -277,7 +381,7 @@ class _HealthCardState extends State<HealthCard> {
                   color: const Color.fromRGBO(78, 118, 207, 1)),
               child: Padding(
                 padding:
-                const EdgeInsets.only(left: 8, right: 8, top: 3, bottom: 3),
+                    const EdgeInsets.only(left: 8, right: 8, top: 3, bottom: 3),
                 child: Row(
                   children: [
                     GestureDetector(
@@ -398,7 +502,7 @@ class _HealthInfoState extends State<HealthInfo> {
             ),
             Container(
               padding:
-              const EdgeInsets.only(left: 15, right: 15, top: 8, bottom: 8),
+                  const EdgeInsets.only(left: 15, right: 15, top: 8, bottom: 8),
               decoration: BoxDecoration(
                   color: blue,
                   borderRadius: const BorderRadius.all(Radius.circular(7)),
@@ -431,19 +535,19 @@ class _HealthInfoState extends State<HealthInfo> {
               decoration: BoxDecoration(
                   gradient: widget.info.testInfo.contains("48")
                       ? const LinearGradient(
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                      colors: [
-                        Color.fromRGBO(116, 186, 130, 1),
-                        Color.fromRGBO(158, 224, 138, 0.95)
-                      ])
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                          colors: [
+                              Color.fromRGBO(116, 186, 130, 1),
+                              Color.fromRGBO(158, 224, 138, 0.95)
+                            ])
                       : const LinearGradient(
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                      colors: [
-                        Color.fromRGBO(90, 136, 248, 1),
-                        Color.fromRGBO(129, 178, 247, 0.95)
-                      ]),
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                          colors: [
+                              Color.fromRGBO(90, 136, 248, 1),
+                              Color.fromRGBO(129, 178, 247, 0.95)
+                            ]),
                   borderRadius: const BorderRadius.all(Radius.circular(10)),
                   boxShadow: const [
                     BoxShadow(
@@ -460,15 +564,15 @@ class _HealthInfoState extends State<HealthInfo> {
                         padding: const EdgeInsets.only(right: 3),
                         child: widget.info.testInfo.contains("48")
                             ? Image.asset(
-                          "images/refresh3.png",
-                          width: 19,
-                          height: 19,
-                        )
+                                "images/refresh3.png",
+                                width: 19,
+                                height: 19,
+                              )
                             : Image.asset(
-                          "images/refresh.png",
-                          width: 19,
-                          height: 19,
-                        ),
+                                "images/refresh.png",
+                                width: 19,
+                                height: 19,
+                              ),
                       ),
                       const Text(
                         "核酸检测",
@@ -636,7 +740,7 @@ class _HealthInfoState extends State<HealthInfo> {
         Text(
           text,
           style:
-          TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: blue),
+              TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: blue),
         )
       ],
     );
@@ -695,28 +799,28 @@ class _HealthInfoState extends State<HealthInfo> {
             )),
         pickTime != null
             ? Positioned(
-          top: 275,
-          child: RichText(
-              text: TextSpan(
-                  text: "核酸 ",
-                  style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w400,
-                      color: Color.fromRGBO(28, 148, 77, 1)),
-                  children: [
-                    const TextSpan(
-                        text: "已采样",
-                        style: TextStyle(
-                            fontSize: 23, fontWeight: FontWeight.w600)),
-                    TextSpan(
-                        text: " " + Util.clock(justDate: true),
+                top: 275,
+                child: RichText(
+                    text: TextSpan(
+                        text: "核酸 ",
                         style: const TextStyle(
-                            fontSize: 19, fontWeight: FontWeight.w400))
-                  ])),
-        )
+                            fontSize: 18,
+                            fontWeight: FontWeight.w400,
+                            color: Color.fromRGBO(28, 148, 77, 1)),
+                        children: [
+                      const TextSpan(
+                          text: "已采样",
+                          style: TextStyle(
+                              fontSize: 23, fontWeight: FontWeight.w600)),
+                      TextSpan(
+                          text: " " + Util.clock(justDate: true),
+                          style: const TextStyle(
+                              fontSize: 19, fontWeight: FontWeight.w400))
+                    ])),
+              )
             : const SizedBox(
-          height: 0,
-        )
+                height: 0,
+              )
       ],
     );
   }

@@ -4,8 +4,118 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+class HomeMe extends StatelessWidget {
+  const HomeMe({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 100, bottom: 140),
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            CupertinoContextMenu(
+                actions: [
+                  CupertinoContextMenuAction(
+                      isDefaultAction: true,
+                      child: const Text("Open"),
+                      onPressed: () {}),
+                  CupertinoContextMenuAction(
+                      isDestructiveAction: true,
+                      child: const Text("Remove"),
+                      onPressed: () {})
+                ],
+                child: const FlutterLogo(
+                  size: 140,
+                )),
+            const SizedBox(
+              height: 100,
+            ),
+            SizedBox(
+              height: 100,
+              child: CupertinoDatePicker(
+                onDateTimeChanged: (d) {},
+                mode: CupertinoDatePickerMode.date,
+              ),
+            ),
+            const SizedBox(
+              height: 100,
+            ),
+            ClipPath(
+              clipper: MyClipper(),
+              child: Padding(
+                padding: const EdgeInsets.all(10),
+                child: Image.network(
+                  "https://mazhangjing.com/static/cover-leaf.jpg",
+                  loadingBuilder: (context, child, progress) {
+                    if (progress == null) return child;
+                    return const CupertinoActivityIndicator(
+                      animating: true,
+                      radius: 20,
+                      color: Colors.red,
+                    );
+                  },
+                ),
+              ),
+            )
+            ,
+            Opacity(
+              opacity: 0.7,
+              child: ShaderMask(
+                blendMode: BlendMode.srcATop,
+                shaderCallback: (Rect b) => const RadialGradient(colors: [
+                  Colors.indigo,
+                  Colors.blue,
+                  Colors.green,
+                  Colors.yellow,
+                  Colors.orange,
+                  Colors.red
+                ], radius: 0.7, center: Alignment(0.2, 0.7))
+                    .createShader(b),
+                child: const FlutterLogo(
+                  size: 128,
+                ),
+              ),
+            ),
+            SizedBox(
+              height: 100,
+              child: CupertinoPicker(
+                itemExtent: 25,
+                children: List.generate(20, (index) => Text("第 $index 项")),
+                onSelectedItemChanged: (v) {},
+              ),
+            ),
+            CupertinoSlider(value: 0.3, onChanged: (v) {}),
+            CupertinoSwitch(value: true, onChanged: (v) {}),
+            CupertinoSwitch(value: false, onChanged: (v) {}),
+            CupertinoSlidingSegmentedControl(
+                groupValue: "wifi",
+                padding: const EdgeInsets.all(10),
+                children: const {
+                  "1": Text("No.1"),
+                  "wifi": Icon(Icons.wifi),
+                  "blueTooth": Icon(Icons.bluetooth)
+                },
+                onValueChanged: (v) {})
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class MyClipper extends CustomClipper<Path> {
+  @override
+  ui.Path getClip(Size size) => Path()..lineTo(0, size.height) //左上角到左下角
+        ..quadraticBezierTo(size.width / 8, size.height / 4 , size.width, size.height)
+        ..lineTo(size.width, 0) //右下角到右上角
+        ..close();
+  //for debug
+  @override bool shouldReclip(covariant CustomClipper<Path> oldClipper) => true;
+}
+
 class TestApp extends StatelessWidget {
-  const TestApp({Key? key}) : super(key: key);
+  TestApp({Key? key}) : super(key: key);
 
   Widget Function(BuildContext) page(String info) =>
       (BuildContext context) => Scaffold(
@@ -18,11 +128,257 @@ class TestApp extends StatelessWidget {
       },
       child: Text("Goto $routeName"));
 
+  String value = "java";
+
   @override
   Widget build(BuildContext context) {
+    return CupertinoApp(
+      home: CupertinoTabScaffold(
+        tabBar: CupertinoTabBar(
+          items: const [
+            BottomNavigationBarItem(
+                icon: Icon(CupertinoIcons.phone), label: "Calls"),
+            BottomNavigationBarItem(
+                icon: Icon(CupertinoIcons.mail), label: "Mail"),
+            BottomNavigationBarItem(
+                icon: Icon(CupertinoIcons.calendar), label: "Calendar"),
+          ],
+        ),
+        tabBuilder: (context, index) => CupertinoTabView(
+          builder: (context) => const CupertinoPageScaffold(
+            navigationBar: CupertinoNavigationBar(
+              middle: Text("Hello World"),
+            ),
+            child: HomeMe(),
+          ),
+        ),
+      ),
+    );
+/*
+    return MaterialApp(
+      home: Builder(
+        builder: (context) =>
+            Scaffold(
+              appBar: AppBar(),
+              body: Center(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      Stepper(
+                        currentStep: 2,
+                        steps: const [
+                          Step(title: Text("步骤1"), content: Text("内容1")),
+                          Step(title: Text("步骤2"), content: Text("内容2")),
+                          Step(title: Text("步骤3"), content: Text("内容3")),
+                          Step(title: Text("步骤4"), content: Text("内容4"))
+                        ],
+                      ),
+                      Card(
+                        elevation: 3,
+                        color: Colors.pink[100],
+                        shadowColor: Colors.blue[100],
+                        shape: const StadiumBorder(),
+                        child: Padding(
+                          padding: const EdgeInsets.only(
+                              left: 15, right: 15, top: 5, bottom: 5),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: const [
+                              Text("新加坡总理李显龙今日访华"),
+                              Text("2022 年 10 月 1 日")
+                            ],
+                          ),
+                        ),
+                      ),
+                      Checkbox(value: true, onChanged: (e) {}),
+                      Checkbox(value: false, onChanged: (e) {}),
+                      Checkbox(
+                        value: null,
+                        onChanged: (e) {},
+                        tristate: true,
+                      ),
+                      DataTable(
+                        columns: [
+                          DataColumn(
+                              label: const Text("姓名"),
+                              tooltip: "HELLO",
+                              numeric: false,
+                              onSort: (e, o) {}),
+                          const DataColumn(label: Text("单位")),
+                          const DataColumn(label: Text("邮箱"))
+                        ],
+                        rows: [
+                          DataRow(
+                              cells: [
+                                const DataCell(Text("Corkine"),
+                                    showEditIcon: true),
+                                const DataCell(Text("Inspur Cisco"),
+                                    placeholder: true),
+                                DataCell(const Text("corkine@inspur.com"),
+                                    onTap: () {})
+                              ],
+                              selected: true,
+                              onSelectChanged: (b) {},
+                              color: MaterialStateProperty.all(Colors.red)),
+                          const DataRow(cells: [
+                            DataCell(Text("Corkine")),
+                            DataCell(Text("Inspur Cisco")),
+                            DataCell(Text("corkine@inspur.com"))
+                          ])
+                        ],
+                        headingTextStyle: const TextStyle(
+                            fontWeight: FontWeight.bold, color: Colors.black),
+                      ),
+                      TextButton(
+                          child: const Text("showDataPicker"),
+                          onPressed: () async {
+                            final res = await showDatePicker(
+                                context: context,
+                                initialDate: DateTime.now(),
+                                firstDate:
+                                DateTime.now().add(const Duration(days: 0)),
+                                lastDate:
+                                DateTime.now().add(const Duration(days: 10)));
+                            print("Choose $res");
+                            return;
+                          }),
+                      DropdownButton(
+                        items: const [
+                          DropdownMenuItem(
+                            child: Text("中文"),
+                            value: "zh",
+                          ),
+                          DropdownMenuItem(
+                            child: Text("英文"),
+                            value: "us",
+                          ),
+                          DropdownMenuItem(
+                            child: Text("法语"),
+                            value: "fa",
+                          )
+                        ],
+                        onChanged: (v) {},
+                        hint: const Text("选择语言"),
+                        value: "zh",
+                      ),
+                      ExpandIcon(
+                        onPressed: (e) {},
+                        isExpanded: true,
+                        size: 30,
+                        padding: const EdgeInsets.all(10),
+                        color: Colors.red,
+                        disabledColor: Colors.pink,
+                        expandedColor: Colors.blue,
+                      ),
+                      Slider(
+                          value: 2,
+                          onChanged: (v) {},
+                          min: 0,
+                          max: 10,
+                          divisions: 10,
+                          label: "标签1"),
+                      TextButton(
+                          onPressed: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content:
+                                const Text("Hello World"),
+                                  action: SnackBarAction(
+                                    label: "OK",
+                                    onPressed: () {},
+                                    textColor: Colors.white,
+                                  ),)
+                            );
+                          }, child: const Text("Show SnackBar")),
+                      RangeSlider(
+                          values: const RangeValues(0.2, 0.8),
+                          onChanged: (value) {}),
+                      Ink(
+                        decoration: const ShapeDecoration(
+                            color: Colors.pink, shape: CircleBorder()),
+                        child: IconButton(
+                            icon: const Icon(
+                                Icons.refresh, color: Colors.white),
+                            onPressed: () {}),
+                      ),
+                      Tooltip(
+                          message: "这里是一些说明文字",
+                          //richMessage: const TextSpan(text: "RichText 支持"),
+                          padding: const EdgeInsets.all(3),
+                          margin: const EdgeInsets.all(3),
+                          preferBelow: true,
+                          height: 40,
+                          waitDuration: const Duration(seconds: 2),
+                          showDuration: const Duration(seconds: 2),
+                          enableFeedback: true,
+                          child: Switch(value: false, onChanged: (v) {})),
+                      Switch(value: true, onChanged: (v) {}),
+                      CupertinoSwitch(value: true, onChanged: (v) {}),
+                      Switch.adaptive(value: false, onChanged: (v) {}),
+                      StatefulBuilder(
+                          builder: (context, setState) =>
+                              Row(
+                                children: [
+                                  Radio(
+                                      value: "java",
+                                      groupValue: value,
+                                      onChanged: (v) =>
+                                          setState(() {
+                                            value = v as String;
+                                          })),
+                                  const Text("Java"),
+                                  Radio(
+                                      value: "clojure",
+                                      groupValue: value,
+                                      onChanged: (v) =>
+                                          setState(() {
+                                            value = v as String;
+                                          })),
+                                  const Text("Clojure"),
+                                ],
+                              )),
+                      ToggleButtons(
+                        children: const [
+                          Icon(Icons.add),
+                          Icon(Icons.remove),
+                          Icon(Icons.delete),
+                          Icon(Icons.star)
+                        ],
+                        isSelected: const [true, false, true, true],
+                        selectedColor: Colors.blue,
+                        onPressed: (v) {},
+                      ),
+                      const ExpansionTile(
+                        title: Text("看我有什么？"),
+                        children: [
+                          FlutterLogo(size: 30),
+                          FlutterLogo(size: 30)
+                        ],
+                      ),
+                      CheckboxListTile(
+                        value: true,
+                        onChanged: (v) {},
+                        title: const Text("选择我"),
+                        subtitle: const Text("我是 xxx"),
+                      ),
+                      OutlinedButton(
+                          onPressed: () {}, child: const Text("Hello")),
+                      OutlinedButton.icon(
+                          onPressed: () {},
+                          icon: const Icon(Icons.star),
+                          label: const Text("Hello"))
+                    ],
+                  ),
+                ),
+              ),
+            ),
+      ),
+    );
+*/
+/*
     return MaterialApp(
         home: Builder(
             builder: (context) => Scaffold(
+              appBar: AppBar(automaticallyImplyLeading: false,),
                 body: Container(
                     width: double.infinity,
                     color: Colors.pink[100],
@@ -79,6 +435,7 @@ class TestApp extends StatelessWidget {
         onUnknownRoute: (RouteSettings settings) {
           return MaterialPageRoute(builder: page("404"));
         });
+*/
   }
 }
 
