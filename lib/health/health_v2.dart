@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'place.dart';
+import 'place_v2.dart';
 import '../util.dart';
 import '../learn/data.dart';
 import 'animate.dart' as go;
@@ -60,7 +60,6 @@ class _HealthCardState extends State<HealthCard>
   }
 
   Widget buildBlue() {
-    print(controller.value);
     return AnimatedBuilder(
         animation: controller,
         builder: (context, child) {
