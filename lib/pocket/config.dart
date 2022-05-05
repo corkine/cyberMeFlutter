@@ -37,12 +37,16 @@ class Config extends ChangeNotifier {
   String password = '';
   String get token => '?user=$user&password=$password';
   String get base64Token => "Basic ${base64Encode(utf8.encode('$user:$password'))}";
+  Map<String,String> get base64Header => <String, String>{'authorization': base64Token};
 
   double position = 0.0;
 
   Config() {
     _init();
   }
+
+  static const String dashboardUrl = "https://cyber.mazhangjing.com/cyber/dashboard/summary";
+  static const String dayWorkUrl = "https://cyber.mazhangjing.com/cyber/dashboard/day-work";
 
   String addURL = 'https://go.mazhangjing.com/add';
   String basicURL = 'https://go.mazhangjing.com';

@@ -17,9 +17,9 @@ void main() {
     print("HELLO");
     return 10;
   });*/
-  runApp(const MyApp());
+  //runApp(const MyApp());
   //runApp(const LearnAnimation());
-  //CMPocket.run();
+  CMPocket.run();
 }
 
 class MyApp extends StatefulWidget {
