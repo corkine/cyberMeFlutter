@@ -16,7 +16,10 @@ class DayInfo {
         })
   ];
   static Widget mainWidget = const DayHome();
-  static const TextStyle normal = TextStyle(fontSize: 13);
+  static const TextStyle normal = TextStyle(fontSize: 14);
+  static const TextStyle noticeStyle =
+      TextStyle(color: Colors.white, fontSize: 12);
+  static const EdgeInsets noticePadding = EdgeInsets.fromLTRB(10, 3, 10, 3);
 }
 
 class DayHome extends StatefulWidget {
@@ -83,7 +86,7 @@ class _DayHomeState extends State<DayHome> {
                               style: TextStyle(
                                   fontWeight: FontWeight.bold, fontSize: 16)),
                           Container(
-                              padding: const EdgeInsets.fromLTRB(10, 3, 10, 3),
+                              padding: DayInfo.noticePadding,
                               decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(20),
                                   color: dashboard.alertDayWork
@@ -91,8 +94,7 @@ class _DayHomeState extends State<DayHome> {
                                       : Colors.blue[300]),
                               child: Text(
                                 dashboard.dayWorkString,
-                                style: const TextStyle(color: Colors.white,
-                                fontSize: 12),
+                                style: DayInfo.noticeStyle,
                               ))
                         ])),
                 ...(dashboard.todayTodo
@@ -154,45 +156,62 @@ class _DayHomeState extends State<DayHome> {
                                               fontSize: 20)),
                                       const TextSpan(text: " h")
                                     ]))),
-                                Padding(
-                                    padding:
-                                        const EdgeInsets.fromLTRB(8, 4, 8, 4),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.max,
-                                      mainAxisAlignment: MainAxisAlignment.end,
-                                      children: (dashboard.work.signData().map((time) => Padding(
-                                          padding:
-                                              const EdgeInsets.only(left: 10),
-                                          child: Container(
-                                              padding: const EdgeInsets.only(
-                                                  left: 7,
-                                                  right: 7,
-                                                  top: 1,
-                                                  bottom: 1),
-                                              decoration: BoxDecoration(
-                                                  color: const Color.fromRGBO(
-                                                      47, 46, 65, 1.0),
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          10)),
-                                              child: Text(time,
-                                                  style: const TextStyle(
-                                                      color: Colors.white)))))).toList(),
-                                    ))
+                                dashboard.work.NeedMorningCheck
+                                    ? Padding(
+                                        padding: const EdgeInsets.fromLTRB(
+                                            8, 4, 8, 4),
+                                        child: Container(
+                                            padding: DayInfo.noticePadding,
+                                            decoration: BoxDecoration(
+                                                color: Colors.green,
+                                                borderRadius:
+                                                    BorderRadius.circular(10)),
+                                            child: const Text("记得打卡",
+                                                style: DayInfo.noticeStyle)))
+                                    : Padding(
+                                        padding: const EdgeInsets.fromLTRB(
+                                            8, 4, 8, 4),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.max,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
+                                          children: (dashboard.work
+                                              .signData()
+                                              .map((time) => Padding(
+                                                  padding: const EdgeInsets.only(
+                                                      left: 10),
+                                                  child: Container(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                              left: 7,
+                                                              right: 7,
+                                                              top: 1,
+                                                              bottom: 1),
+                                                      decoration: BoxDecoration(
+                                                          color: const Color.fromRGBO(
+                                                              47, 46, 65, 1.0),
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                  10)),
+                                                      child: Text(time,
+                                                          style: const TextStyle(color: Colors.white)))))).toList(),
+                                        ))
                               ]))
                     ]),
                     elevation: 0.2,
                   )),
         ),
         Card(
-          child: Stack(
+          child: Column(
             children: [
               Image.asset(
                 "images/diary.png",
                 height: 180,
                 width: double.infinity,
               ),
-              const Positioned(bottom: 90, left: 105, child: Text("没有日记"))
+              const Padding(
+                  padding: EdgeInsets.only(bottom: 20, right: 10),
+                  child: Text("没有日记"))
             ],
           ),
           elevation: 0.2,

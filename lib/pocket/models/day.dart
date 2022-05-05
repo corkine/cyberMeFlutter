@@ -627,7 +627,7 @@ class Todo {
     return Todo(
       modified_at: map['modified_at'] as String,
       time: map['time'] as String,
-      finish_at: map['finish_at'] as String,
+      finish_at: map['finish_at'] as String?,
       title: map['title'] as String,
       list: map['list'] as String,
       due_at: map['due_at'] as String,
@@ -696,7 +696,14 @@ class Dashboard {
     return sprintf("%4d-%02d-%02d", [now.year, now.month, now.day]);
   }
 
+  /// 获取今日带星标的待办事项
   List<Todo> get todayTodo {
+    return (todo[today] as List).map((e) => Todo.fromMap(e))
+        .where((element) => element.isImportant).toList();
+  }
+
+  /// 获取今日所有的待办事项，包括没有带星标的
+  List<Todo> get todayAllTodo {
     return (todo[today] as List).map((e) => Todo.fromMap(e)).toList();
   }
 
