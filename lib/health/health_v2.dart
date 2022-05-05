@@ -65,13 +65,13 @@ class _HealthCardState extends State<HealthCard>
         animation: controller,
         builder: (context, child) {
           return Positioned(
-              //蓝色背景
               top: 0,
               left: 0,
               right: 0,
               child: Stack(alignment: Alignment.topCenter, children: [
+                //蓝色背景
                 Container(
-                  height: 580,
+                  height: 600,
                   decoration: const BoxDecoration(
                       gradient: LinearGradient(
                           begin: Alignment.topCenter,
@@ -121,22 +121,55 @@ class _HealthCardState extends State<HealthCard>
                     ),
                   ),
                 ),
+                //白色渐变底部内衬
                 Positioned(
                   bottom: 0,
                   left: 0,
                   right: 0,
-                  height: 130,
+                  height: 150,
                   child: Container(
                     decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.white.withOpacity(0),
+                          Colors.white.withOpacity(0.7),
+                          Colors.white.withOpacity(0.8),
+                        ], stops: const [0, 0.5, 1]
+                      )
+                    ),
+                  ),
+                ),
+                //蓝色渐变底部遮盖
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  height: 180,
+                  child: Container(
+                    decoration: BoxDecoration(
+                        color: Colors.white,
                         gradient: LinearGradient(
                             end: Alignment.topCenter,
                             begin: Alignment.bottomCenter,
                             colors: [
-                          const Color.fromRGBO(88, 145, 235, 1).withOpacity(0),
-                          const Color.fromRGBO(88, 145, 235, 1).withOpacity(0.1)
-                        ])),
+                              const Color.fromRGBO(88, 145, 235, 1)
+                                  .withOpacity(0),
+                              const Color.fromRGBO(88, 145, 235, 1)
+                                  .withOpacity(0.2),
+                              const Color.fromRGBO(88, 145, 235, 1)
+                                  .withOpacity(0.4),
+                              const Color.fromRGBO(88, 145, 235, 1)
+                                  .withOpacity(0.8),
+                              const Color.fromRGBO(88, 145, 235, 1)
+                                  .withOpacity(0.9),
+                              const Color.fromRGBO(88, 145, 235, 1)
+                                  .withOpacity(0),
+                            ])),
                   ),
                 ),
+                //顶部蓝色渐变遮盖
                 Positioned(
                   top: 0,
                   left: 0,
@@ -151,10 +184,12 @@ class _HealthCardState extends State<HealthCard>
                         const Color.fromRGBO(88, 145, 235, 1).withOpacity(1),
                         const Color.fromRGBO(88, 145, 235, 1).withOpacity(0.9),
                         const Color.fromRGBO(88, 145, 235, 1).withOpacity(0.3),
+                        const Color.fromRGBO(88, 145, 235, 1).withOpacity(0),
                       ],
                               stops: const [
                         0,
                         0.8,
+                        0.9,
                         1
                       ]))),
                 ),
@@ -779,15 +814,12 @@ class _HealthInfoState extends State<HealthInfo> {
                         fontSize: 22,
                         fontWeight: FontWeight.w600,
                         color: Colors.black)),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 2),
-                  child: Text(Util.clock(justSeconds: true),
-                      style: TextStyle(
-                        fontSize: 27,
-                        color: Info.blue,
-                        fontWeight: FontWeight.w600,
-                      )),
-                )
+                Text(Util.clock(justSeconds: true),
+                    style: TextStyle(
+                      fontSize: 27,
+                      color: Info.blue,
+                      fontWeight: FontWeight.w600,
+                    ))
               ],
             )),
         Positioned(
