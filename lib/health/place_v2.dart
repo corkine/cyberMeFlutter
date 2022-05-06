@@ -264,7 +264,7 @@ class _HealthCheckState extends State<HealthCheck>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Column(children: [
-                  Image.asset("images/back.png", width: 50, height: 50),
+                  Image.asset("images/health/back.png", width: 50, height: 50),
                   const SizedBox(height: 10),
                   const SizedBox(
                       width: 90,
@@ -272,7 +272,7 @@ class _HealthCheckState extends State<HealthCheck>
                           softWrap: true, textAlign: TextAlign.center))
                 ]),
                 Column(children: [
-                  Image.asset("images/policy.png", width: 50, height: 50),
+                  Image.asset("images/health/policy.png", width: 50, height: 50),
                   const SizedBox(height: 10),
                   const SizedBox(
                       width: 90,
@@ -280,7 +280,7 @@ class _HealthCheckState extends State<HealthCheck>
                           softWrap: true, textAlign: TextAlign.center))
                 ]),
                 Column(children: [
-                  Image.asset("images/area.png", width: 50, height: 50),
+                  Image.asset("images/health/area.png", width: 50, height: 50),
                   const SizedBox(height: 10),
                   const SizedBox(
                     width: 90,
@@ -296,7 +296,7 @@ class _HealthCheckState extends State<HealthCheck>
               children: [
                 Column(
                   children: [
-                    Image.asset("images/trival.png", width: 50, height: 50),
+                    Image.asset("images/health/trival.png", width: 50, height: 50),
                     const SizedBox(height: 10),
                     const SizedBox(
                         width: 90,
@@ -305,7 +305,7 @@ class _HealthCheckState extends State<HealthCheck>
                   ],
                 ),
                 Column(children: [
-                  Image.asset("images/hospital.png", width: 50, height: 50),
+                  Image.asset("images/health/hospital.png", width: 50, height: 50),
                   const SizedBox(height: 10),
                   const SizedBox(
                       width: 90,
@@ -313,7 +313,7 @@ class _HealthCheckState extends State<HealthCheck>
                           softWrap: true, textAlign: TextAlign.center))
                 ]),
                 Column(children: [
-                  Image.asset("images/help2.png", width: 50, height: 50),
+                  Image.asset("images/health/help2.png", width: 50, height: 50),
                   const SizedBox(height: 10),
                   const SizedBox(
                       width: 90,
@@ -368,17 +368,17 @@ class _HealthCheckState extends State<HealthCheck>
 
   Container buildInputStatus() {
     var out = Row(children: [
-      Image.asset("images/check2.png", width: 24, height: 24),
+      Image.asset("images/health/check2.png", width: 24, height: 24),
       const SizedBox(width: 5),
       const Text("外出", style: TextStyle(fontSize: 15))
     ]);
     var in_to = Row(children: [
-      Image.asset("images/check.png", width: 24, height: 24),
+      Image.asset("images/health/check.png", width: 24, height: 24),
       const SizedBox(width: 5),
       const Text("入内", style: TextStyle(fontSize: 15))
     ]);
     var pass = Row(children: [
-      Image.asset("images/check2.png", width: 24, height: 24),
+      Image.asset("images/health/check2.png", width: 24, height: 24),
       const SizedBox(width: 5),
       const Text("途径", style: TextStyle(fontSize: 15))
     ]);
@@ -534,7 +534,7 @@ class _HealthCheckState extends State<HealthCheck>
                   Padding(
                     padding: const EdgeInsets.only(right: 16, top: 13),
                     child:
-                        Image.asset("images/code2.png", width: 97, height: 97),
+                        Image.asset("images/health/code2.png", width: 97, height: 97),
                   )
                 ]),
             Padding(

@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 import 'package:sprintf/sprintf.dart';
@@ -5,6 +7,7 @@ import 'dart:convert';
 
 import '../config.dart';
 
+///快递数据
 class Express {
   String id;
   String name;
@@ -91,6 +94,7 @@ class Express {
 //</editor-fold>
 }
 
+///工作数据
 class Work {
   bool NeedWork;
   bool OffWork;
@@ -228,6 +232,7 @@ class Work {
 //</editor-fold>
 }
 
+///Blue 数据
 class Blue {
   String UpdateTime;
   bool IsTodayBlue;
@@ -332,6 +337,7 @@ class Blue {
 //</editor-fold>
 }
 
+///健身数据
 class Fitness {
   double active;
   double rest;
@@ -418,6 +424,7 @@ class Fitness {
 //</editor-fold>
 }
 
+///刷牙和清洁数据
 class Clean {
   final bool MorningBrushTeeth;
   final bool NightBrushTeeth;
@@ -522,6 +529,7 @@ class Clean {
 //</editor-fold>
 }
 
+///待办事项
 class Todo {
   String modified_at;
   String time;
@@ -612,14 +620,14 @@ class Todo {
 
   Map<String, dynamic> toMap() {
     return {
-      'modified_at': this.modified_at,
-      'time': this.time,
-      'finish_at': this.finish_at,
-      'title': this.title,
-      'list': this.list,
-      'due_at': this.due_at,
-      'create_at': this.create_at,
-      'importance': this.importance,
+      'modified_at': modified_at,
+      'time': time,
+      'finish_at': finish_at,
+      'title': title,
+      'list': list,
+      'due_at': due_at,
+      'create_at': create_at,
+      'importance': importance,
     };
   }
 
@@ -639,6 +647,7 @@ class Todo {
 //</editor-fold>
 }
 
+///总的 Dashboard 主页入口
 class Dashboard {
   List<Express> express;
   Work work;
@@ -667,13 +676,13 @@ class Dashboard {
 
   Map<String, dynamic> toMap() {
     return {
-      'express': this.express,
-      'work': this.work,
-      'blue': this.blue,
-      'todo': this.todo,
-      'score': this.score,
-      'fitness': this.fitness,
-      'clean': this.clean,
+      'express': express,
+      'work': work,
+      'blue': blue,
+      'todo': todo,
+      'score': score,
+      'fitness': fitness,
+      'clean': clean,
     };
   }
 
@@ -691,22 +700,13 @@ class Dashboard {
 
 //</editor-fold>
 
+  ///获取今天的日期字符串
   String get today {
     final now = DateTime.now();
     return sprintf("%4d-%02d-%02d", [now.year, now.month, now.day]);
   }
 
-  /// 获取今日带星标的待办事项
-  List<Todo> get todayTodo {
-    return (todo[today] as List).map((e) => Todo.fromMap(e))
-        .where((element) => element.isImportant).toList();
-  }
-
-  /// 获取今日所有的待办事项，包括没有带星标的
-  List<Todo> get todayAllTodo {
-    return (todo[today] as List).map((e) => Todo.fromMap(e)).toList();
-  }
-
+  ///获取今天的日期信息，短格式
   static String todayShort() {
     final now = DateTime.now();
     var weekday;
@@ -736,7 +736,129 @@ class Dashboard {
     return sprintf("%d 号 %s", [now.day, weekday]);
   }
 
+  ///获取今日带星标的待办事项
+  List<Todo> get todayTodo {
+    return (todo[today] as List)
+        .map((e) => Todo.fromMap(e))
+        .where((element) => element.isImportant)
+        .toList();
+  }
+
+  ///获取今日所有的待办事项，包括没有带星标的
+  List<Todo> get todayAllTodo {
+    return (todo[today] as List).map((e) => Todo.fromMap(e)).toList();
+  }
+
+  int get cleanCount => clean.HabitCountUntilNow;
+
+  int get cleanMarvelCount => clean.MarvelCount;
+
+  double get cleanPercentInRange {
+    if (cleanMarvelCount == 0) return 0;
+    final res = cleanCount / cleanMarvelCount;
+    return res <= 1.0 ? res : 1.0;
+  }
+
+  int get noBlueCount => blue.MaxNoBlueDay;
+
+  int get noBlueMarvelCount => blue.MarvelCount;
+
+  double get noBluePercentInRange {
+    if (noBlueMarvelCount == 0) return 0;
+    final res = noBlueCount / noBlueMarvelCount;
+    return res <= 1.0 ? res : 1.0;
+  }
+
+  ///强制同步 Microsoft TO DO 待办事项
+  static Future<String> focusSyncTodo(Config config) async {
+    try {
+      print("Sync with Todo now..");
+      var resp = await get(Uri.parse(Config.todoSyncUrl),
+          headers: config.base64Header);
+      return jsonDecode(resp.body)["message"];
+    } on Exception catch (e) {
+      return e.toString();
+    }
+  }
+
+  ///强制同步 HCM 打卡数据
+  static Future<String> checkHCMCard(Config config) async {
+    try {
+      print("Checking HCM now..");
+      var resp = await get(Uri.parse(Config.hcmCardCheckUrl),
+          headers: config.base64Header);
+      //刷新 API 以获取最新更改
+      config.justNotify();
+      return resp.body;
+    } on Exception catch (e) {
+      return e.toString();
+    }
+  }
+
+  ///设置 Clean 数据
+  static Future<String> setClean(Config config) async {
+    var now = DateTime.now().hour;
+    var isMorningTime = now >= 5 && now <= 18;
+    try {
+      print("Setting clean data, isMorning? $isMorningTime");
+      var resp = await get(
+          Uri.parse(
+              isMorningTime ? Config.morningCleanUrl : Config.nightCleanUrl),
+          headers: config.base64Header);
+      return jsonDecode(resp.body)["message"];
+    } on Exception catch (e) {
+      return e.toString();
+    }
+  }
+
+  ///设置 Blue 数据
+  static Future<String> setBlue(Config config, String date) async {
+    try {
+      print("Setting blue data, date: $date");
+      var resp = await get(Uri.parse(Config.blueUrl + date),
+          headers: config.base64Header);
+      config.justNotify();
+      return jsonDecode(resp.body)["message"];
+    } on Exception catch (e) {
+      return e.toString();
+    }
+  }
+
+  ///获取最后一条笔记
+  static Future<List<String?>> fetchLastNote(Config config) async {
+    try {
+      print("fetching last note...");
+      var resp = await get(Uri.parse(Config.lastNoteUrl),
+          headers: config.base64Header);
+      var data = jsonDecode(resp.body);
+      return [data["message"], data["data"] != null ? data["message"] : null];
+    } on Exception catch (e) {
+      return [e.toString(), null];
+    }
+  }
+
+  ///上传一条笔记
+  static Future<String> uploadOneNote(Config config, String content) async {
+    try {
+      print("uploading one note... length ${content.length}");
+      var resp = await http.post(Uri.parse(Config.uploadNoteUrl),
+          headers: config.base64Header
+            ..addAll({"Content-Type": "application/json"}),
+          body: jsonEncode({
+            "from": "CyberMe Flutter Client",
+            "content": content,
+            "liveSeconds": 300
+          }));
+      var data = jsonDecode(resp.body);
+      return data["message"];
+    } on Exception catch (e) {
+      return e.toString();
+    }
+  }
+
+  ///从 API 加载大屏数据
   static Future<Dashboard> loadFromApi(Config config) async {
+    print("Loading from CyberMe... from user: ${config.user}");
     final Response r =
         await get(Uri.parse(Config.dashboardUrl), headers: config.base64Header);
     final data = jsonDecode(r.body);

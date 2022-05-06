@@ -47,6 +47,13 @@ class Config extends ChangeNotifier {
 
   static const String dashboardUrl = "https://cyber.mazhangjing.com/cyber/dashboard/summary";
   static const String dayWorkUrl = "https://cyber.mazhangjing.com/cyber/dashboard/day-work";
+  static const String todoSyncUrl = "https://cyber.mazhangjing.com/cyber/todo/sync";
+  static const String hcmCardCheckUrl = "https://cyber.mazhangjing.com/cyber/check/now?plainText=true&useCache=false";
+  static const String morningCleanUrl = "https://cyber.mazhangjing.com/cyber/clean/update?merge=true&mt=true&mf=true";
+  static const String nightCleanUrl = "https://cyber.mazhangjing.com/cyber/clean/update?merge=true&nt=true&nf=true";
+  static const String blueUrl = "https://cyber.mazhangjing.com/cyber/blue/update?blue=true&day=";
+  static const String lastNoteUrl = "https://cyber.mazhangjing.com/cyber/note/last";
+  static const String uploadNoteUrl = "https://cyber.mazhangjing.com/cyber/note";
 
   String addURL = 'https://go.mazhangjing.com/add';
   String basicURL = 'https://go.mazhangjing.com';

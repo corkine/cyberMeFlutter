@@ -37,7 +37,7 @@ class _HealthCheckState extends State<HealthCheck> {
                     Navigator.of(context).pop();
                   },
                   child: Image.asset(
-                    "images/home.png",
+                    "images/health/home.png",
                     width: 29,
                     height: 29,
                   ),
@@ -54,7 +54,7 @@ class _HealthCheckState extends State<HealthCheck> {
                     child: Row(
                       children: [
                         Image.asset(
-                          "images/more.png",
+                          "images/health/more.png",
                           width: 23,
                           height: 20,
                         ),
@@ -151,7 +151,7 @@ class _HealthCheckState extends State<HealthCheck> {
               Column(
                 children: [
                   Image.asset(
-                    "images/back.png",
+                    "images/health/back.png",
                     width: 50,
                     height: 50,
                   ),
@@ -171,7 +171,7 @@ class _HealthCheckState extends State<HealthCheck> {
               Column(
                 children: [
                   Image.asset(
-                    "images/policy.png",
+                    "images/health/policy.png",
                     width: 50,
                     height: 50,
                   ),
@@ -191,7 +191,7 @@ class _HealthCheckState extends State<HealthCheck> {
               Column(
                 children: [
                   Image.asset(
-                    "images/area.png",
+                    "images/health/area.png",
                     width: 50,
                     height: 50,
                   ),
@@ -220,7 +220,7 @@ class _HealthCheckState extends State<HealthCheck> {
               Column(
                 children: [
                   Image.asset(
-                    "images/trival.png",
+                    "images/health/trival.png",
                     width: 50,
                     height: 50,
                   ),
@@ -240,7 +240,7 @@ class _HealthCheckState extends State<HealthCheck> {
               Column(
                 children: [
                   Image.asset(
-                    "images/hospital.png",
+                    "images/health/hospital.png",
                     width: 50,
                     height: 50,
                   ),
@@ -260,7 +260,7 @@ class _HealthCheckState extends State<HealthCheck> {
               Column(
                 children: [
                   Image.asset(
-                    "images/help2.png",
+                    "images/health/help2.png",
                     width: 50,
                     height: 50,
                   ),
@@ -346,7 +346,7 @@ class _HealthCheckState extends State<HealthCheck> {
     var out = Row(
       children: [
         Image.asset(
-          "images/check2.png",
+          "images/health/check2.png",
           width: 24,
           height: 24,
         ),
@@ -362,7 +362,7 @@ class _HealthCheckState extends State<HealthCheck> {
     var in_to = Row(
       children: [
         Image.asset(
-          "images/check.png",
+          "images/health/check.png",
           width: 24,
           height: 24,
         ),
@@ -378,7 +378,7 @@ class _HealthCheckState extends State<HealthCheck> {
     var pass = Row(
       children: [
         Image.asset(
-          "images/check2.png",
+          "images/health/check2.png",
           width: 24,
           height: 24,
         ),
@@ -579,7 +579,7 @@ class _HealthCheckState extends State<HealthCheck> {
           Padding(
             padding: const EdgeInsets.only(right: 16, top: 13),
             child: Image.asset(
-              "images/code2.png",
+              "images/health/code2.png",
               width: 97,
               height: 97,
             ),

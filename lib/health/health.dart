@@ -293,7 +293,7 @@ class _HealthCardState extends State<HealthCard> {
                         handleSetData();
                       },
                       child: Image.asset(
-                        "images/more.png",
+                        "images/health/more.png",
                         width: 23,
                         height: 20,
                       ),
@@ -469,12 +469,12 @@ class _HealthInfoState extends State<HealthInfo> {
                         padding: const EdgeInsets.only(right: 3),
                         child: widget.info.testInfo.contains("48")
                             ? Image.asset(
-                          "images/refresh3.png",
+                          "images/health/refresh3.png",
                           width: 19,
                           height: 19,
                         )
                             : Image.asset(
-                          "images/refresh.png",
+                          "images/health/refresh.png",
                           width: 19,
                           height: 19,
                         ),
@@ -536,7 +536,7 @@ class _HealthInfoState extends State<HealthInfo> {
                       Padding(
                         padding: const EdgeInsets.only(right: 3),
                         child: Image.asset(
-                          "images/refresh2.png",
+                          "images/health/refresh2.png",
                           width: 19,
                           height: 19,
                         ),
@@ -591,7 +591,7 @@ class _HealthInfoState extends State<HealthInfo> {
               Padding(
                 padding: const EdgeInsets.only(right: 8, left: 10, top: 3),
                 child: Image.asset(
-                  "images/card.png",
+                  "images/health/card.png",
                   width: 23,
                   height: 23,
                 ),
@@ -620,9 +620,9 @@ class _HealthInfoState extends State<HealthInfo> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          simpleButton("images/report.png", "健康上报"),
-          simpleButton("images/manage.png", "健康码管理"),
-          simpleButton("images/help.png", "客服")
+          simpleButton("images/health/report.png", "健康上报"),
+          simpleButton("images/health/manage.png", "健康码管理"),
+          simpleButton("images/health/help.png", "客服")
         ],
       ),
     );
@@ -691,7 +691,7 @@ class _HealthInfoState extends State<HealthInfo> {
         Positioned(
             top: 54,
             child: Image.asset(
-              "images/code.png",
+              "images/health/code.png",
               width: 220,
               height: 220,
             )),

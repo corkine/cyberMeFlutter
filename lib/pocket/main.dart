@@ -83,7 +83,7 @@ class _PocketHomeState extends State<PocketHome> {
 
   /// 决定标题栏显示的菜单按钮
   List<Widget> _buildActions(Config config, int index) {
-    if (index == 0) return DayInfo.menuActions;
+    if (index == 0) return DayInfo.menuActions(context, config);
     if (index == 1) {
       return [
         PopupMenuButton(
@@ -414,7 +414,7 @@ class _PocketHomeState extends State<PocketHome> {
               type: BottomNavigationBarType.fixed,
               currentIndex: _index,
               onTap: (i) => setState(() => _index = i),
-              items:  [
+              items: [
                 BottomNavigationBarItem(
                     label: DayInfo.title,
                     icon: const Icon(Icons.calendar_today_outlined),
