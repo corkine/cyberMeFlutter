@@ -393,10 +393,13 @@ class _HealthCardState extends State<HealthCard>
                       return HealthCheck(info: widget.info);
                     }));
           },
-          child: Center(
-            child: Text(
-              "湖北健康码",
-              style: titleStyle,
+          child: SizedBox(
+            height: 30,
+            child: Center(
+              child: Text(
+                "湖北健康码",
+                style: titleStyle,
+              ),
             ),
           ),
         ),
@@ -411,11 +414,11 @@ class _HealthCardState extends State<HealthCard>
             right: 0,
             child: Container(
               decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(100),
+                  borderRadius: BorderRadius.circular(50),
                   color: const Color.fromRGBO(78, 118, 207, 1)),
               child: Padding(
                 padding:
-                    const EdgeInsets.only(left: 8, right: 8, top: 3, bottom: 3),
+                    const EdgeInsets.only(left: 8, right: 8, top: 2, bottom: 3),
                 child: Row(
                   children: [
                     GestureDetector(
@@ -839,15 +842,15 @@ class _HealthInfoState extends State<HealthInfo> {
                             fontWeight: FontWeight.w400,
                             color: Color.fromRGBO(28, 148, 77, 1)),
                         children: [
-                      const TextSpan(
-                          text: "已采样",
-                          style: TextStyle(
-                              fontSize: 23, fontWeight: FontWeight.w600)),
-                      TextSpan(
-                          text: " " + Util.clock(justDate: true),
-                          style: const TextStyle(
-                              fontSize: 19, fontWeight: FontWeight.w400))
-                    ])),
+                          const TextSpan(
+                              text: "已采样",
+                              style: TextStyle(
+                                  fontSize: 23, fontWeight: FontWeight.w600)),
+                          TextSpan(
+                              text: " " + Util.clock(justDate: true),
+                              style: const TextStyle(
+                                  fontSize: 19, fontWeight: FontWeight.w400))
+                        ])),
               )
             : const SizedBox(
                 height: 0,

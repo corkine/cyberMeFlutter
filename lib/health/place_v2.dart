@@ -39,12 +39,14 @@ class _HealthCheckState extends State<HealthCheck>
           backgroundColor: Info.blue,
           elevation: 0,
           title: Stack(alignment: Alignment.center, children: [
-            Center(child: Text("社区通行登记", style: Info.titleStyle)),
+            SizedBox(
+                height: 30,
+                child: Center(child: Text("社区通行登记", style: Info.titleStyle))),
             Positioned(
                 left: 0,
                 child: GestureDetector(
                   onTap: () => Navigator.of(context).pop(),
-                  child: Image.asset("images/home.png", width: 29, height: 29),
+                  child: Image.asset("images/health/home.png", width: 29, height: 29),
                 )),
             Positioned(
                 right: 0,
@@ -56,7 +58,8 @@ class _HealthCheckState extends State<HealthCheck>
                         padding: const EdgeInsets.only(
                             left: 8, right: 8, top: 3, bottom: 3),
                         child: Row(children: [
-                          Image.asset("images/health/more.png", width: 23, height: 20),
+                          Image.asset("images/health/more.png",
+                              width: 23, height: 20),
                           Padding(
                               padding: const EdgeInsets.only(left: 6, right: 6),
                               child: Container(
@@ -272,7 +275,8 @@ class _HealthCheckState extends State<HealthCheck>
                           softWrap: true, textAlign: TextAlign.center))
                 ]),
                 Column(children: [
-                  Image.asset("images/health/policy.png", width: 50, height: 50),
+                  Image.asset("images/health/policy.png",
+                      width: 50, height: 50),
                   const SizedBox(height: 10),
                   const SizedBox(
                       width: 90,
@@ -296,7 +300,8 @@ class _HealthCheckState extends State<HealthCheck>
               children: [
                 Column(
                   children: [
-                    Image.asset("images/health/trival.png", width: 50, height: 50),
+                    Image.asset("images/health/trival.png",
+                        width: 50, height: 50),
                     const SizedBox(height: 10),
                     const SizedBox(
                         width: 90,
@@ -305,7 +310,8 @@ class _HealthCheckState extends State<HealthCheck>
                   ],
                 ),
                 Column(children: [
-                  Image.asset("images/health/hospital.png", width: 50, height: 50),
+                  Image.asset("images/health/hospital.png",
+                      width: 50, height: 50),
                   const SizedBox(height: 10),
                   const SizedBox(
                       width: 90,
@@ -533,8 +539,8 @@ class _HealthCheckState extends State<HealthCheck>
                       ]),
                   Padding(
                     padding: const EdgeInsets.only(right: 16, top: 13),
-                    child:
-                        Image.asset("images/health/code2.png", width: 97, height: 97),
+                    child: Image.asset("images/health/code2.png",
+                        width: 97, height: 97),
                   )
                 ]),
             Padding(
