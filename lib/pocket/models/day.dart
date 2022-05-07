@@ -738,6 +738,7 @@ class Dashboard {
 
   ///获取今日带星标的待办事项
   List<Todo> get todayTodo {
+    if (todo[today] == null) return [];
     return (todo[today] as List)
         .map((e) => Todo.fromMap(e))
         .where((element) => element.isImportant)

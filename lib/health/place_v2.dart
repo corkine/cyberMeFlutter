@@ -56,7 +56,7 @@ class _HealthCheckState extends State<HealthCheck>
                         padding: const EdgeInsets.only(
                             left: 8, right: 8, top: 3, bottom: 3),
                         child: Row(children: [
-                          Image.asset("images/more.png", width: 23, height: 20),
+                          Image.asset("images/health/more.png", width: 23, height: 20),
                           Padding(
                               padding: const EdgeInsets.only(left: 6, right: 6),
                               child: Container(

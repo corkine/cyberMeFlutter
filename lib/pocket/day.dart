@@ -169,8 +169,15 @@ class _DayHomeState extends State<DayHome> {
     );
   }
 
+  GlobalKey background = GlobalKey();
+
   Widget buildMainPage(Dashboard dashboard) {
     final bg = DayInfo.background();
+    /*final bgPadding =
+        (background.currentContext?.findRenderObject()! as RenderBox)
+            .localToGlobal(Offset.zero)
+            .dy;
+    final allY = MediaQuery.of(context).size.height;*/
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       //待办卡片
       Card(child: Todo(config, dashboard), elevation: 0.2),
@@ -181,24 +188,46 @@ class _DayHomeState extends State<DayHome> {
               builder: (context, constraints) => Work(dashboard, constraints))),
       //习惯卡片
       SizedBox(
+          key: background,
           height: 100,
           child: LayoutBuilder(
               builder: (context, constraints) =>
                   Habit(dashboard, constraints))),
       //日记卡片
       Padding(
-        padding: const EdgeInsets.only(top: 5),
+        padding: EdgeInsets.only(top: 10),
         child: Stack(
           children: [
-            Image.asset(
-              bg[0],
-              width: double.infinity,
-            ),
+            Image.asset(bg[0]),
             Positioned.fill(child: Container(decoration: bg[1]))
           ],
         ),
       )
     ]);
+  }
+}
+
+class AlwaysBottom extends SingleChildLayoutDelegate {
+  @override
+  Size getSize(BoxConstraints constraints) {
+    return super.getSize(constraints);
+  }
+
+  @override
+  BoxConstraints getConstraintsForChild(BoxConstraints constraints) {
+    return super.getConstraintsForChild(constraints);
+  }
+
+  @override
+  Offset getPositionForChild(Size size, Size childSize) {
+    // TODO: implement getPositionForChild
+    return super.getPositionForChild(size, childSize);
+  }
+
+  @override
+  bool shouldRelayout(covariant SingleChildLayoutDelegate oldDelegate) {
+    // TODO: implement shouldRelayout
+    throw UnimplementedError();
   }
 }
 
