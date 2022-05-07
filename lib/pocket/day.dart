@@ -1,4 +1,7 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import '/pocket/config.dart';
 import '/pocket/models/day.dart';
 import 'package:provider/provider.dart';
@@ -60,8 +63,9 @@ class DayInfo {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-          Colors.white.withOpacity(1),
-          Colors.white.withOpacity(0.85),
+          const Color.fromRGBO(250, 250, 250, 1),
+          const Color.fromRGBO(250, 250, 250, 1).withOpacity(0.85),
+          const Color.fromRGBO(250, 250, 250, 1).withOpacity(0.75),
           Colors.white.withOpacity(0.2),
           Colors.white.withOpacity(0)
         ],
@@ -69,6 +73,7 @@ class DayInfo {
           0,
           0.2,
           0.3,
+          0.5,
           1
         ]));
     final now = DateTime.now();
@@ -124,110 +129,134 @@ class _DayHomeState extends State<DayHome> {
 
   @override
   Widget build(BuildContext context) {
-    return RefreshIndicator(
-      onRefresh: () async {
-        future = Dashboard.loadFromApi(config);
-        await Future.delayed(const Duration(seconds: 1), () => setState(() {}));
+    return FutureBuilder(
+      future: future,
+      builder: (context, future) {
+        if (future.hasData && future.data != null) {
+          return buildMainPage(future.data as Dashboard);
+        }
+        if (future.hasError) {
+          return SizedBox(
+            width: double.infinity,
+            height: MediaQuery.of(context).size.height - 100,
+            child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Image.asset("images/empty.jpg", width: 200),
+                  Text("发生了一些错误：${future.error}", textAlign: TextAlign.center)
+                ]),
+          );
+        }
+        return Container(
+            alignment: Alignment.center,
+            padding:
+                EdgeInsets.only(top: MediaQuery.of(context).size.height / 3),
+            child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: const [
+                  CircularProgressIndicator(),
+                  Padding(padding: EdgeInsets.all(8.0), child: Text("正在联系服务器"))
+                ]));
       },
-      child: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        child: FutureBuilder(
-          future: future,
-          builder: (context, future) {
-            if (future.hasData && future.data != null) {
-              return buildMainPage(future.data as Dashboard);
-            }
-            if (future.hasError) {
-              return SizedBox(
-                width: double.infinity,
-                height: MediaQuery.of(context).size.height - 100,
-                child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Image.asset("images/empty.jpg", width: 200),
-                      Text("发生了一些错误：${future.error}",
-                          textAlign: TextAlign.center)
-                    ]),
-              );
-            }
-            return Container(
-                alignment: Alignment.center,
-                padding: EdgeInsets.only(
-                    top: MediaQuery.of(context).size.height / 3),
-                child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: const [
-                      CircularProgressIndicator(),
-                      Padding(
-                          padding: EdgeInsets.all(8.0), child: Text("正在联系服务器"))
-                    ]));
-          },
-        ),
-      ),
     );
   }
 
-  GlobalKey background = GlobalKey();
-
   Widget buildMainPage(Dashboard dashboard) {
     final bg = DayInfo.background();
-    /*final bgPadding =
-        (background.currentContext?.findRenderObject()! as RenderBox)
-            .localToGlobal(Offset.zero)
-            .dy;
-    final allY = MediaQuery.of(context).size.height;*/
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      //待办卡片
-      Card(child: Todo(config, dashboard), elevation: 0.2),
-      //工作日卡片，包含是否打卡，是否下班，工作时长，打卡信息
-      SizedBox(
-          height: 130,
-          child: LayoutBuilder(
-              builder: (context, constraints) => Work(dashboard, constraints))),
-      //习惯卡片
-      SizedBox(
-          key: background,
-          height: 100,
-          child: LayoutBuilder(
-              builder: (context, constraints) =>
-                  Habit(dashboard, constraints))),
-      //日记卡片
-      Padding(
-        padding: EdgeInsets.only(top: 10),
-        child: Stack(
-          children: [
-            Image.asset(bg[0]),
-            Positioned.fill(child: Container(decoration: bg[1]))
-          ],
+    final allY = MediaQuery.of(context).size.height;
+    return Stack(
+      alignment: Alignment.topCenter,
+      children: [
+        Transform.translate(
+          offset: const Offset(0, 50),
+          child: Container(
+            padding: EdgeInsets.only(top: allY - 400),
+            child: Stack(
+              children: [
+                Positioned.fill(child: Image.asset(bg[0])),
+                Positioned.fill(child: Container(decoration: bg[1]))
+              ],
+            ),
+          ),
         ),
-      )
-    ]);
+        RefreshIndicator(
+          onRefresh: () async {
+            future = Dashboard.loadFromApi(config);
+            await Future.delayed(
+                const Duration(seconds: 1), () => setState(() {}));
+          },
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(
+                parent: BouncingScrollPhysics()),
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              //待办卡片
+              Card(child: Todo(config, dashboard), elevation: 0.2),
+              //工作日卡片，包含是否打卡，是否下班，工作时长，打卡信息
+              SizedBox(
+                  height: 130,
+                  child: LayoutBuilder(
+                      builder: (context, constraints) =>
+                          Work(dashboard, constraints))),
+              //习惯卡片
+              SizedBox(
+                  height: 100,
+                  child: LayoutBuilder(
+                      builder: (context, constraints) =>
+                          Habit(dashboard, constraints))),
+              //空卡片，防止下拉刷新时 ScrollView 卡在背景中
+              const SizedBox(height: 100)
+            ]),
+          ),
+        )
+      ],
+    );
   }
 }
 
-class AlwaysBottom extends SingleChildLayoutDelegate {
+/*GlobalKey background = GlobalKey();
+  final bgPadding =
+      ((background.currentContext?.findRenderObject()! as RenderBox?)
+          ?.localToGlobal(Offset.zero).dy) ?? 0;*/
+
+///一个始终显示在底部的背景图案（当 Viewpoint 高度不足则填充空白, 没有使用，
+///其不能实现和 ScrollView 一致的动画，看起来比较突兀）
+///另一种实现方案是将背景作为最后一个列表项放置，同时在其前面插入一个透明的 Box
+///通过 GlobalKey 定位并且获取其 Offset 并且设置自己的 padding
+class Background extends SingleChildRenderObjectWidget {
   @override
-  Size getSize(BoxConstraints constraints) {
-    return super.getSize(constraints);
+  RenderObject createRenderObject(BuildContext context) {
+    return BackgroundBox(context);
+  }
+
+  const Background({required Widget child, Key? key})
+      : super(child: child, key: key);
+}
+
+class BackgroundBox extends RenderBox with RenderObjectWithChildMixin {
+  final BuildContext ctx;
+
+  BackgroundBox(this.ctx);
+
+  @override
+  void performLayout() {
+    child?.layout(constraints, parentUsesSize: true);
+    size = (child as RenderBox).size;
   }
 
   @override
-  BoxConstraints getConstraintsForChild(BoxConstraints constraints) {
-    return super.getConstraintsForChild(constraints);
-  }
-
-  @override
-  Offset getPositionForChild(Size size, Size childSize) {
-    // TODO: implement getPositionForChild
-    return super.getPositionForChild(size, childSize);
-  }
-
-  @override
-  bool shouldRelayout(covariant SingleChildLayoutDelegate oldDelegate) {
-    // TODO: implement shouldRelayout
-    throw UnimplementedError();
+  void paint(PaintingContext context, Offset offset) {
+    var height = MediaQuery.of(ctx).size.height;
+    var needTranslate = height - offset.dy - size.height - 100;
+    if (needTranslate > 0) {
+      //添加额外的空白，这里的 100 包含了 header 和 tabBar 的高度（估计）
+      context.paintChild(child!, offset.translate(0, needTranslate));
+    } else {
+      //绘制在紧贴着上面的位置
+      context.paintChild(child!, offset);
+    }
   }
 }
 
@@ -331,7 +360,11 @@ class Work extends StatelessWidget {
                 : Image.asset("images/dash/offwork.png",
                     height: constraints.maxHeight)),
         Container(
-            color: Colors.transparent,
+            color: dashboard.work.NeedMorningCheck
+                ? Colors.redAccent.withOpacity(0.2)
+                : dashboard.work.OffWork
+                    ? Colors.lightGreen.withOpacity(0.2)
+                    : Colors.transparent,
             width: double.infinity,
             padding: const EdgeInsets.only(right: 20, top: 20),
             child: Column(
@@ -376,7 +409,7 @@ class Work extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: (dashboard.work.signData().map((time) =>
                                   Padding(
-                                      padding: const EdgeInsets.only(left: 10),
+                                      padding: const EdgeInsets.only(left: 3),
                                       child: Container(
                                           padding: DayInfo.noticePadding,
                                           decoration: BoxDecoration(
@@ -437,7 +470,8 @@ class Habit extends StatelessWidget {
                                       Text.rich(TextSpan(children: [
                                         const TextSpan(text: " 已坚持 "),
                                         TextSpan(
-                                            text: " ${dashboard.cleanCount} ",
+                                            text:
+                                                " ${dashboard.clean.HabitHint} ",
                                             style: const TextStyle(
                                                 fontFamily: "consolas",
                                                 fontSize: 20)),
@@ -506,10 +540,13 @@ class Habit extends StatelessWidget {
                 opacity: progress,
                 duration: const Duration(seconds: 1),
                 child: Image.asset("images/dash/$png.png", width: 50))
-            : ColorFiltered(
+            : /*ColorFiltered(
                 colorFilter: ColorFilter.mode(
                     Colors.black.withOpacity(0.45 - progress),
                     BlendMode.srcATop),
+                child: Image.asset("images/dash/$png.png", width: 50)))*/
+            ImageFiltered(
+                imageFilter: ImageFilter.blur(sigmaY: 5, sigmaX: 5),
                 child: Image.asset("images/dash/$png.png", width: 50)));
   }
 }
