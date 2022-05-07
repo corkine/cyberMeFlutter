@@ -71,9 +71,9 @@ class DayInfo {
         ],
             stops: const [
           0,
+          0.1,
           0.2,
           0.3,
-          0.5,
           1
         ]));
     final now = DateTime.now();
@@ -170,12 +170,14 @@ class _DayHomeState extends State<DayHome> {
       alignment: Alignment.topCenter,
       children: [
         Transform.translate(
-          offset: const Offset(0, 50),
+          offset: const Offset(0, 30),
           child: Container(
-            padding: EdgeInsets.only(top: allY - 400),
+            padding: EdgeInsets.only(top: allY - 400, left: 0, right: 0),
             child: Stack(
               children: [
-                Positioned.fill(child: Image.asset(bg[0])),
+                Container(
+                    width: double.infinity,
+                    child: Image.asset(bg[0], fit: BoxFit.fitWidth)),
                 Positioned.fill(child: Container(decoration: bg[1]))
               ],
             ),
