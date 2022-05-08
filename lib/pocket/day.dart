@@ -92,20 +92,20 @@ class DayInfo {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  const Color.fromRGBO(250, 250, 250, 1),
-                  const Color.fromRGBO(250, 250, 250, 1).withOpacity(0.95),
-                  const Color.fromRGBO(250, 250, 250, 1).withOpacity(0.85),
-                  const Color.fromRGBO(250, 250, 250, 1).withOpacity(0.73),
-                  Colors.white.withOpacity(0.2),
-                  Colors.white.withOpacity(0)
+              const Color.fromRGBO(250, 250, 250, 1),
+              const Color.fromRGBO(250, 250, 250, 1).withOpacity(0.95),
+              const Color.fromRGBO(250, 250, 250, 1).withOpacity(0.85),
+              const Color.fromRGBO(250, 250, 250, 1).withOpacity(0.73),
+              Colors.white.withOpacity(0.2),
+              Colors.white.withOpacity(0)
             ],
                 stops: const [
-                  0,
-                  0.1,
-                  0.2,
-                  0.3,
-                  0.4,
-                  1
+              0,
+              0.1,
+              0.2,
+              0.3,
+              0.4,
+              1
             ]))
       ];
     }
@@ -157,6 +157,7 @@ class _DayHomeState extends State<DayHome> {
     return FutureBuilder(
       future: future,
       builder: (context, future) {
+        print("state ${future.connectionState}");
         if (future.hasData && future.data != null) {
           return buildMainPage(future.data as Dashboard);
         }
@@ -187,6 +188,7 @@ class _DayHomeState extends State<DayHome> {
   }
 
   Widget buildMainPage(Dashboard dashboard) {
+    print("Ref");
     final bg = DayInfo.background();
     final allY = MediaQuery.of(context).size.height;
     return Stack(alignment: Alignment.topCenter, children: [
@@ -577,12 +579,6 @@ class _DiaryState extends State<Diary> {
   late d.Diary? diary;
 
   @override
-  void initState() {
-    diary = d.DiaryManager.today(widget.dashboard.diaries);
-    super.initState();
-  }
-
-  @override
   void didChangeDependencies() {
     Future.delayed(
         const Duration(milliseconds: 500), () => setState(() => {scale = 0.8}));
@@ -591,6 +587,7 @@ class _DiaryState extends State<Diary> {
 
   @override
   Widget build(BuildContext context) {
+    diary = d.DiaryManager.today(widget.dashboard.diaries);
     return Card(
         color: Colors.white.withOpacity(1),
         child: Container(
@@ -605,13 +602,13 @@ class _DiaryState extends State<Diary> {
     var image = data.previewPicture;
     var content = Expanded(
         child: GestureDetector(
-          onTap: () {
-            launchUrl(Uri.parse(data.url));
-          },
-          child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
+      onTap: () {
+        launchUrl(Uri.parse(data.url));
+      },
+      child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
             Text(data.title, style: const TextStyle(fontSize: 18)),
             Expanded(
               child: Padding(
@@ -629,7 +626,7 @@ class _DiaryState extends State<Diary> {
                   align: MainAxisAlignment.start),
             )
           ]),
-        ));
+    ));
     return SizedBox(
       height: 110,
       child: Row(
