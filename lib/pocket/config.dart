@@ -54,6 +54,7 @@ class Config extends ChangeNotifier {
   static const String blueUrl = "https://cyber.mazhangjing.com/cyber/blue/update?blue=true&day=";
   static const String lastNoteUrl = "https://cyber.mazhangjing.com/cyber/note/last";
   static const String uploadNoteUrl = "https://cyber.mazhangjing.com/cyber/note";
+  static const String diariesUrl = "https://cyber.mazhangjing.com/cyber/diaries";
 
   String addURL = 'https://go.mazhangjing.com/add';
   String basicURL = 'https://go.mazhangjing.com';

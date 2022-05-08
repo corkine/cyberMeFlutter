@@ -1,11 +1,13 @@
 import 'dart:ffi';
 
+import 'package:hello_flutter/pocket/models/diary.dart' as real_diary;
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 import 'package:sprintf/sprintf.dart';
 import 'dart:convert';
 
 import '../config.dart';
+import '../time.dart';
 
 ///快递数据
 class Express {
@@ -657,10 +659,19 @@ class Dashboard {
   Fitness fitness;
   Clean clean;
   String? dayWork;
+  List<real_diary.Diary> diaries = [];
 
   String get dayWorkString => dayWork ?? "没有日报";
 
-  bool get alertDayWork => dayWork == null;
+  bool get alertMorningDayWork => dayWork == null;
+
+  bool get alertNightDayWork {
+    var now = DateTime.now();
+    if (!work.OffWork &&
+        ((now.hour > 16 && now.hour <= 23) ||
+            (now.hour == 16 && now.minute >= 30))) return true;
+    return false;
+  }
 
 //<editor-fold desc="Data Methods">
 
@@ -700,54 +711,26 @@ class Dashboard {
 
 //</editor-fold>
 
-  ///获取今天的日期字符串
-  String get today {
-    final now = DateTime.now();
-    return sprintf("%4d-%02d-%02d", [now.year, now.month, now.day]);
-  }
-
-  ///获取今天的日期信息，短格式
-  static String todayShort() {
-    final now = DateTime.now();
-    var weekday;
-    switch (now.weekday) {
-      case 1:
-        weekday = "周一";
-        break;
-      case 2:
-        weekday = "周二";
-        break;
-      case 3:
-        weekday = "周三";
-        break;
-      case 4:
-        weekday = "周四";
-        break;
-      case 5:
-        weekday = "周五";
-        break;
-      case 6:
-        weekday = "周六";
-        break;
-      default:
-        weekday = "周日";
-        break;
-    }
-    return sprintf("%d 号 %s", [now.day, weekday]);
-  }
-
-  ///获取今日带星标的待办事项
+  ///获取今日带星标的待办事项，按照是否完成和时间排序
   List<Todo> get todayTodo {
-    if (todo[today] == null) return [];
-    return (todo[today] as List)
+    if (todo[TimeUtil.today] == null) return [];
+    return (todo[TimeUtil.today] as List)
         .map((e) => Todo.fromMap(e))
         .where((element) => element.isImportant)
-        .toList();
+        .toList()
+      ..sort((a, b) {
+        if (a.isFinish && !b.isFinish) return 1;
+        if (b.isFinish && !a.isFinish) {
+          return -1;
+        } else {
+          return a.time.compareTo(b.time);
+        }
+      });
   }
 
   ///获取今日所有的待办事项，包括没有带星标的
   List<Todo> get todayAllTodo {
-    return (todo[today] as List).map((e) => Todo.fromMap(e)).toList();
+    return (todo[TimeUtil.today] as List).map((e) => Todo.fromMap(e)).toList();
   }
 
   int get cleanCount => clean.HabitCountUntilNow;
@@ -868,6 +851,7 @@ class Dashboard {
         await get(Uri.parse(Config.dayWorkUrl), headers: config.base64Header);
     final workData = jsonDecode(workResult.body)["data"];
     dashInfo.dayWork = workData as String?;
+    dashInfo.diaries = await real_diary.DiaryManager.loadFromApi(config);
     return dashInfo;
   }
 }
