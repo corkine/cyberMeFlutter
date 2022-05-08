@@ -8,6 +8,7 @@ import '/pocket/models/day.dart';
 import '/pocket/models/diary.dart' as d;
 import 'package:provider/provider.dart';
 import 'package:clipboard/clipboard.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class DayInfo {
   static String title = TimeUtil.todayShort();
@@ -91,16 +92,20 @@ class DayInfo {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-              Colors.white.withOpacity(1),
-              Colors.white.withOpacity(0.9),
-              Colors.white.withOpacity(0.3),
-              Colors.white.withOpacity(0)
+                  const Color.fromRGBO(250, 250, 250, 1),
+                  const Color.fromRGBO(250, 250, 250, 1).withOpacity(0.95),
+                  const Color.fromRGBO(250, 250, 250, 1).withOpacity(0.85),
+                  const Color.fromRGBO(250, 250, 250, 1).withOpacity(0.73),
+                  Colors.white.withOpacity(0.2),
+                  Colors.white.withOpacity(0)
             ],
                 stops: const [
-              0,
-              0.3,
-              0.6,
-              1
+                  0,
+                  0.1,
+                  0.2,
+                  0.3,
+                  0.4,
+                  1
             ]))
       ];
     }
@@ -599,27 +604,32 @@ class _DiaryState extends State<Diary> {
     var data = diary!;
     var image = data.previewPicture;
     var content = Expanded(
-        child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-          Text(data.title, style: const TextStyle(fontSize: 18)),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 6, bottom: 5),
-              child: Text(data.preview,
-                  style: const TextStyle(
-                      overflow: TextOverflow.fade, color: Colors.black54),
-                  softWrap: true),
+        child: GestureDetector(
+          onTap: () {
+            launchUrl(Uri.parse(data.url));
+          },
+          child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+            Text(data.title, style: const TextStyle(fontSize: 18)),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 6, bottom: 5),
+                child: Text(data.preview,
+                    style: const TextStyle(
+                        overflow: TextOverflow.fade, color: Colors.black54),
+                    softWrap: true),
+              ),
             ),
-          ),
-          Transform.translate(
-            offset: const Offset(-10, 3),
-            child: DayInfo.noticeOf(data.labels,
-                color: const Color.fromRGBO(196, 196, 196, 1.0),
-                align: MainAxisAlignment.start),
-          )
-        ]));
+            Transform.translate(
+              offset: const Offset(-10, 3),
+              child: DayInfo.noticeOf(data.labels,
+                  color: const Color.fromRGBO(196, 196, 196, 1.0),
+                  align: MainAxisAlignment.start),
+            )
+          ]),
+        ));
     return SizedBox(
       height: 110,
       child: Row(
@@ -677,7 +687,9 @@ class _DiaryState extends State<Diary> {
                       ElevatedButton(
                           style: ButtonStyle(
                               elevation: MaterialStateProperty.all(0.1)),
-                          onPressed: () {},
+                          onPressed: () {
+                            launchUrl(Uri.parse(d.DiaryManager.newDiaryUrl));
+                          },
                           child: const Text("写篇日记"))
                     ]))
           ]);
