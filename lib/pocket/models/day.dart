@@ -789,6 +789,7 @@ class Dashboard {
           Uri.parse(
               isMorningTime ? Config.morningCleanUrl : Config.nightCleanUrl),
           headers: config.base64Header);
+      config.justNotify();
       return jsonDecode(resp.body)["message"];
     } on Exception catch (e) {
       return e.toString();

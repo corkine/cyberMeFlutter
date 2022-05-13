@@ -1,3 +1,4 @@
+import 'dart:ffi';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -128,6 +129,11 @@ class DayInfo {
                               borderRadius: BorderRadius.circular(20)),
                           child: Text(time, style: DayInfo.noticeStyle)))))
                   .toList()));
+
+  static callAndShow(
+          Future Function(Config) f, BuildContext context, Config config) =>
+      f(config).then((message) => ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(message))));
 }
 
 class DayHome extends StatefulWidget {
@@ -157,7 +163,6 @@ class _DayHomeState extends State<DayHome> {
     return FutureBuilder(
       future: future,
       builder: (context, future) {
-        print("state ${future.connectionState}");
         if (future.hasData && future.data != null) {
           return buildMainPage(future.data as Dashboard);
         }
@@ -188,7 +193,6 @@ class _DayHomeState extends State<DayHome> {
   }
 
   Widget buildMainPage(Dashboard dashboard) {
-    print("Ref");
     final bg = DayInfo.background();
     final allY = MediaQuery.of(context).size.height;
     return Stack(alignment: Alignment.topCenter, children: [
@@ -330,9 +334,8 @@ class Todo extends StatelessWidget {
                       child: GestureDetector(
                         onDoubleTap: () => Dashboard.focusSyncTodo(config).then(
                             (message) => ScaffoldMessenger.of(context)
-                                    .showSnackBar(SnackBar(
-                                  content: Text(message),
-                                ))),
+                                .showSnackBar(
+                                    SnackBar(content: Text(message)))),
                         child: const Text("我的待办",
                             style: TextStyle(
                                 fontWeight: FontWeight.bold, fontSize: 16)),
@@ -341,7 +344,7 @@ class Todo extends StatelessWidget {
                     DayInfo.noticeOf([dashboard.dayWorkString],
                         color: dashboard.alertMorningDayWork
                             ? Colors.red[400]!
-                            : Colors.blue[400]!)
+                            : Colors.green)
                   ])),
           ...(dashboard.todayTodo
               .map((todo) => ListTile(
@@ -367,7 +370,7 @@ class Todo extends StatelessWidget {
 }
 
 ///工作卡片
-class Work extends StatelessWidget {
+class Work extends StatefulWidget {
   final Dashboard dashboard;
   final BoxConstraints constraints;
 
@@ -378,21 +381,37 @@ class Work extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<Work> createState() => _WorkState();
+}
+
+class _WorkState extends State<Work> {
+  double left = -10;
+
+  @override
+  void didChangeDependencies() {
+    Future.delayed(
+        const Duration(milliseconds: 100), () => setState(() => {left = 0}));
+    super.didChangeDependencies();
+  }
+
+  @override
   Widget build(BuildContext context) {
     var config = Provider.of<Config>(context, listen: false);
     return Card(
       child: Stack(children: [
-        Positioned(
-            left: -10,
+        AnimatedPositioned(
+            duration: const Duration(milliseconds: 1000),
+            curve: Curves.linearToEaseOut,
+            left: left,
             bottom: -10,
-            child: dashboard.work.NeedWork
-                ? dashboard.work.OffWork
+            child: widget.dashboard.work.NeedWork
+                ? widget.dashboard.work.OffWork
                     ? Image.asset("images/dash/offwork.png",
-                        height: constraints.maxHeight)
+                        height: widget.constraints.maxHeight)
                     : Image.asset("images/dash/work.png",
-                        height: constraints.maxHeight)
+                        height: widget.constraints.maxHeight)
                 : Image.asset("images/dash/offwork.png",
-                    height: constraints.maxHeight)),
+                    height: widget.constraints.maxHeight)),
         Container(
             width: double.infinity,
             padding: const EdgeInsets.only(right: 20, top: 20),
@@ -404,30 +423,28 @@ class Work extends StatelessWidget {
                   Tooltip(
                     message: "双击同步 HCM",
                     child: GestureDetector(
-                      onDoubleTap: () => Dashboard.checkHCMCard(config).then(
-                          (message) => ScaffoldMessenger.of(context)
-                                  .showSnackBar(SnackBar(
-                                content: Text(message),
-                              ))),
+                      onDoubleTap: () => DayInfo.callAndShow(
+                          Dashboard.checkHCMCard, context, config),
                       child: Padding(
                           padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
                           child: Text.rich(TextSpan(children: [
                             const TextSpan(text: "已工作 "),
                             TextSpan(
-                                text: "${dashboard.work.WorkHour}",
+                                text: "${widget.dashboard.work.WorkHour}",
                                 style: const TextStyle(
                                     fontFamily: "consolas", fontSize: 20)),
                             const TextSpan(text: " h")
                           ]))),
                     ),
                   ),
-                  dashboard.work.OffWork
+                  widget.dashboard.work.OffWork
                       ? DayInfo.noticeOf(["无需打卡"], color: Colors.green)
-                      : dashboard.work.NeedMorningCheck
+                      : widget.dashboard.work.NeedMorningCheck
                           ? DayInfo.noticeOf(["记得打卡"], color: Colors.orange)
-                          : dashboard.alertNightDayWork
+                          : widget.dashboard.alertNightDayWork
                               ? DayInfo.noticeOf(["记得打卡"], color: Colors.red)
-                              : DayInfo.noticeOf(dashboard.work.signData())
+                              : DayInfo.noticeOf(
+                                  widget.dashboard.work.signData())
                 ]))
       ]),
       elevation: 0.2,
@@ -462,12 +479,8 @@ class Habit extends StatelessWidget {
                       Tooltip(
                           message: "双击添加今日记录",
                           child: GestureDetector(
-                              onDoubleTap: () => Dashboard.setClean(config)
-                                  .then((message) =>
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(SnackBar(
-                                        content: Text(message),
-                                      ))),
+                              onDoubleTap: () => DayInfo.callAndShow(
+                                  Dashboard.setClean, context, config),
                               child: Row(children: [
                                 buildProgressIcon(
                                     dashboard.cleanPercentInRange, "comb"),
@@ -476,7 +489,7 @@ class Habit extends StatelessWidget {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text.rich(TextSpan(children: [
-                                        const TextSpan(text: " 已坚持 "),
+                                        const TextSpan(text: " 已坚持"),
                                         TextSpan(
                                             text:
                                                 " ${dashboard.clean.HabitHint} ",
@@ -505,11 +518,10 @@ class Habit extends StatelessWidget {
                                     .then((date) {
                                   if (date == null) return;
                                   var dateStr = date.toString().split(" ")[0];
-                                  Dashboard.setBlue(config, dateStr).then(
-                                      (message) => ScaffoldMessenger.of(context)
-                                              .showSnackBar(SnackBar(
-                                            content: Text(message),
-                                          )));
+                                  DayInfo.callAndShow(
+                                      (c) => Dashboard.setBlue(c, dateStr),
+                                      context,
+                                      config);
                                 });
                               },
                               child: Row(children: [
