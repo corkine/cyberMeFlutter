@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -6,6 +7,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'models/good.dart';
 
 class Config extends ChangeNotifier {
+
+  late bool isLoadingFromLocal;
 
   static const version = 'VERSION 1.1.7, Build#2022-04-30';
   /*
@@ -42,6 +45,7 @@ class Config extends ChangeNotifier {
   double position = 0.0;
 
   Config() {
+    isLoadingFromLocal = true;
     _init();
   }
 
@@ -110,7 +114,17 @@ class Config extends ChangeNotifier {
       final r = e.split('::');
       return MapEntry<String,int>(r[0], int.parse(r[1]));
     }));
+    isLoadingFromLocal = false;
     notifyListeners();
+  }
+
+  void waitingLoad() {
+    if (!isLoadingFromLocal) return;
+    print("loading from local start.");
+    while (isLoadingFromLocal) {
+      sleep(const Duration(milliseconds: 100));
+    }
+    print("loaded from local done.");
   }
 
   bool setGoodsShortByName(bool res) {
