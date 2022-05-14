@@ -7,10 +7,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'models/good.dart';
 
 class Config extends ChangeNotifier {
-
   late bool isLoadingFromLocal;
 
   static const version = 'VERSION 1.1.7, Build#2022-04-30';
+
   /*
   1.0.4 修复了 Goods 标题显示详情问题，新键项目添加图片表单信息丢失问题，添加/修改返回后列表不更新问题
   1.0.5 修复了 QuickLink 非去重时的数据折叠问题
@@ -34,13 +34,18 @@ class Config extends ChangeNotifier {
 
   static const headerStyle = TextStyle(fontSize: 20);
   static const smallHeaderStyle = TextStyle(fontSize: 13);
-  static const formHelperStyle = TextStyle(color: Colors.grey,fontSize: 10);
+  static const formHelperStyle = TextStyle(color: Colors.grey, fontSize: 10);
 
   String user = '';
   String password = '';
+
   String get token => '?user=$user&password=$password';
-  String get base64Token => "Basic ${base64Encode(utf8.encode('$user:$password'))}";
-  Map<String,String> get base64Header => <String, String>{'authorization': base64Token};
+
+  String get base64Token =>
+      "Basic ${base64Encode(utf8.encode('$user:$password'))}";
+
+  Map<String, String> get base64Header =>
+      <String, String>{'authorization': base64Token};
 
   double position = 0.0;
 
@@ -49,36 +54,63 @@ class Config extends ChangeNotifier {
     _init();
   }
 
-  static const String dashboardUrl = "https://cyber.mazhangjing.com/cyber/dashboard/summary";
-  static const String dayWorkUrl = "https://cyber.mazhangjing.com/cyber/dashboard/day-work";
-  static const String todoSyncUrl = "https://cyber.mazhangjing.com/cyber/todo/sync";
-  static const String hcmCardCheckUrl = "https://cyber.mazhangjing.com/cyber/check/now?plainText=true&useCache=false";
-  static const String morningCleanUrl = "https://cyber.mazhangjing.com/cyber/clean/update?merge=true&mt=true&mf=true";
-  static const String nightCleanUrl = "https://cyber.mazhangjing.com/cyber/clean/update?merge=true&nt=true&nf=true";
-  static const String blueUrl = "https://cyber.mazhangjing.com/cyber/blue/update?blue=true&day=";
-  static const String lastNoteUrl = "https://cyber.mazhangjing.com/cyber/note/last";
-  static const String uploadNoteUrl = "https://cyber.mazhangjing.com/cyber/note";
-  static const String diariesUrl = "https://cyber.mazhangjing.com/cyber/diaries";
+  static const String dashboardUrl =
+      "https://cyber.mazhangjing.com/cyber/dashboard/summary";
+  static const String dayWorkUrl =
+      "https://cyber.mazhangjing.com/cyber/dashboard/day-work";
+  static const String todoSyncUrl =
+      "https://cyber.mazhangjing.com/cyber/todo/sync";
+  static const String hcmCardCheckUrl =
+      "https://cyber.mazhangjing.com/cyber/check/now?plainText=true&useCache=false";
+  static const String morningCleanUrl =
+      "https://cyber.mazhangjing.com/cyber/clean/update?merge=true&mt=true&mf=true";
+  static const String nightCleanUrl =
+      "https://cyber.mazhangjing.com/cyber/clean/update?merge=true&nt=true&nf=true";
+  static const String blueUrl =
+      "https://cyber.mazhangjing.com/cyber/blue/update?blue=true&day=";
+  static const String lastNoteUrl =
+      "https://cyber.mazhangjing.com/cyber/note/last";
+  static const String uploadNoteUrl =
+      "https://cyber.mazhangjing.com/cyber/note";
+  static const String diariesUrl =
+      "https://cyber.mazhangjing.com/cyber/diaries";
 
   String addURL = 'https://go.mazhangjing.com/add';
   String basicURL = 'https://go.mazhangjing.com';
+
   String get goodsAddURL => 'https://status.mazhangjing.com/goods/add$token';
 
-  String searchURL(String word) => 'https://go.mazhangjing.com/searchjson/$word$token';
-  String dataURL(int limit) => 'https://go.mazhangjing.com/logs$token&day=$limit';
-  String deleteURL(String keyword) => 'https://go.mazhangjing.com/deleteKey/$keyword$token';
-  String deleteGoodsURL(String goodsId) => 'https://status.mazhangjing.com/goods/$goodsId/delete$token';
-  String goodsUpdateURL(String goodsId) => 'https://status.mazhangjing.com/goods/$goodsId/update$token';
+  String searchURL(String word) =>
+      'https://go.mazhangjing.com/searchjson/$word$token';
 
-  String goodsURL() => 'https://status.mazhangjing.com/goods/data$token&hideRemove=$notShowRemoved&hideClothes=$notShowClothes'
+  String dataURL(int limit) =>
+      'https://go.mazhangjing.com/logs$token&day=$limit';
+
+  String deleteURL(String keyword) =>
+      'https://go.mazhangjing.com/deleteKey/$keyword$token';
+
+  String deleteGoodsURL(String goodsId) =>
+      'https://status.mazhangjing.com/goods/$goodsId/delete$token';
+
+  String goodsUpdateURL(String goodsId) =>
+      'https://status.mazhangjing.com/goods/$goodsId/update$token';
+
+  String goodsURL() =>
+      'https://status.mazhangjing.com/goods/data$token&hideRemove=$notShowRemoved&hideClothes=$notShowClothes'
       '&recentFirst:$goodsRecentFirst&shortByName:$goodsShortByName';
-  String goodsView(Good good) => 'https://status.mazhangjing.com/goods/${good.id}/details$token';
-  String goodsViewNoToken(Good good) => 'https://status.mazhangjing.com/goods/${good.id}/details';
+
+  String goodsView(Good good) =>
+      'https://status.mazhangjing.com/goods/${good.id}/details$token';
+
+  String goodsViewNoToken(Good good) =>
+      'https://status.mazhangjing.com/goods/${good.id}/details';
 
   int _shortURLShowLimit = 10;
   static double toolBarHeight = 50.0;
   bool _filterDuplicate = true;
+
   int get shortURLShowLimit => _shortURLShowLimit;
+
   bool get filterDuplicate => _filterDuplicate;
 
   int goodsLastDay = 300;
@@ -91,7 +123,7 @@ class Config extends ChangeNotifier {
   bool autoCopyToClipboard = true;
   bool useReorderableListView = false;
 
-  Map<String,int> map = {};
+  Map<String, int> map = {};
 
   late SharedPreferences prefs;
   late ScrollController controller;
@@ -107,24 +139,27 @@ class Config extends ChangeNotifier {
     notShowClothes = prefs.getBool('notShowClothes') ?? true;
     notShowRemoved = prefs.getBool('notShowRemoved') ?? true;
     notShowArchive = prefs.getBool('notShowArchive') ?? true;
-    showUpdateButNotCreateTime = prefs.getBool('showUpdateButNotCreateTime') ?? true;
+    showUpdateButNotCreateTime =
+        prefs.getBool('showUpdateButNotCreateTime') ?? true;
     autoCopyToClipboard = prefs.getBool('autoCopyToClipboard') ?? true;
     useReorderableListView = prefs.getBool('useReorderableListView') ?? false;
-    map = Map<String,int>.fromEntries((prefs.getStringList('goodsOrderMap') ?? <String>[]).map((e){
+    map = Map<String, int>.fromEntries(
+        (prefs.getStringList('goodsOrderMap') ?? <String>[]).map((e) {
       final r = e.split('::');
-      return MapEntry<String,int>(r[0], int.parse(r[1]));
+      return MapEntry<String, int>(r[0], int.parse(r[1]));
     }));
     isLoadingFromLocal = false;
     notifyListeners();
   }
 
-  void waitingLoad() {
+  void waitingLoad({Duration duration = const Duration(seconds: 1)}) {
     if (!isLoadingFromLocal) return;
-    print("loading from local start.");
-    while (isLoadingFromLocal) {
+    var start = DateTime.now().millisecondsSinceEpoch;
+    while (isLoadingFromLocal &&
+        (DateTime.now().millisecondsSinceEpoch - start <
+            duration.inMilliseconds)) {
       sleep(const Duration(milliseconds: 100));
     }
-    print("loaded from local done.");
   }
 
   bool setGoodsShortByName(bool res) {
@@ -192,7 +227,8 @@ class Config extends ChangeNotifier {
 
   setUseReorderableListView(bool set) {
     prefs.setBool('useReorderableListView', set);
-    prefs.setStringList('goodsOrderMap', map.entries.map((e) => e.key + '::' + e.value.toString()).toList());
+    prefs.setStringList('goodsOrderMap',
+        map.entries.map((e) => e.key + '::' + e.value.toString()).toList());
     //prefs.setStringList('goodsOrderMap', []);
     useReorderableListView = set;
     notifyListeners();
