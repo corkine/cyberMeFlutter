@@ -1,4 +1,3 @@
-import 'dart:ffi';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -145,13 +144,25 @@ class DayHome extends StatefulWidget {
 
 class _DayHomeState extends State<DayHome> {
   Config? config;
-  late Future<Dashboard?> future = Future.value(null);
+  Future<Dashboard?> future = Future.value(null);
+
   @override
   void didChangeDependencies() {
     config ??= Provider.of<Config>(context, listen: true)
-        ..justInit().then((c) => future = Dashboard.loadFromApi(c));
-    super.didChangeDependencies();
+      ..justInit().then((c) => setState(() {
+            future = Dashboard.loadFromApi(c);
+          }));
+    //一种降低鲁棒性，但避免空 build 的方法
+    /*config = Provider.of<Config>(context, listen: true);
+    if (config.isLoadedFromLocal) {
+      future = Dashboard.loadFromApi(config);
+    } else {
+      config.justInit().then((c) =>
+        future = Dashboard.loadFromApi(c));
+    }
+    super.didChangeDependencies();*/
   }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
