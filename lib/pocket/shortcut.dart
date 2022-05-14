@@ -48,13 +48,13 @@ void setupQuickAction(BuildContext context) {
           break;
         case 'action_clean':
           var config = Provider.of<Config>(context, listen: false);
-          config.waitingLoad();
-          DayInfo.callAndShow(Dashboard.setClean, context, config);
+          config.justInit().then(
+              (_) => DayInfo.callAndShow(Dashboard.setClean, context, config));
           break;
         case 'action_hcm':
           var config = Provider.of<Config>(context, listen: false);
-          config.waitingLoad();
-          DayInfo.callAndShow(Dashboard.checkHCMCard, context, config);
+          config.justInit().then((_) =>
+              DayInfo.callAndShow(Dashboard.checkHCMCard, context, config));
           break;
       }
     });

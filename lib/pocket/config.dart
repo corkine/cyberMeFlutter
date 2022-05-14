@@ -7,7 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'models/good.dart';
 
 class Config extends ChangeNotifier {
-  late bool isLoadingFromLocal;
+  bool isLoadedFromLocal = false;
 
   static const version = 'VERSION 1.1.7, Build#2022-04-30';
 
@@ -50,7 +50,6 @@ class Config extends ChangeNotifier {
   double position = 0.0;
 
   Config() {
-    isLoadingFromLocal = true;
     _init();
   }
 
@@ -128,31 +127,38 @@ class Config extends ChangeNotifier {
   late SharedPreferences prefs;
   late ScrollController controller;
 
+  Future<Config> justInit() async {
+    if (!isLoadedFromLocal) {
+      prefs = await SharedPreferences.getInstance();
+      user = prefs.getString('user') ?? '';
+      password = prefs.getString('password') ?? '';
+      _shortURLShowLimit = prefs.getInt('_shortURLShowLimit') ?? 10;
+      _filterDuplicate = prefs.getBool('_filterDuplicate') ?? true;
+      goodsShortByName = prefs.getBool('goodsShortByName') ?? true;
+      goodsRecentFirst = prefs.getBool('goodsRecentFirst') ?? true;
+      notShowClothes = prefs.getBool('notShowClothes') ?? true;
+      notShowRemoved = prefs.getBool('notShowRemoved') ?? true;
+      notShowArchive = prefs.getBool('notShowArchive') ?? true;
+      showUpdateButNotCreateTime =
+          prefs.getBool('showUpdateButNotCreateTime') ?? true;
+      autoCopyToClipboard = prefs.getBool('autoCopyToClipboard') ?? true;
+      useReorderableListView = prefs.getBool('useReorderableListView') ?? false;
+      map = Map<String, int>.fromEntries(
+          (prefs.getStringList('goodsOrderMap') ?? <String>[]).map((e) {
+        final r = e.split('::');
+        return MapEntry<String, int>(r[0], int.parse(r[1]));
+      }));
+    }
+    isLoadedFromLocal = true;
+    return this;
+  }
+
   _init() async {
-    prefs = await SharedPreferences.getInstance();
-    user = prefs.getString('user') ?? '';
-    password = prefs.getString('password') ?? '';
-    _shortURLShowLimit = prefs.getInt('_shortURLShowLimit') ?? 10;
-    _filterDuplicate = prefs.getBool('_filterDuplicate') ?? true;
-    goodsShortByName = prefs.getBool('goodsShortByName') ?? true;
-    goodsRecentFirst = prefs.getBool('goodsRecentFirst') ?? true;
-    notShowClothes = prefs.getBool('notShowClothes') ?? true;
-    notShowRemoved = prefs.getBool('notShowRemoved') ?? true;
-    notShowArchive = prefs.getBool('notShowArchive') ?? true;
-    showUpdateButNotCreateTime =
-        prefs.getBool('showUpdateButNotCreateTime') ?? true;
-    autoCopyToClipboard = prefs.getBool('autoCopyToClipboard') ?? true;
-    useReorderableListView = prefs.getBool('useReorderableListView') ?? false;
-    map = Map<String, int>.fromEntries(
-        (prefs.getStringList('goodsOrderMap') ?? <String>[]).map((e) {
-      final r = e.split('::');
-      return MapEntry<String, int>(r[0], int.parse(r[1]));
-    }));
-    isLoadingFromLocal = false;
+    await justInit();
     notifyListeners();
   }
 
-  void waitingLoad({Duration duration = const Duration(seconds: 1)}) {
+  /*void waitingLoad({Duration duration = const Duration(seconds: 1)}) {
     if (!isLoadingFromLocal) return;
     var start = DateTime.now().millisecondsSinceEpoch;
     while (isLoadingFromLocal &&
@@ -160,7 +166,7 @@ class Config extends ChangeNotifier {
             duration.inMilliseconds)) {
       sleep(const Duration(milliseconds: 100));
     }
-  }
+  }*/
 
   bool setGoodsShortByName(bool res) {
     prefs.setBool('goodsShortByName', res);

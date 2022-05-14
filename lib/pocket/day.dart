@@ -144,20 +144,14 @@ class DayHome extends StatefulWidget {
 }
 
 class _DayHomeState extends State<DayHome> {
-  late Config config;
-  late Future<Dashboard?> future;
-
+  Config? config;
+  late Future<Dashboard?> future = Future.value(null);
   @override
   void didChangeDependencies() {
-    config = Provider.of<Config>(context, listen: true);
-    if (config.user.isEmpty) {
-      future = Future.value(null);
-    } else {
-      future = Dashboard.loadFromApi(config);
-    }
+    config ??= Provider.of<Config>(context, listen: true)
+        ..justInit().then((c) => future = Dashboard.loadFromApi(c));
     super.didChangeDependencies();
   }
-
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
@@ -212,11 +206,11 @@ class _DayHomeState extends State<DayHome> {
       ),
       RefreshIndicator(
           onRefresh: () async {
-            future = Dashboard.loadFromApi(config);
+            future = Dashboard.loadFromApi(config!);
             await Future.delayed(
                 const Duration(seconds: 1), () => setState(() {}));
           },
-          child: MainPage(config: config, dashboard: dashboard))
+          child: MainPage(config: config!, dashboard: dashboard))
     ]);
   }
 }
