@@ -143,24 +143,16 @@ class DayHome extends StatefulWidget {
 }
 
 class _DayHomeState extends State<DayHome> {
-  Config? config;
+  late Config config;
   Future<Dashboard?> future = Future.value(null);
 
   @override
   void didChangeDependencies() {
-    config ??= Provider.of<Config>(context, listen: true)
-      ..justInit().then((c) => setState(() {
-            future = Dashboard.loadFromApi(c);
-          }));
-    //一种降低鲁棒性，但避免空 build 的方法
-    /*config = Provider.of<Config>(context, listen: true);
+    config = Provider.of<Config>(context, listen: true);
     if (config.isLoadedFromLocal) {
       future = Dashboard.loadFromApi(config);
-    } else {
-      config.justInit().then((c) =>
-        future = Dashboard.loadFromApi(c));
     }
-    super.didChangeDependencies();*/
+    super.didChangeDependencies();
   }
 
   @override
@@ -217,11 +209,11 @@ class _DayHomeState extends State<DayHome> {
       ),
       RefreshIndicator(
           onRefresh: () async {
-            future = Dashboard.loadFromApi(config!);
+            future = Dashboard.loadFromApi(config);
             await Future.delayed(
                 const Duration(seconds: 1), () => setState(() {}));
           },
-          child: MainPage(config: config!, dashboard: dashboard))
+          child: MainPage(config: config, dashboard: dashboard))
     ]);
   }
 }

@@ -782,12 +782,16 @@ class Dashboard {
   ///设置 Clean 数据
   static Future<String> setClean(Config config) async {
     var now = DateTime.now().hour;
-    var isMorningTime = now >= 5 && now <= 18;
+    var isMorningTime = now >= 4 && now <= 18;
+    var isYesterday = now < 4;
     try {
       print("Setting clean data, isMorning? $isMorningTime");
-      var resp = await get(
-          Uri.parse(
-              isMorningTime ? Config.morningCleanUrl : Config.nightCleanUrl),
+      var url = isMorningTime ? Config.morningCleanUrl : Config.nightCleanUrl;
+      if (isYesterday) {
+        url = url + "&yesterday=true";
+        print("is midnight, use yesterday!!!");
+      }
+      var resp = await get(Uri.parse(url),
           headers: config.base64Header);
       config.justNotify();
       return jsonDecode(resp.body)["message"];
