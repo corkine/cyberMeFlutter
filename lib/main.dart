@@ -1,8 +1,8 @@
 ﻿import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:hello_flutter/learn/test.dart';
-import 'package:hello_flutter/pocket/main.dart';
+import 'pocket/main.dart';
 import 'learn/animated.dart';
 import 'health/health_v2.dart';
 import 'learn/game.dart';
@@ -20,6 +20,10 @@ void main() {
   //runApp(const MyApp());
   //runApp(const LearnAnimation());
   CMPocket.run();
+  /*runApp(const MaterialApp(
+    debugShowCheckedModeBanner: false,
+    home: Home1(),
+  ));*/
 }
 
 class MyApp extends StatefulWidget {

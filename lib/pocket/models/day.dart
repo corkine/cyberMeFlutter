@@ -1,5 +1,6 @@
 import 'dart:ffi';
 
+import 'package:flutter/foundation.dart';
 import 'package:hello_flutter/pocket/models/diary.dart' as real_diary;
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
@@ -847,7 +848,9 @@ class Dashboard {
 
   ///从 API 加载大屏数据
   static Future<Dashboard> loadFromApi(Config config) async {
-    print("Loading from CyberMe... from user: ${config.user}");
+    if (kDebugMode) {
+      print("Loading from CyberMe... from user: ${config.user}");
+    }
     final Response r =
         await get(Uri.parse(Config.dashboardUrl), headers: config.base64Header);
     final data = jsonDecode(r.body);

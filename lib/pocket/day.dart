@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import '/pocket/config.dart';
 import '/pocket/time.dart';
+import '/pocket/util.dart' as util;
 import '/pocket/models/day.dart';
 import '/pocket/models/diary.dart' as d;
 import 'package:provider/provider.dart';
@@ -144,13 +145,13 @@ class DayHome extends StatefulWidget {
 
 class _DayHomeState extends State<DayHome> {
   late Config config;
-  Future<Dashboard?> future = Future.value(null);
+  Future<Dashboard?>? future;
 
   @override
   void didChangeDependencies() {
     config = Provider.of<Config>(context, listen: true);
     if (config.isLoadedFromLocal) {
-      future = Dashboard.loadFromApi(config);
+      future ??= Dashboard.loadFromApi(config);
     }
     super.didChangeDependencies();
   }
@@ -159,33 +160,7 @@ class _DayHomeState extends State<DayHome> {
   Widget build(BuildContext context) {
     return FutureBuilder(
       future: future,
-      builder: (context, future) {
-        if (future.hasData && future.data != null) {
-          return buildMainPage(future.data as Dashboard);
-        }
-        if (future.hasError) {
-          return SizedBox(
-            width: double.infinity,
-            height: MediaQuery.of(context).size.height - 100,
-            child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Image.asset("images/empty.png", width: 200),
-                  Text("发生了一些错误：${future.error}", textAlign: TextAlign.center)
-                ]),
-          );
-        }
-        return Container(
-            alignment: Alignment.center,
-            child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: const [
-                  CircularProgressIndicator(),
-                  Padding(padding: EdgeInsets.all(20), child: Text("正在联系服务器"))
-                ]));
-      },
+      builder: util.commonFutureBuilder<Dashboard>(buildMainPage),
     );
   }
 
@@ -529,7 +504,7 @@ class Habit extends StatelessWidget {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text.rich(TextSpan(children: [
-                                        const TextSpan(text: " 已坚持 "),
+                                        const TextSpan(text: " 已坚持"),
                                         TextSpan(
                                             text: " ${dashboard.noBlueCount} ",
                                             style: const TextStyle(
@@ -637,7 +612,7 @@ class _DiaryState extends State<Diary> {
           ]),
     ));
     return SizedBox(
-      height: 110,
+      height: 100,
       child: Row(
           mainAxisSize: MainAxisSize.min,
           children: image == null
@@ -650,13 +625,16 @@ class _DiaryState extends State<Diary> {
                 ]
               : [
                   Padding(
-                      padding: const EdgeInsets.only(right: 15),
-                      child: FadeInImage.assetNetwork(
-                          placeholder: "images/dash/lol.png",
-                          image: image,
-                          width: 110,
-                          height: 110,
-                          fit: BoxFit.cover)),
+                      padding: const EdgeInsets.only(right: 15, left: 2),
+                      child: ClipRRect(
+                        borderRadius: const BorderRadius.all(Radius.circular(5)),
+                        child: FadeInImage.assetNetwork(
+                            placeholder: "images/dash/lol.png",
+                            image: image,
+                            width: 95,
+                            height: 95,
+                            fit: BoxFit.cover),
+                      )),
                   content
                 ]),
     );

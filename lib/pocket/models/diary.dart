@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:hello_flutter/pocket/config.dart';
 import 'package:hello_flutter/pocket/time.dart';
 import 'package:http/http.dart';
@@ -23,13 +24,15 @@ class Diary {
   String get preview {
     var first = content.split("\n")[0];
     if (first.isEmpty) return "暂无内容";
-    if (first.length > 100) return first.substring(0,100) + "...";
+    if (first.length > 90) return first.substring(0,90) + "...";
     return first;
   }
 
   String? get previewPicture {
     var res = RegExp("!\\[.*?\\]\\((.*?)\\)").firstMatch(content);
-    return res?.group(1);
+    var find =  res?.group(1);
+    if (find != null) find = find + "?x-oss-process=style/fit";
+    return find;
   }
 
   String get url => "https://cyber.mazhangjing.com/diary/$id";
@@ -123,6 +126,9 @@ class Diary {
 
 class DiaryManager {
   static Future<List<Diary>> loadFromApi(Config config) async {
+    if (kDebugMode) {
+      print("Loading from Diary... from user: ${config.user}");
+    }
     final Response r =
         await get(Uri.parse(Config.diariesUrl), headers: config.base64Header);
     final data = jsonDecode(r.body)["data"] as List;
@@ -130,6 +136,7 @@ class DiaryManager {
   }
 
   static Diary? today(List<Diary> data) {
+    return data[2];
     String today = TimeUtil.today;
     var find = data.where((element) => element.day == today);
     return find.isNotEmpty ? find.first : null;

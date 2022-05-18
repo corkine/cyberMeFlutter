@@ -9,7 +9,7 @@ import 'models/good.dart';
 class Config extends ChangeNotifier {
   bool isLoadedFromLocal = false;
 
-  static const version = 'VERSION 1.1.7, Build#2022-04-30';
+  static const version = 'VERSION 1.1.9, Build#2022-5-18';
 
   /*
   1.0.4 修复了 Goods 标题显示详情问题，新键项目添加图片表单信息丢失问题，添加/修改返回后列表不更新问题
@@ -29,6 +29,8 @@ class Config extends ChangeNotifier {
   1.1.5 修改快速链接 - 最近 为 查找最近链接
   1.1.6 修改默认启动页为短连接
   1.1.7 2022-04-30 迁移到 Dart 空指针安全模式，优化了部分代码结构，整合了游戏、SNH48 和凭证系统。
+  1.1.8 2022-5-1 添加了 Dashboard 页面。
+  1.1.9 2022-5-18 添加了日记页面。
   */
   static const int pageIndex = 0;
 

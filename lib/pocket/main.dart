@@ -1,16 +1,12 @@
-import 'package:clipboard/clipboard.dart';
 import 'package:flutter/material.dart';
-import 'package:hello_flutter/learn/snh.dart';
 import 'package:hello_flutter/pocket/day.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart';
-import '../learn/data.dart';
-import '../learn/game.dart';
 import 'goods.dart';
 import 'link.dart';
 import 'config.dart';
+import 'auth.dart' as auth;
 import 'shortcut.dart' as short;
+import 'diary.dart' as diary;
 
 class CMPocket {
   static void run() {
@@ -41,6 +37,8 @@ class _PocketHomeState extends State<PocketHome> {
       case 0:
         return DayInfo.titleWidget;
       case 1:
+        return diary.title;
+      case 2:
         return RichText(
             text: TextSpan(text: '短链接', style: Config.headerStyle, children: [
           TextSpan(
@@ -48,7 +46,7 @@ class _PocketHomeState extends State<PocketHome> {
                   ' (最近 ${config.shortURLShowLimit} 天${config.filterDuplicate ? ' 去重' : ''})',
               style: Config.smallHeaderStyle)
         ]));
-      case 2:
+      case 3:
         return config.useReorderableListView
             ? const Text('拖动条目以排序', style: Config.headerStyle)
             : RichText(
@@ -63,7 +61,7 @@ class _PocketHomeState extends State<PocketHome> {
                         style: Config.smallHeaderStyle)
                   ]));
       default:
-        return const Text('CMGO');
+        return const Text('CM GO');
     }
   }
 
@@ -73,8 +71,10 @@ class _PocketHomeState extends State<PocketHome> {
       case 0:
         return DayInfo.mainWidget;
       case 1:
-        return const QuickLinkPage();
+        return diary.mainWidget;
       case 2:
+        return const QuickLinkPage();
+      case 3:
         return const GoodsHome();
       default:
         return Container();
@@ -84,7 +84,8 @@ class _PocketHomeState extends State<PocketHome> {
   /// 决定标题栏显示的菜单按钮
   List<Widget> _buildActions(Config config, int index) {
     if (index == 0) return DayInfo.menuActions(context, config);
-    if (index == 1) {
+    if (index == 1) return diary.menuActions(context, config);
+    if (index == 2) {
       return [
         PopupMenuButton(
             icon: const Icon(Icons.more_vert_rounded),
@@ -191,9 +192,12 @@ class _PocketHomeState extends State<PocketHome> {
   _callActionButton(Config config, int index) {
     switch (index) {
       case 1:
-        showSearch(context: context, delegate: ItemSearchDelegate(config));
+        diary.mainAction(context, config);
         break;
       case 2:
+        showSearch(context: context, delegate: ItemSearchDelegate(config));
+        break;
+      case 3:
         Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext c) {
           return const GoodAdd(null);
         }));
@@ -208,72 +212,16 @@ class _PocketHomeState extends State<PocketHome> {
       case 0:
         return const Icon(Icons.search);
       case 1:
-        return const Icon(Icons.search);
+        return diary.mainButton;
       case 2:
+        return const Icon(Icons.search);
+      case 3:
         return const Icon(Icons.add);
       default:
         return const Icon(Icons.search);
     }
   }
 
-  /// 处理 App 的认证和登录信息
-  _handleLogin(Config config) {
-    if (config.user.isNotEmpty) {
-      config.user = '';
-      config.password = '';
-      config.justNotify();
-    } else {
-      showDialog<List<String>>(
-          context: context,
-          builder: (BuildContext c) {
-            final userController = TextEditingController();
-            final passwordController = TextEditingController();
-            return SimpleDialog(
-              title: const Text('输入用户名和登录凭证'),
-              contentPadding: const EdgeInsets.all(19),
-              children: [
-                TextField(
-                    controller: userController,
-                    decoration: const InputDecoration(labelText: '用户名')),
-                TextField(
-                    controller: passwordController,
-                    decoration: const InputDecoration(labelText: '密码'),
-                    obscureText: true),
-                ButtonBar(
-                  children: [
-                    TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop(null);
-                        },
-                        child: const Text('取消')),
-                    TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop(
-                              [userController.text, passwordController.text]);
-                        },
-                        child: const Text('确定')),
-                  ],
-                )
-              ],
-            );
-          }).then((List<String>? value) {
-        if (value != null) {
-          config.user = value[0];
-          config.password = value[1];
-          config.justNotify();
-          _savingData(config.user, config.password);
-        }
-      });
-    }
-  }
-
-  _savingData(String user, String pass) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString('user', user);
-    prefs.setString('password', pass);
-  }
-
-  /// iOS 右键菜单注册
   @override
   void initState() {
     super.initState();
@@ -285,68 +233,7 @@ class _PocketHomeState extends State<PocketHome> {
     return Consumer<Config>(
         builder: (BuildContext context, Config config, Widget? w) {
       return Scaffold(
-          drawer: Drawer(
-              child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                Column(mainAxisAlignment: MainAxisAlignment.start, children: [
-                  const UserAccountsDrawerHeader(
-                      decoration: BoxDecoration(
-                          image: DecorationImage(
-                              fit: BoxFit.fitWidth,
-                              alignment: Alignment.centerLeft,
-                              image: AssetImage('images/girl.jpg'))),
-                      accountName: Text('Corkine Ma'),
-                      accountEmail: Text('corkine@outlook.com'),
-                      currentAccountPicture: FractionalTranslation(
-                          translation: Offset(-0.1, 0.1),
-                          child: Icon(
-                            Icons.face_unlock_sharp,
-                            size: 70,
-                            color: Colors.white,
-                          ))),
-                  ListTile(
-                      leading: const Icon(Icons.home),
-                      title: const Text('主页'),
-                      onTap: () => launch('https://mazhangjing.com')),
-                  ListTile(
-                      leading: const Icon(Icons.all_inclusive_sharp),
-                      title: const Text('博客'),
-                      onTap: () {}),
-                  ListTile(
-                      leading: const Icon(Icons.videogame_asset),
-                      title: const Text('游戏'),
-                      onTap: () => Info.readData().then((value) => {
-                            Navigator.of(context)
-                                .push(MaterialPageRoute(builder: (c) {
-                              return Game(info: value);
-                            }))
-                          })),
-                  ListTile(
-                      leading: const Icon(Icons.store),
-                      title: const Text('SNH48'),
-                      onTap: () => Navigator.of(context)
-                              .push(MaterialPageRoute(builder: (c) {
-                            return const SNHApp();
-                          })))
-                ]),
-                Column(children: [
-                  SizedBox(
-                      width: 200,
-                      child: ElevatedButton(
-                          style: ButtonStyle(
-                              backgroundColor: MaterialStateProperty.all(
-                                  Colors.green.shade300)),
-                          onPressed: () => _handleLogin(config),
-                          child: Text(config.user.isEmpty ? '验证秘钥' : '取消登录'))),
-                  const Padding(
-                      padding: EdgeInsets.only(bottom: 15),
-                      child: Text(
-                        Config.version,
-                        style: TextStyle(color: Colors.grey, fontSize: 12),
-                      ))
-                ])
-              ])),
+          drawer: auth.userMenuDrawer(config, context),
           appBar: AppBar(
               elevation: 7,
               title: _title(config),
@@ -374,6 +261,10 @@ class _PocketHomeState extends State<PocketHome> {
                     label: DayInfo.title,
                     icon: const Icon(Icons.calendar_today_outlined),
                     activeIcon: const Icon(Icons.calendar_today)),
+                BottomNavigationBarItem(
+                    label: diary.buttonTitle,
+                    icon: const Icon(Icons.sticky_note_2_outlined),
+                    activeIcon: const Icon(Icons.sticky_note_2_rounded)),
                 const BottomNavigationBarItem(
                     label: '短链接',
                     icon: Icon(Icons.bookmark_border_rounded),
