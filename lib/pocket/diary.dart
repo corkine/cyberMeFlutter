@@ -144,13 +144,16 @@ class _DiaryCardsState extends State<DiaryCards> {
                           child: BackdropFilter(
                             filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
                             child: GestureDetector(
-                              onTapDown: (d) {
+                              onTapDown: (de) {
                                 var width = MediaQuery.of(context).size.width;
-                                var localX = d.localPosition.dx;
-                                if (localX < width * 1.0 / 2) {
+                                var localX = de.localPosition.dx;
+                                var thirdPart = width * 1.0 / 3;
+                                if (localX < thirdPart) {
                                   _controller.rewind(); //只能回退一次
-                                } else {
+                                } else if (localX > thirdPart + thirdPart) {
                                   _controller.next(swipeDirection: SwipeDirection.left);
+                                } else {
+                                  launch(d.url);
                                 }
                               },
                               child: Container(
@@ -175,7 +178,7 @@ class _DiaryCardsState extends State<DiaryCards> {
                                           style: Theme.of(context)
                                               .primaryTextTheme
                                               .bodyText1!
-                                              .copyWith(color: Colors.black))
+                                              .copyWith(color: Colors.black54))
                                     ]),
                               ),
                             ),

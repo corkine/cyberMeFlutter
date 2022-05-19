@@ -136,7 +136,6 @@ class DiaryManager {
   }
 
   static Diary? today(List<Diary> data) {
-    return data[2];
     String today = TimeUtil.today;
     var find = data.where((element) => element.day == today);
     return find.isNotEmpty ? find.first : null;
