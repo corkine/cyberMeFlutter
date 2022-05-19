@@ -9,16 +9,14 @@ import 'shortcut.dart' as short;
 import 'diary.dart' as diary;
 
 class CMPocket {
-  static void run() {
-    runApp(ChangeNotifierProvider(
+  static Widget call() => ChangeNotifierProvider(
       create: (c) => Config(),
       child: const MaterialApp(
         title: 'CMPocket',
         debugShowCheckedModeBanner: true,
         home: PocketHome(),
       ),
-    ));
-  }
+    );
 }
 
 class PocketHome extends StatefulWidget {

@@ -19,7 +19,7 @@ void main() {
   });*/
   //runApp(const MyApp());
   //runApp(const LearnAnimation());
-  CMPocket.run();
+  runApp(CMPocket.call());
   /*runApp(const MaterialApp(
     debugShowCheckedModeBanner: false,
     home: Home1(),
