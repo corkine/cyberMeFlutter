@@ -32,9 +32,10 @@ jobs:
       - name: Run tests
         run: flutter test --coverage
         
-      - name: Upload coverage to codecov
-        run: curl -s https://codecov.io/bash -t $CODECOV_TOKEN
-        shell: bash
+      - uses: codecov/codecov-action@v1.0.2
+        with:
+          token: ${{secrets.CODECOV_TOKEN}}
+          file: ./coverage/lcov.info
 
       - name: Notice to Slack
         id: slack
