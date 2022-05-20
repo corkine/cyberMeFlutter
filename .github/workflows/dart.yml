@@ -32,6 +32,10 @@ jobs:
       - name: Run tests
         run: flutter test --coverage
         
+      - name: Upload coverage to codecov
+        run: curl -s https://codecov.io/bash -t $
+        shell: bash
+
       - name: Notice to Slack
         id: slack
         uses: slackapi/slack-github-action@v1.18.0
