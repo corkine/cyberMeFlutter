@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'dart:ui';
 
+import 'package:clipboard/clipboard.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -31,11 +32,25 @@ List<Widget> menuActions(BuildContext context, Config config) {
   ];
 }
 
-void mainAction(BuildContext context, Config config) {
-  launch(DiaryManager.newDiaryUrl).then((value) {
+void mainAction(BuildContext context, Config config) async {
+  /*launch(DiaryManager.newDiaryUrl).then((value) {
     //on desktop, this will call immediately, not like mobile
     if (kDebugMode) print("back to app!");
-  });
+  });*/
+  String? url;
+  var image = await util.pickImage(context);
+  if (image != null) {
+    if (kDebugMode) print("uploading image $image");
+    var uploadRes = await util.uploadImage(image, config);
+    if (uploadRes[0] == null) {
+      if (kDebugMode) print("upload failed! ${uploadRes[1]}");
+    } else {
+      url = uploadRes[0];
+      await FlutterClipboard.copy("![]($url)");
+    }
+  }
+  if (kDebugMode) print(url);
+  Future.delayed(const Duration(milliseconds: 500), () => launch(DiaryManager.newDiaryUrl));
 }
 
 class DiaryStage extends StatefulWidget {
@@ -151,7 +166,8 @@ class _DiaryCardsState extends State<DiaryCards> {
                                 if (localX < thirdPart) {
                                   _controller.rewind(); //只能回退一次
                                 } else if (localX > thirdPart + thirdPart) {
-                                  _controller.next(swipeDirection: SwipeDirection.left);
+                                  _controller.next(
+                                      swipeDirection: SwipeDirection.left);
                                 } else {
                                   launch(d.url);
                                 }

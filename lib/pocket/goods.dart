@@ -2,7 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import '/pocket/util.dart';
 import 'package:http/http.dart';
 import 'package:intl/intl.dart';
 import '../util.dart';
@@ -11,7 +13,6 @@ import 'config.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:clipboard/clipboard.dart';
 
@@ -650,36 +651,15 @@ class _GoodAddState extends State<GoodAdd> {
   _handleFetch() async {
     if (_image == null) {
       //_image 为空则拍照更新，反之则将其置为空，新键或更新对其无影响
-      final pickedFile = await _picker.getImage(source: ImageSource.camera);
-      File? image;
-      if (pickedFile != null) {
-        print(pickedFile.path);
-        image = await compressAndGetFile(
-            File(pickedFile.path),
-            pickedFile.path
-                .replaceFirst('image_picker', 'compressed_image_picker'));
-        setState(() {
-          _image = image;
-        });
-      }
+      File? image = await pickImage(context, justCamera: true);
+      setState(() {
+        _image = image;
+      });
     } else {
       setState(() {
         _image = null;
       });
     }
-  }
-
-  Future<File?> compressAndGetFile(File file, String targetPath) async {
-    var result = await FlutterImageCompress.compressAndGetFile(
-      file.absolute.path,
-      targetPath,
-      minHeight: 640,
-      minWidth: 480,
-      quality: 100,
-    );
-    print(
-        'File length ${file.lengthSync()}, Compressed to ${result?.lengthSync()}');
-    return result;
   }
 
   bool _uploading = false;
@@ -692,7 +672,7 @@ class _GoodAddState extends State<GoodAdd> {
       });
       try {
         formKey.currentState!.save();
-        print(request.fields);
+        if (kDebugMode) print(request.fields);
         if (_image != null) {
           //新建，有新图片 或者 修改，更新图片。
           //当新建时没有添加图片，或者修改图片未更改（_image 始终为空），则不做处理。
@@ -719,7 +699,7 @@ class _GoodAddState extends State<GoodAdd> {
         });
         if (failed) {
           ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text('上传失败')));
+              .showSnackBar(const SnackBar(content: Text('上传失败')));
         }
       }
     }

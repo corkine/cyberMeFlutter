@@ -41,6 +41,12 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>程序需要使用相机以拍摄照片</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>程序需要使用麦克风以录制视频</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>程序需要访问图库以选取照片</string>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
 </dict>
