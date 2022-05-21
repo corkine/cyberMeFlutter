@@ -10,6 +10,10 @@ class Info {
   int vaccineTimes;
   String checkPlace;
 
+  bool get isTestInfo48 => testInfo.contains("48");
+  bool get isTestInfo72 => testInfo.contains("72");
+  bool get isEmptyTimeInTestInfo => !(isTestInfo48 || isTestInfo72);
+
   Info(
       {required this.name,
       required this.id,

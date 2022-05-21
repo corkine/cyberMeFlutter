@@ -128,16 +128,19 @@ class _HealthCardState extends State<HealthCard>
                   height: 150,
                   child: Container(
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
+                        gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
                           Colors.white.withOpacity(0),
                           Colors.white.withOpacity(0.7),
                           Colors.white.withOpacity(0.8),
-                        ], stops: const [0, 0.5, 1]
-                      )
-                    ),
+                        ],
+                            stops: const [
+                          0,
+                          0.5,
+                          1
+                        ])),
                   ),
                 ),
                 //蓝色渐变底部遮盖
@@ -570,7 +573,7 @@ class _HealthInfoState extends State<HealthInfo> {
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                  gradient: widget.info.testInfo.contains("48")
+                  gradient: widget.info.isTestInfo48
                       ? const LinearGradient(
                           begin: Alignment.centerLeft,
                           end: Alignment.centerRight,
@@ -578,13 +581,18 @@ class _HealthInfoState extends State<HealthInfo> {
                               Color.fromRGBO(116, 186, 130, 1),
                               Color.fromRGBO(158, 224, 138, 0.95)
                             ])
-                      : const LinearGradient(
-                          begin: Alignment.centerLeft,
-                          end: Alignment.centerRight,
-                          colors: [
-                              Color.fromRGBO(90, 136, 248, 1),
-                              Color.fromRGBO(129, 178, 247, 0.95)
-                            ]),
+                      : widget.info.isTestInfo72
+                          ? const LinearGradient(
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
+                              colors: [
+                                  Color.fromRGBO(90, 136, 248, 1),
+                                  Color.fromRGBO(129, 178, 247, 0.95)
+                                ])
+                          : const LinearGradient(
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
+                              colors: [Colors.white, Colors.white]),
                   borderRadius: const BorderRadius.all(Radius.circular(10)),
                   boxShadow: const [
                     BoxShadow(
@@ -599,46 +607,62 @@ class _HealthInfoState extends State<HealthInfo> {
                     children: [
                       Padding(
                         padding: const EdgeInsets.only(right: 3),
-                        child: widget.info.testInfo.contains("48")
+                        child: widget.info.isTestInfo48
                             ? Image.asset(
                                 "images/health/refresh3.png",
                                 width: 19,
                                 height: 19,
                               )
-                            : Image.asset(
-                                "images/health/refresh.png",
-                                width: 19,
-                                height: 19,
-                              ),
+                            : widget.info.isTestInfo72
+                                ? Image.asset(
+                                    "images/health/refresh.png",
+                                    width: 19,
+                                    height: 19,
+                                  )
+                                : Image.asset(
+                                    "images/health/refresh2.png",
+                                    width: 19,
+                                    height: 19,
+                                  ),
                       ),
-                      const Text(
+                      Text(
                         "核酸检测",
-                        style: TextStyle(color: Colors.white, fontSize: 15),
+                        style: TextStyle(
+                            color: widget.info.isEmptyTimeInTestInfo
+                                ? Colors.black87
+                                : Colors.white,
+                            fontSize: 15),
                       ),
-                      const RotatedBox(
+                      RotatedBox(
                           quarterTurns: -2,
                           child: Icon(
                             Icons.arrow_back_ios,
-                            color: Colors.white,
-                            size: 15,
+                            color: widget.info.isEmptyTimeInTestInfo
+                                ? Colors.grey
+                                : Colors.white,
+                            size: 13,
                           ))
                     ],
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(top: 5, bottom: 5),
+                    padding: const EdgeInsets.only(top: 9, bottom: 9),
                     child: Text(
                       widget.info.testInfo,
-                      style: const TextStyle(
-                          fontSize: 20,
-                          color: Colors.white,
+                      style: TextStyle(
+                          fontSize: 23,
+                          color: widget.info.isEmptyTimeInTestInfo
+                              ? blue
+                              : Colors.white,
                           fontWeight: FontWeight.bold),
                     ),
                   ),
                   Text(
                     widget.info.lastTestTime,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 13,
-                        color: Colors.white,
+                        color: widget.info.isEmptyTimeInTestInfo
+                            ? Colors.black87
+                            : Colors.white,
                         fontWeight: FontWeight.w300),
                   )
                 ],
@@ -681,17 +705,17 @@ class _HealthInfoState extends State<HealthInfo> {
                           quarterTurns: -2,
                           child: Icon(
                             Icons.arrow_back_ios,
-                            color: Colors.black87,
-                            size: 15,
+                            color: Colors.grey,
+                            size: 13,
                           ))
                     ],
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(top: 5, bottom: 7),
+                    padding: const EdgeInsets.only(top: 9, bottom: 9),
                     child: Text(
                       widget.info.vaccineTimes.toString() + "次",
                       style: TextStyle(
-                          fontSize: 20,
+                          fontSize: 23,
                           color: blue,
                           fontWeight: FontWeight.bold),
                     ),
@@ -842,15 +866,15 @@ class _HealthInfoState extends State<HealthInfo> {
                             fontWeight: FontWeight.w400,
                             color: Color.fromRGBO(28, 148, 77, 1)),
                         children: [
-                          const TextSpan(
-                              text: "已采样",
-                              style: TextStyle(
-                                  fontSize: 23, fontWeight: FontWeight.w600)),
-                          TextSpan(
-                              text: " " + Util.clock(justDate: true),
-                              style: const TextStyle(
-                                  fontSize: 19, fontWeight: FontWeight.w400))
-                        ])),
+                      const TextSpan(
+                          text: "已采样",
+                          style: TextStyle(
+                              fontSize: 23, fontWeight: FontWeight.w600)),
+                      TextSpan(
+                          text: " " + Util.clock(justDate: true),
+                          style: const TextStyle(
+                              fontSize: 19, fontWeight: FontWeight.w400))
+                    ])),
               )
             : const SizedBox(
                 height: 0,
