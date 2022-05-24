@@ -116,6 +116,8 @@ class Config extends ChangeNotifier {
 
   bool get filterDuplicate => _filterDuplicate;
 
+  bool needRefreshDashboardPage = false;
+
   int goodsLastDay = 300;
   bool goodsShortByName = true;
   bool goodsRecentFirst = true;

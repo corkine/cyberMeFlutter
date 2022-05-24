@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'place.dart';
 import '../util.dart';
-import '../learn/data.dart';
+import 'data.dart';
 
 class HealthCard extends StatefulWidget {
   final Info info;

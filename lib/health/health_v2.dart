@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'place_v2.dart';
 import '../util.dart';
-import '../learn/data.dart';
+import 'data.dart';
 import 'animate.dart' as go;
 
 class HealthCard extends StatefulWidget {
@@ -421,7 +421,7 @@ class _HealthCardState extends State<HealthCard>
                   color: const Color.fromRGBO(78, 118, 207, 1)),
               child: Padding(
                 padding:
-                    const EdgeInsets.only(left: 8, right: 8, top: 2, bottom: 3),
+                    const EdgeInsets.only(left: 11, right: 8, top: 2, bottom: 3),
                 child: Row(
                   children: [
                     GestureDetector(
@@ -431,7 +431,7 @@ class _HealthCardState extends State<HealthCard>
                       child: Image.asset(
                         "images/health/more.png",
                         width: 23,
-                        height: 20,
+                        height: 25,
                       ),
                     ),
                     Padding(
@@ -573,7 +573,7 @@ class _HealthInfoState extends State<HealthInfo> {
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                  gradient: widget.info.isTestInfo48
+                  gradient: widget.info.isTestInfo24
                       ? const LinearGradient(
                           begin: Alignment.centerLeft,
                           end: Alignment.centerRight,
@@ -581,18 +581,26 @@ class _HealthInfoState extends State<HealthInfo> {
                               Color.fromRGBO(116, 186, 130, 1),
                               Color.fromRGBO(158, 224, 138, 0.95)
                             ])
-                      : widget.info.isTestInfo72
+                      : widget.info.isTestInfo48
                           ? const LinearGradient(
                               begin: Alignment.centerLeft,
                               end: Alignment.centerRight,
                               colors: [
-                                  Color.fromRGBO(90, 136, 248, 1),
-                                  Color.fromRGBO(129, 178, 247, 0.95)
+                                  Color.fromRGBO(61, 172, 177, 1),
+                                  Color.fromRGBO(61, 214, 173, 0.95)
                                 ])
-                          : const LinearGradient(
-                              begin: Alignment.centerLeft,
-                              end: Alignment.centerRight,
-                              colors: [Colors.white, Colors.white]),
+                          : widget.info.isTestInfo72
+                              ? const LinearGradient(
+                                  begin: Alignment.centerLeft,
+                                  end: Alignment.centerRight,
+                                  colors: [
+                                      Color.fromRGBO(90, 136, 248, 1),
+                                      Color.fromRGBO(129, 178, 247, 0.95)
+                                    ])
+                              : const LinearGradient(
+                                  begin: Alignment.centerLeft,
+                                  end: Alignment.centerRight,
+                                  colors: [Colors.white, Colors.white]),
                   borderRadius: const BorderRadius.all(Radius.circular(10)),
                   boxShadow: const [
                     BoxShadow(
@@ -607,23 +615,29 @@ class _HealthInfoState extends State<HealthInfo> {
                     children: [
                       Padding(
                         padding: const EdgeInsets.only(right: 3),
-                        child: widget.info.isTestInfo48
+                        child: widget.info.isTestInfo24
                             ? Image.asset(
                                 "images/health/refresh3.png",
                                 width: 19,
                                 height: 19,
                               )
-                            : widget.info.isTestInfo72
+                            : widget.info.isTestInfo48
                                 ? Image.asset(
-                                    "images/health/refresh.png",
+                                    "images/health/refresh4.png",
                                     width: 19,
                                     height: 19,
                                   )
-                                : Image.asset(
-                                    "images/health/refresh2.png",
-                                    width: 19,
-                                    height: 19,
-                                  ),
+                                : widget.info.isTestInfo72
+                                    ? Image.asset(
+                                        "images/health/refresh.png",
+                                        width: 19,
+                                        height: 19,
+                                      )
+                                    : Image.asset(
+                                        "images/health/refresh2.png",
+                                        width: 19,
+                                        height: 19,
+                                      ),
                       ),
                       Text(
                         "核酸检测",

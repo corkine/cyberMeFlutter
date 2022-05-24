@@ -539,7 +539,7 @@ class Todo {
   String? finish_at;
   String title;
   String list;
-  String due_at;
+  String? due_at;
   String create_at;
   String importance;
 
@@ -641,7 +641,7 @@ class Todo {
       finish_at: map['finish_at'] as String?,
       title: map['title'] as String,
       list: map['list'] as String,
-      due_at: map['due_at'] as String,
+      due_at: map['due_at'] as String?,
       create_at: map['create_at'] as String,
       importance: map['importance'] as String,
     );

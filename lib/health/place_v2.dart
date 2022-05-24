@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../learn/data.dart';
+import 'data.dart';
 import '../util.dart';
 import 'animate.dart' as go;
 
@@ -56,7 +56,7 @@ class _HealthCheckState extends State<HealthCheck>
                         color: const Color.fromRGBO(78, 118, 207, 1)),
                     child: Padding(
                         padding: const EdgeInsets.only(
-                            left: 8, right: 8, top: 3, bottom: 3),
+                            left: 11, right: 8, top: 3, bottom: 3),
                         child: Row(children: [
                           Image.asset("images/health/more.png",
                               width: 23, height: 20),
@@ -64,7 +64,7 @@ class _HealthCheckState extends State<HealthCheck>
                               padding: const EdgeInsets.only(left: 6, right: 6),
                               child: Container(
                                   width: 1,
-                                  height: 16,
+                                  height: 25,
                                   color:
                                       const Color.fromRGBO(73, 113, 200, 1))),
                           GestureDetector(

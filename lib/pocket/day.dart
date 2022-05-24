@@ -132,8 +132,10 @@ class DayInfo {
 
   static callAndShow(
           Future Function(Config) f, BuildContext context, Config config) =>
-      f(config).then((message) => ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(message))));
+      f(config)
+          .then((message) => ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(message))))
+          .then((value) => config.needRefreshDashboardPage = true);
 }
 
 class DayHome extends StatefulWidget {
@@ -151,7 +153,12 @@ class _DayHomeState extends State<DayHome> {
   void didChangeDependencies() {
     config = Provider.of<Config>(context, listen: true);
     if (config.isLoadedFromLocal) {
-      future ??= Dashboard.loadFromApi(config);
+      if (config.needRefreshDashboardPage) {
+        future = Dashboard.loadFromApi(config);
+        config.needRefreshDashboardPage = false;
+      } else {
+        future ??= Dashboard.loadFromApi(config);
+      }
     }
     super.didChangeDependencies();
   }
@@ -627,7 +634,8 @@ class _DiaryState extends State<Diary> {
                   Padding(
                       padding: const EdgeInsets.only(right: 15, left: 2),
                       child: ClipRRect(
-                        borderRadius: const BorderRadius.all(Radius.circular(5)),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(5)),
                         child: FadeInImage.assetNetwork(
                             placeholder: "images/dash/lol.png",
                             image: image,

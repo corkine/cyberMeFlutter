@@ -8,7 +8,7 @@ import 'health/health_v2.dart';
 import 'learn/game.dart';
 import 'learn/snh.dart';
 
-import 'learn/data.dart';
+import 'health/data.dart';
 
 void main() {
   //runApp(const SNHApp());

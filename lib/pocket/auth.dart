@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../learn/data.dart';
+import '../health/data.dart';
 import '../learn/game.dart';
 import '../learn/snh.dart';
 import 'config.dart';
