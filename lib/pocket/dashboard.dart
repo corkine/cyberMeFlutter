@@ -29,15 +29,17 @@ class DashInfo {
           child: Row(
               mainAxisSize: MainAxisSize.max,
               mainAxisAlignment: align,
-              children: (text.map((time) => Padding(
-                      padding: const EdgeInsets.only(left: 3),
-                      child: Container(
-                          padding: DashInfo.noticePadding,
-                          decoration: BoxDecoration(
-                              color: color,
-                              borderRadius: BorderRadius.circular(20)),
-                          child: Text(time, style: DashInfo.noticeStyle)))))
-                  .toList()));
+              children: [
+                ClipOval(
+                  child: Container(width: 13, height: 13, color: color),
+                ),
+                ...(text.map((time) => Padding(
+                        padding: const EdgeInsets.only(left: 3),
+                        child: Container(
+                            padding: const EdgeInsets.only(left: 0),
+                            child: Text(time, style: DashInfo.noticeStyle)))))
+                    .toList()
+              ]));
 
   static callAndShow(
           Future Function(Config) f, BuildContext context, Config config) =>
@@ -160,10 +162,15 @@ class MainPage extends StatelessWidget {
                     Habit(dashboard, constraints))),*/
         Card(
           child: Padding(
-            padding: const EdgeInsets.only(left: 25, top: 20),
-            child: Text(
-              time,
-              style: const TextStyle(fontSize: 30, color: Colors.white),
+            padding: const EdgeInsets.only(left: 20, top: 20),
+            child: GestureDetector(
+              onTap: () {
+                Navigator.of(context).pop();
+              },
+              child: Text(
+                time,
+                style: const TextStyle(fontSize: 30, color: Colors.white),
+              ),
             ),
           ),
           color: Colors.transparent,
@@ -199,26 +206,28 @@ class Todo extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Row(mainAxisAlignment: MainAxisAlignment.start, 
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Tooltip(
-                        message: "双击同步 Graph API",
-                        child: GestureDetector(
-                          onDoubleTap: () => Dashboard.focusSyncTodo(config)
-                              .then((message) => ScaffoldMessenger.of(context)
-                                  .showSnackBar(
-                                      SnackBar(content: Text(message)))),
-                          child: const Text("我的待办",
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: Colors.white)),
-                        ),
-                      ),
-                      Text(" " + dashboard.plantInfo.weekWaterStr.join(""),
-                          style: const TextStyle(color: Colors.white)),
-                    ]),
+                    Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Tooltip(
+                            message: "双击同步 Graph API",
+                            child: GestureDetector(
+                              onDoubleTap: () => Dashboard.focusSyncTodo(config)
+                                  .then((message) => ScaffoldMessenger.of(
+                                          context)
+                                      .showSnackBar(
+                                          SnackBar(content: Text(message)))),
+                              child: const Text("我的待办",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                      color: Colors.white)),
+                            ),
+                          ),
+                          Text(" " + dashboard.plantInfo.weekWaterStr.join(""),
+                              style: const TextStyle(color: Colors.white)),
+                        ]),
                     DashInfo.noticeOf([dashboard.dayWorkString],
                         color: dashboard.alertMorningDayWork
                             ? Colors.red[400]!
