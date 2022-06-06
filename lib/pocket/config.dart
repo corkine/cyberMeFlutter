@@ -77,8 +77,9 @@ class Config extends ChangeNotifier {
       "https://cyber.mazhangjing.com/cyber/note";
   static const String diariesUrl =
       "https://cyber.mazhangjing.com/cyber/diaries";
-  static const String ossUrl =
-      "https://cyber.mazhangjing.com/api/files/upload";
+  static const String ossUrl = "https://cyber.mazhangjing.com/api/files/upload";
+  static const String plantUrl =
+      "https://cyber.mazhangjing.com/cyber/dashboard/plant-week";
 
   String addURL = 'https://go.mazhangjing.com/add';
   String basicURL = 'https://go.mazhangjing.com';

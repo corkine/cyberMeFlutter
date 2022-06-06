@@ -9,6 +9,7 @@ import 'dart:convert';
 
 import '../config.dart';
 import '../time.dart';
+import 'plant.dart';
 
 ///快递数据
 class Express {
@@ -661,6 +662,7 @@ class Dashboard {
   Clean clean;
   String? dayWork;
   List<real_diary.Diary> diaries = [];
+  Plant plantInfo = Plant();
 
   String get dayWorkString => dayWork ?? "没有日报";
 
@@ -792,8 +794,7 @@ class Dashboard {
         url = url + "&yesterday=true";
         print("is midnight, use yesterday!!!");
       }
-      var resp = await get(Uri.parse(url),
-          headers: config.base64Header);
+      var resp = await get(Uri.parse(url), headers: config.base64Header);
       config.justNotify();
       return jsonDecode(resp.body)["message"];
     } on Exception catch (e) {
@@ -860,6 +861,7 @@ class Dashboard {
     final workData = jsonDecode(workResult.body)["data"];
     dashInfo.dayWork = workData as String?;
     dashInfo.diaries = await real_diary.DiaryManager.loadFromApi(config);
+    dashInfo.plantInfo = await Plant.loadFromApi(config);
     return dashInfo;
   }
 }

@@ -63,7 +63,8 @@ class _DashHomeState extends State<DashHome> {
 
   @override
   void initState() {
-    controller.sink.addStream(Stream.periodic(const Duration(seconds: 5), (index) {
+    controller.sink
+        .addStream(Stream.periodic(const Duration(seconds: 5), (index) {
       return index;
     }));
     subscription = controller.stream.listen((event) {
@@ -135,7 +136,7 @@ class MainPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
-    var time = sprintf("%02d:%02d",[now.hour, now.minute]);
+    var time = sprintf("%02d:%02d", [now.hour, now.minute]);
     return SingleChildScrollView(
       physics:
           const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
@@ -198,20 +199,26 @@ class Todo extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Tooltip(
-                      message: "双击同步 Graph API",
-                      child: GestureDetector(
-                        onDoubleTap: () => Dashboard.focusSyncTodo(config).then(
-                            (message) => ScaffoldMessenger.of(context)
-                                .showSnackBar(
-                                    SnackBar(content: Text(message)))),
-                        child: const Text("我的待办",
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                                color: Colors.white)),
+                    Row(mainAxisAlignment: MainAxisAlignment.start, 
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Tooltip(
+                        message: "双击同步 Graph API",
+                        child: GestureDetector(
+                          onDoubleTap: () => Dashboard.focusSyncTodo(config)
+                              .then((message) => ScaffoldMessenger.of(context)
+                                  .showSnackBar(
+                                      SnackBar(content: Text(message)))),
+                          child: const Text("我的待办",
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                  color: Colors.white)),
+                        ),
                       ),
-                    ),
+                      Text(" " + dashboard.plantInfo.weekWaterStr.join(""),
+                          style: const TextStyle(color: Colors.white)),
+                    ]),
                     DashInfo.noticeOf([dashboard.dayWorkString],
                         color: dashboard.alertMorningDayWork
                             ? Colors.red[400]!
