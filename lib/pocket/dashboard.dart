@@ -1,131 +1,25 @@
-import 'dart:io';
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
+import 'package:sprintf/sprintf.dart';
 import '/pocket/config.dart';
 import '/pocket/time.dart';
 import '/pocket/util.dart' as util;
 import '/pocket/models/day.dart';
 import '/pocket/models/diary.dart' as d;
 import 'package:provider/provider.dart';
-import 'package:clipboard/clipboard.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '/pocket/dashboard.dart' as dash;
 
-class DayInfo {
-  static String title = TimeUtil.todayShort();
-  static const Widget titleWidget = Text("我的一天");
+int dashFetchSeconds = 120;
 
-  static List<Widget> menuActions(BuildContext context, Config config) => [
-        PopupMenuButton(
-            icon: const Icon(Icons.more_vert_rounded),
-            onSelected: (e) {},
-            itemBuilder: (c) {
-              return [
-                PopupMenuItem(
-                    child: const Text("获取最后一条笔记"),
-                    onTap: () async {
-                      var message = await Dashboard.fetchLastNote(config);
-                      if (message[1] != null) {
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text("内容已拷贝到剪贴板，字数 ${message[0]?.length}"),
-                        ));
-                        FlutterClipboard.copy(message[1] ?? "未知数据");
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text(message[0] ?? "未知错误"),
-                        ));
-                      }
-                    }),
-                PopupMenuItem(
-                    child: const Text("从剪贴板上传笔记"),
-                    onTap: () async {
-                      var content = await FlutterClipboard.paste();
-                      if (context.toString().isEmpty) {
-                        ScaffoldMessenger.of(context)
-                            .showSnackBar(const SnackBar(
-                          content: Text("剪贴板没有数据！"),
-                        ));
-                      }
-                      var message =
-                          await Dashboard.uploadOneNote(config, content);
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text(message),
-                      ));
-                    }),
-                PopupMenuItem(
-                    child:
-                        Text("${!config.useDashboard ? "启动" : "关闭"} Dashboard"),
-                    onTap: () async {
-                      config.needRefreshDashboardPage = true;
-                      config.setBool('useDashboard', !config.useDashboard);
-                      /*ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text(
-                            "已${config.useDashboard ? "启动" : "关闭"} Dashboard"),
-                      ));*/
-                    })
-              ];
-            })
-      ];
-  static Widget mainWidget = const DayHome();
-  static const TextStyle normal = TextStyle(fontSize: 14);
+class DashInfo {
+  static TextStyle normal =
+      TextStyle(fontSize: 14, color: Colors.white.withOpacity(0.9));
   static const TextStyle noticeStyle =
       TextStyle(color: Colors.white, fontSize: 12);
   static const EdgeInsets noticePadding = EdgeInsets.fromLTRB(10, 3, 10, 3);
-
-  static List background() {
-    final normal = BoxDecoration(
-        gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-          const Color.fromRGBO(250, 250, 250, 1),
-          const Color.fromRGBO(250, 250, 250, 1).withOpacity(0.85),
-          const Color.fromRGBO(250, 250, 250, 1).withOpacity(0.75),
-          Colors.white.withOpacity(0.2),
-          Colors.white.withOpacity(0)
-        ],
-            stops: const [
-          0,
-          0.1,
-          0.2,
-          0.3,
-          1
-        ]));
-    final now = DateTime.now();
-    if (now.hour <= 16 && now.hour >= 3) {
-      return ["images/dash/spring.png", normal];
-    } else if (now.hour < 20) {
-      return ["images/dash/fall.png", normal];
-    } else {
-      return [
-        "images/dash/night.png",
-        BoxDecoration(
-            gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-              const Color.fromRGBO(250, 250, 250, 1),
-              const Color.fromRGBO(250, 250, 250, 1).withOpacity(0.95),
-              const Color.fromRGBO(250, 250, 250, 1).withOpacity(0.85),
-              const Color.fromRGBO(250, 250, 250, 1).withOpacity(0.73),
-              Colors.white.withOpacity(0.2),
-              Colors.white.withOpacity(0)
-            ],
-                stops: const [
-              0,
-              0.1,
-              0.2,
-              0.3,
-              0.4,
-              1
-            ]))
-      ];
-    }
-  }
 
   static Padding noticeOf(List<String> text,
           {Color color = const Color.fromRGBO(47, 46, 65, 1.0),
@@ -138,11 +32,11 @@ class DayInfo {
               children: (text.map((time) => Padding(
                       padding: const EdgeInsets.only(left: 3),
                       child: Container(
-                          padding: DayInfo.noticePadding,
+                          padding: DashInfo.noticePadding,
                           decoration: BoxDecoration(
                               color: color,
                               borderRadius: BorderRadius.circular(20)),
-                          child: Text(time, style: DayInfo.noticeStyle)))))
+                          child: Text(time, style: DashInfo.noticeStyle)))))
                   .toList()));
 
   static callAndShow(
@@ -153,25 +47,47 @@ class DayInfo {
           .then((value) => config.needRefreshDashboardPage = true);
 }
 
-class DayHome extends StatefulWidget {
-  const DayHome({Key? key}) : super(key: key);
+class DashHome extends StatefulWidget {
+  const DashHome({Key? key}) : super(key: key);
 
   @override
-  State<DayHome> createState() => _DayHomeState();
+  State<DashHome> createState() => _DashHomeState();
 }
 
-class _DayHomeState extends State<DayHome> {
+class _DashHomeState extends State<DashHome> {
   late Config config;
   Future<Dashboard?>? future;
-  bool isLoadDashboard = false;
+  String time = "00:00";
+  StreamController controller = StreamController();
+  late StreamSubscription subscription;
 
   @override
   void initState() {
+    controller.sink.addStream(Stream.periodic(const Duration(seconds: 5), (index) {
+      return index;
+    }));
+    subscription = controller.stream.listen((event) {
+      if (event % (dashFetchSeconds / 5) == 0) {
+        if (kDebugMode) print("Call API Now at ${TimeUtil.nowLog}");
+        future = Dashboard.loadFromApi(config);
+      }
+      setState(() {
+        //print("Setting state at ${TimeUtil.nowLog}");
+      });
+    });
     super.initState();
   }
 
   @override
+  void dispose() {
+    subscription.cancel();
+    controller.close();
+    super.dispose();
+  }
+
+  @override
   void didChangeDependencies() {
+    //print("Rebuild at ${TimeUtil.nowLog}");
     config = Provider.of<Config>(context, listen: true);
     if (config.isLoadedFromLocal) {
       if (config.needRefreshDashboardPage) {
@@ -186,110 +102,20 @@ class _DayHomeState extends State<DayHome> {
 
   @override
   Widget build(BuildContext context) {
-    if (config.useDashboard && !isLoadDashboard) {
-      isLoadDashboard = true;
-      Future.delayed(const Duration(seconds: 2), () {
-        Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-          if (Platform.isAndroid) {
-            SystemChrome.setEnabledSystemUIOverlays([]);
-          }
-          return WillPopScope(
-              child: const Scaffold(
-                backgroundColor: Colors.black,
-                body: dash.DashHome(),
-              ),
-              onWillPop: () async {
-                if (kDebugMode) print("Pop dashboard now...");
-                if (Platform.isAndroid) {
-                  SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
-                }
-                return true;
-              });
-        }, maintainState: false));
-      });
-      return const Center(
-          child: Text(
-        "等待进入大屏..",
-        style: TextStyle(fontSize: 16),
-      ));
-    } else {
-      return FutureBuilder(
-        future: future,
-        builder: util.commonFutureBuilder<Dashboard>(buildMainPage),
-      );
-    }
+    return FutureBuilder(
+      future: future,
+      builder: util.commonFutureBuilder<Dashboard>(buildMainPage),
+    );
   }
 
   Widget buildMainPage(Dashboard dashboard) {
-    final bg = DayInfo.background();
-    final allY = MediaQuery.of(context).size.height;
-    return Stack(alignment: Alignment.topCenter, children: [
-      Transform.translate(
-        offset: const Offset(0, 30),
-        child: Container(
-          padding: EdgeInsets.only(top: allY - 400, left: 0, right: 0),
-          child: Stack(
-            children: [
-              SizedBox(
-                  width: double.infinity,
-                  child: Image.asset(bg[0], fit: BoxFit.fitWidth)),
-              Positioned.fill(child: Container(decoration: bg[1]))
-            ],
-          ),
-        ),
-      ),
-      RefreshIndicator(
-          onRefresh: () async {
-            future = Dashboard.loadFromApi(config);
-            await Future.delayed(
-                const Duration(seconds: 1), () => setState(() {}));
-          },
-          child: MainPage(config: config, dashboard: dashboard))
-    ]);
-  }
-}
-
-/*GlobalKey background = GlobalKey();
-  final bgPadding =
-      ((background.currentContext?.findRenderObject()! as RenderBox?)
-          ?.localToGlobal(Offset.zero).dy) ?? 0;*/
-
-///一个始终显示在底部的背景图案（当 Viewpoint 高度不足则填充空白, 没有使用，
-///其不能实现和 ScrollView 一致的动画，看起来比较突兀）
-///另一种实现方案是将背景作为最后一个列表项放置，同时在其前面插入一个透明的 Box
-///通过 GlobalKey 定位并且获取其 Offset 并且设置自己的 padding
-class Background extends SingleChildRenderObjectWidget {
-  @override
-  RenderObject createRenderObject(BuildContext context) {
-    return BackgroundBox(context);
-  }
-
-  const Background({required Widget child, Key? key})
-      : super(child: child, key: key);
-}
-
-class BackgroundBox extends RenderBox with RenderObjectWithChildMixin {
-  final BuildContext ctx;
-
-  BackgroundBox(this.ctx);
-
-  @override
-  void performLayout() {
-    child?.layout(constraints, parentUsesSize: true);
-    size = (child as RenderBox).size;
-  }
-
-  @override
-  void paint(PaintingContext context, Offset offset) {
-    var height = MediaQuery.of(ctx).size.height;
-    var needTranslate = height - offset.dy - size.height - 100;
-    if (needTranslate > 0) {
-      //添加额外的空白，这里的 100 包含了 header 和 tabBar 的高度（估计）
-      context.paintChild(child!, offset.translate(0, needTranslate));
-    } else {
-      //绘制在紧贴着上面的位置
-      context.paintChild(child!, offset);
-    }
+    return RefreshIndicator(
+        onRefresh: () async {
+          future = Dashboard.loadFromApi(config);
+          await Future.delayed(
+              const Duration(seconds: 1), () => setState(() {}));
+        },
+        child: MainPage(config: config, dashboard: dashboard, state: this));
   }
 }
 
@@ -299,33 +125,48 @@ class MainPage extends StatelessWidget {
     Key? key,
     required this.dashboard,
     required this.config,
+    required this.state,
   }) : super(key: key);
 
   final Config config;
   final Dashboard dashboard;
+  final _DashHomeState state;
 
   @override
   Widget build(BuildContext context) {
+    final now = DateTime.now();
+    var time = sprintf("%02d:%02d",[now.hour, now.minute]);
     return SingleChildScrollView(
       physics:
           const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         //待办卡片
-        Card(child: Todo(config, dashboard), elevation: 0.2),
+        Card(
+            child: Todo(config, dashboard),
+            elevation: 0.2,
+            color: Colors.transparent),
         //工作日卡片，包含是否打卡，是否下班，工作时长，打卡信息
         SizedBox(
-            height: 130,
+            height: 70,
             child: LayoutBuilder(
                 builder: (context, constraints) =>
                     Work(dashboard, constraints))),
-        //习惯卡片
+        /*//习惯卡片
         SizedBox(
             height: 100,
             child: LayoutBuilder(
                 builder: (context, constraints) =>
-                    Habit(dashboard, constraints))),
-        LayoutBuilder(
-            builder: (context, constraints) => Diary(dashboard, constraints)),
+                    Habit(dashboard, constraints))),*/
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.only(left: 25, top: 20),
+            child: Text(
+              time,
+              style: const TextStyle(fontSize: 30, color: Colors.white),
+            ),
+          ),
+          color: Colors.transparent,
+        ),
         //空卡片，防止下拉刷新时 ScrollView 卡在背景中
         const SizedBox(height: 200)
       ]),
@@ -366,10 +207,12 @@ class Todo extends StatelessWidget {
                                     SnackBar(content: Text(message)))),
                         child: const Text("我的待办",
                             style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 16)),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                color: Colors.white)),
                       ),
                     ),
-                    DayInfo.noticeOf([dashboard.dayWorkString],
+                    DashInfo.noticeOf([dashboard.dayWorkString],
                         color: dashboard.alertMorningDayWork
                             ? Colors.red[400]!
                             : Colors.green)
@@ -377,18 +220,18 @@ class Todo extends StatelessWidget {
           ...(dashboard.todayTodo
               .map((todo) => ListTile(
                   trailing: todo.isImportant
-                      ? const Icon(Icons.star)
-                      : const Icon(Icons.star_border),
+                      ? const Icon(Icons.star, color: Colors.grey)
+                      : const Icon(Icons.star_border, color: Colors.grey),
                   title: Text(todo.title,
                       style: todo.isFinish
                           ? const TextStyle(
                                   decoration: TextDecoration.lineThrough)
-                              .merge(DayInfo.normal)
-                          : DayInfo.normal),
+                              .merge(DashInfo.normal)
+                          : DashInfo.normal),
                   dense: true,
                   subtitle: Padding(
                     padding: const EdgeInsets.only(top: 4),
-                    child: Text(todo.list, style: DayInfo.normal),
+                    child: Text(todo.list, style: DashInfo.normal),
                   )))
               .toList()),
         ],
@@ -426,52 +269,46 @@ class _WorkState extends State<Work> {
   Widget build(BuildContext context) {
     var config = Provider.of<Config>(context, listen: false);
     return Card(
+      color: Colors.transparent,
       child: Stack(children: [
-        AnimatedPositioned(
-            duration: const Duration(milliseconds: 1000),
-            curve: Curves.linearToEaseOut,
-            left: left,
-            bottom: -10,
-            child: widget.dashboard.work.NeedWork
-                ? widget.dashboard.work.OffWork
-                    ? Image.asset("images/dash/offwork.png",
-                        height: widget.constraints.maxHeight)
-                    : Image.asset("images/dash/work.png",
-                        height: widget.constraints.maxHeight)
-                : Image.asset("images/dash/offwork.png",
-                    height: widget.constraints.maxHeight)),
         Container(
             width: double.infinity,
-            padding: const EdgeInsets.only(right: 20, top: 20),
-            child: Column(
+            padding: const EdgeInsets.only(left: 15, top: 20, right: 20),
+            child: Row(
                 mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Tooltip(
                     message: "双击同步 HCM",
                     child: GestureDetector(
-                      onDoubleTap: () => DayInfo.callAndShow(
+                      onDoubleTap: () => DashInfo.callAndShow(
                           Dashboard.checkHCMCard, context, config),
                       child: Padding(
                           padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
                           child: Text.rich(TextSpan(children: [
-                            const TextSpan(text: "已工作 "),
+                            const TextSpan(
+                                text: "已工作 ",
+                                style: TextStyle(color: Colors.white)),
                             TextSpan(
                                 text: "${widget.dashboard.work.WorkHour}",
                                 style: const TextStyle(
-                                    fontFamily: "consolas", fontSize: 20)),
-                            const TextSpan(text: " h")
+                                    fontFamily: "consolas",
+                                    fontSize: 20,
+                                    color: Colors.white)),
+                            const TextSpan(
+                                text: " h",
+                                style: TextStyle(color: Colors.white))
                           ]))),
                     ),
                   ),
                   widget.dashboard.work.OffWork
-                      ? DayInfo.noticeOf(["无需打卡"], color: Colors.green)
+                      ? DashInfo.noticeOf(["无需打卡"], color: Colors.green)
                       : widget.dashboard.work.NeedMorningCheck
-                          ? DayInfo.noticeOf(["记得打卡"], color: Colors.orange)
+                          ? DashInfo.noticeOf(["记得打卡"], color: Colors.orange)
                           : widget.dashboard.alertNightDayWork
-                              ? DayInfo.noticeOf(["记得打卡"], color: Colors.red)
-                              : DayInfo.noticeOf(
+                              ? DashInfo.noticeOf(["记得打卡"], color: Colors.red)
+                              : DashInfo.noticeOf(
                                   widget.dashboard.work.signData())
                 ]))
       ]),
@@ -507,7 +344,7 @@ class Habit extends StatelessWidget {
                       Tooltip(
                           message: "双击添加今日记录",
                           child: GestureDetector(
-                              onDoubleTap: () => DayInfo.callAndShow(
+                              onDoubleTap: () => DashInfo.callAndShow(
                                   Dashboard.setClean, context, config),
                               child: Row(children: [
                                 buildProgressIcon(
@@ -546,7 +383,7 @@ class Habit extends StatelessWidget {
                                     .then((date) {
                                   if (date == null) return;
                                   var dateStr = date.toString().split(" ")[0];
-                                  DayInfo.callAndShow(
+                                  DashInfo.callAndShow(
                                       (c) => Dashboard.setBlue(c, dateStr),
                                       context,
                                       config);
@@ -661,7 +498,7 @@ class _DiaryState extends State<Diary> {
             ),
             Transform.translate(
               offset: const Offset(-10, 3),
-              child: DayInfo.noticeOf(data.labels,
+              child: DashInfo.noticeOf(data.labels,
                   color: const Color.fromRGBO(196, 196, 196, 1.0),
                   align: MainAxisAlignment.start),
             )

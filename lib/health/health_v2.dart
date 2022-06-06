@@ -515,7 +515,7 @@ class _HealthInfoState extends State<HealthInfo> {
 
   Padding buildTravelBar() {
     return Padding(
-      padding: const EdgeInsets.only(top: 10),
+      padding: const EdgeInsets.only(top: 15),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: const BoxDecoration(
@@ -565,7 +565,7 @@ class _HealthInfoState extends State<HealthInfo> {
 
   Padding buildVaccineCard() {
     return Padding(
-      padding: const EdgeInsets.only(top: 10),
+      padding: const EdgeInsets.only(top: 13),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [

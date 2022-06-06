@@ -8,6 +8,12 @@ class TimeUtil {
     return sprintf("%4d-%02d-%02d", [now.year, now.month, now.day]);
   }
 
+  ///获取今天的日期字符串
+  static String get nowLog {
+    final now = DateTime.now();
+    return sprintf("%4d-%02d-%02d %02d:%02d:%02d", [now.year, now.month, now.day, now.hour, now.minute, now.second]);
+  }
+
   ///获取今天的日期信息，短格式
   static String todayShort() {
     final now = DateTime.now();

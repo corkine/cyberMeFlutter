@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -40,6 +41,7 @@ class Config extends ChangeNotifier {
 
   String user = '';
   String password = '';
+  bool useDashboard = false;
 
   String get token => '?user=$user&password=$password';
 
@@ -137,6 +139,7 @@ class Config extends ChangeNotifier {
     if (!isLoadedFromLocal) {
       prefs = await SharedPreferences.getInstance();
       user = prefs.getString('user') ?? '';
+      useDashboard = prefs.getBool('useDashboard') ?? false;
       password = prefs.getString('password') ?? '';
       _shortURLShowLimit = prefs.getInt('_shortURLShowLimit') ?? 10;
       _filterDuplicate = prefs.getBool('_filterDuplicate') ?? true;
@@ -245,6 +248,15 @@ class Config extends ChangeNotifier {
     useReorderableListView = set;
     notifyListeners();
     return true;
+  }
+
+  setBool(String key, bool set) {
+    if (kDebugMode) {
+      print("set $key to $set");
+    }
+    prefs.setBool(key, set);
+    useDashboard = set;
+    notifyListeners();
   }
 
   justNotify() {

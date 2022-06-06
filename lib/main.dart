@@ -47,8 +47,8 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     Info.readData().then((value) => {
           setState(() {
-            ww = Game(info: value);
-            //ww = HealthCard(info: value, scoreEvent: StreamController());
+            //ww = Game(info: value);
+            ww = HealthCard(info: value, scoreEvent: StreamController());
           })
         });
     super.initState();

@@ -24,7 +24,8 @@ class Util {
   /// 采样时间为上午，则不显示采样信息，采样时间为下午才显示采样信息
   static String? pickTime() {
     var now = DateTime.now().toLocal();
-    if (now.hour >= 12) {
+    /// 暂时不显示 核酸已采样 字样
+    if (false && now.hour >= 12) {
       return clock(justDate: true);
     } else {
       return null;
