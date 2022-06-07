@@ -26,6 +26,24 @@ class Plant {
     }
   }
 
+  static Future<String> setWaterRecordToDB(Config config) async {
+    try {
+      if (kDebugMode) {
+        print("Setting to Plant to CyberMe");
+      }
+      final Response r =
+          await post(Uri.parse(Config.plantUrl), headers: config.base64Header);
+      final result = jsonDecode(r.body)["message"];
+      config.justNotify();
+      return result;
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error to set Plant to CyberMe $e");
+      }
+      return "失败：$e";
+    }
+  }
+
   bool get todayWater {
     DateTime now = DateTime.now();
     if (data.length != 7) {

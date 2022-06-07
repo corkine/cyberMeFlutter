@@ -15,7 +15,7 @@ import 'config.dart';
 
 String buttonTitle = "日记";
 
-Widget title = const Text("起居注");
+Widget title = const Text("日日新");
 
 Widget mainButton = const Icon(Icons.add_a_photo);
 

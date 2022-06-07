@@ -12,6 +12,8 @@ import '/pocket/models/diary.dart' as d;
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'models/plant.dart';
+
 int dashFetchSeconds = 120;
 
 class DashInfo {
@@ -32,7 +34,7 @@ class DashInfo {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Padding(
-                  padding: const EdgeInsets.only(top:3, right:1),
+                  padding: const EdgeInsets.only(top: 3, right: 1),
                   child: ClipOval(
                     child: Container(width: 10, height: 10, color: color),
                   ),
@@ -229,8 +231,17 @@ class Todo extends StatelessWidget {
                                       color: Colors.white)),
                             ),
                           ),
-                          Text(" " + dashboard.plantInfo.weekWaterStr.join(""),
-                              style: const TextStyle(color: Colors.white)),
+                          Tooltip(
+                            message: "双击记录今日浇水",
+                            child: GestureDetector(
+                              onDoubleTap: () => DashInfo.callAndShow(
+                                  Plant.setWaterRecordToDB, context, config),
+                              child: Text(
+                                  " " +
+                                      dashboard.plantInfo.weekWaterStr.join(""),
+                                  style: const TextStyle(color: Colors.white)),
+                            ),
+                          ),
                         ]),
                     DashInfo.noticeOf([dashboard.dayWorkString],
                         color: dashboard.alertMorningDayWork
@@ -329,7 +340,8 @@ class _WorkState extends State<Work> {
                           : widget.dashboard.alertNightDayWork
                               ? DashInfo.noticeOf(["记得打卡"], color: Colors.red)
                               : DashInfo.noticeOf(
-                                  widget.dashboard.work.signData(), color: Colors.black)
+                                  widget.dashboard.work.signData(),
+                                  color: Colors.black)
                 ]))
       ]),
       elevation: 0.2,
