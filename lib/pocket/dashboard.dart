@@ -29,9 +29,13 @@ class DashInfo {
           child: Row(
               mainAxisSize: MainAxisSize.max,
               mainAxisAlignment: align,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                ClipOval(
-                  child: Container(width: 13, height: 13, color: color),
+                Padding(
+                  padding: const EdgeInsets.only(top:3, right:1),
+                  child: ClipOval(
+                    child: Container(width: 10, height: 10, color: color),
+                  ),
                 ),
                 ...(text.map((time) => Padding(
                         padding: const EdgeInsets.only(left: 3),
@@ -325,7 +329,7 @@ class _WorkState extends State<Work> {
                           : widget.dashboard.alertNightDayWork
                               ? DashInfo.noticeOf(["记得打卡"], color: Colors.red)
                               : DashInfo.noticeOf(
-                                  widget.dashboard.work.signData())
+                                  widget.dashboard.work.signData(), color: Colors.black)
                 ]))
       ]),
       elevation: 0.2,

@@ -1,7 +1,6 @@
 import 'package:sprintf/sprintf.dart';
 
 class TimeUtil {
-
   ///获取今天的日期字符串
   static String get today {
     final now = DateTime.now();
@@ -11,7 +10,13 @@ class TimeUtil {
   ///获取今天的日期字符串
   static String get nowLog {
     final now = DateTime.now();
-    return sprintf("%4d-%02d-%02d %02d:%02d:%02d", [now.year, now.month, now.day, now.hour, now.minute, now.second]);
+    return sprintf("%4d-%02d-%02d %02d:%02d:%02d",
+        [now.year, now.month, now.day, now.hour, now.minute, now.second]);
+  }
+
+  static String get time {
+    final now = DateTime.now();
+    return sprintf("%2d:%2d", [now.hour, now.minute]);
   }
 
   ///获取今天的日期信息，短格式
