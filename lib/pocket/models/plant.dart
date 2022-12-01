@@ -13,7 +13,7 @@ class Plant {
         print("Loading from Plant... from user: ${config.user}");
       }
       final Response r =
-          await get(Uri.parse(Config.plantUrl), headers: config.base64Header);
+          await get(Uri.parse(Config.plantUrl), headers: config.cyberBase64Header);
       final data = jsonDecode(r.body)["data"]["status"] as List;
       var plant = Plant();
       plant.data = data.map((e) => e as int).toList();

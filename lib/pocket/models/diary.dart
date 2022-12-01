@@ -130,7 +130,7 @@ class DiaryManager {
       print("Loading from Diary... from user: ${config.user}");
     }
     final Response r =
-        await get(Uri.parse(Config.diariesUrl), headers: config.base64Header);
+        await get(Uri.parse(Config.diariesUrl), headers: config.cyberBase64Header);
     final data = jsonDecode(r.body)["data"] as List;
     return data.map((diaryJson) => Diary.fromMap(diaryJson)).toList();
   }

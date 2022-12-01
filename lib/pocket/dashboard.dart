@@ -385,15 +385,15 @@ class Habit extends StatelessWidget {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Text.rich(TextSpan(children: [
-                                        const TextSpan(text: " 已坚持"),
+                                      const Text.rich(TextSpan(children: [
+                                        TextSpan(text: " 已坚持"),
                                         TextSpan(
                                             text:
-                                                " ${dashboard.clean.HabitHint} ",
-                                            style: const TextStyle(
+                                                " 10 ",
+                                            style: TextStyle(
                                                 fontFamily: "consolas",
                                                 fontSize: 20)),
-                                        const TextSpan(text: "天")
+                                        TextSpan(text: "天")
                                       ])),
                                       Text(
                                         " 最长 ${dashboard.cleanMarvelCount} 天",

@@ -2,6 +2,7 @@ import 'dart:ffi';
 
 import 'package:flutter/foundation.dart';
 import 'package:hello_flutter/pocket/models/diary.dart' as real_diary;
+import 'package:hello_flutter/utils/crypto.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 import 'package:sprintf/sprintf.dart';
@@ -104,8 +105,6 @@ class Work {
   bool OffWork;
   bool NeedMorningCheck;
   double WorkHour;
-  int today;
-  dynamic movie;
   dynamic SignIn;
   dynamic Policy;
 
@@ -140,8 +139,6 @@ class Work {
     required this.OffWork,
     required this.NeedMorningCheck,
     required this.WorkHour,
-    required this.today,
-    required this.movie,
     required this.SignIn,
     required this.Policy,
   });
@@ -155,8 +152,6 @@ class Work {
           OffWork == other.OffWork &&
           NeedMorningCheck == other.NeedMorningCheck &&
           WorkHour == other.WorkHour &&
-          today == other.today &&
-          movie == other.movie &&
           SignIn == other.SignIn &&
           Policy == other.Policy);
 
@@ -166,8 +161,6 @@ class Work {
       OffWork.hashCode ^
       NeedMorningCheck.hashCode ^
       WorkHour.hashCode ^
-      today.hashCode ^
-      movie.hashCode ^
       SignIn.hashCode ^
       Policy.hashCode;
 
@@ -178,8 +171,6 @@ class Work {
         ' OffWork: $OffWork,' +
         ' NeedMorningCheck: $NeedMorningCheck,' +
         ' WorkHour: $WorkHour,' +
-        ' today: $today,' +
-        ' movie: $movie,' +
         ' SignIn: $SignIn,' +
         ' Policy: $Policy,' +
         '}';
@@ -190,8 +181,6 @@ class Work {
     bool? OffWork,
     bool? NeedMorningCheck,
     double? WorkHour,
-    int? today,
-    dynamic? movie,
     dynamic? SignIn,
     dynamic? Policy,
   }) {
@@ -200,8 +189,6 @@ class Work {
       OffWork: OffWork ?? this.OffWork,
       NeedMorningCheck: NeedMorningCheck ?? this.NeedMorningCheck,
       WorkHour: WorkHour ?? this.WorkHour,
-      today: today ?? this.today,
-      movie: movie ?? this.movie,
       SignIn: SignIn ?? this.SignIn,
       Policy: Policy ?? this.Policy,
     );
@@ -213,8 +200,6 @@ class Work {
       'OffWork': this.OffWork,
       'NeedMorningCheck': this.NeedMorningCheck,
       'WorkHour': this.WorkHour,
-      'today': this.today,
-      'movie': this.movie,
       'SignIn': this.SignIn,
       'Policy': this.Policy,
     };
@@ -226,115 +211,8 @@ class Work {
       OffWork: map['OffWork'] as bool,
       NeedMorningCheck: map['NeedMorningCheck'] as bool,
       WorkHour: map['WorkHour'] as double,
-      today: map['today'] as int? ?? 0,
-      movie: map['movie'] as dynamic,
       SignIn: map['SignIn'] as dynamic,
       Policy: map['Policy'] as dynamic,
-    );
-  }
-
-//</editor-fold>
-}
-
-///Blue 数据
-class Blue {
-  String UpdateTime;
-  bool IsTodayBlue;
-  int WeekBlueCount;
-  int MonthBlueCount;
-  int MaxNoBlueDay;
-  String MaxNoBlueDayFirstDay;
-  int MarvelCount;
-
-//<editor-fold desc="Data Methods">
-
-  Blue({
-    required this.UpdateTime,
-    required this.IsTodayBlue,
-    required this.WeekBlueCount,
-    required this.MonthBlueCount,
-    required this.MaxNoBlueDay,
-    required this.MaxNoBlueDayFirstDay,
-    required this.MarvelCount,
-  });
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is Blue &&
-          runtimeType == other.runtimeType &&
-          UpdateTime == other.UpdateTime &&
-          IsTodayBlue == other.IsTodayBlue &&
-          WeekBlueCount == other.WeekBlueCount &&
-          MonthBlueCount == other.MonthBlueCount &&
-          MaxNoBlueDay == other.MaxNoBlueDay &&
-          MaxNoBlueDayFirstDay == other.MaxNoBlueDayFirstDay &&
-          MarvelCount == other.MarvelCount);
-
-  @override
-  int get hashCode =>
-      UpdateTime.hashCode ^
-      IsTodayBlue.hashCode ^
-      WeekBlueCount.hashCode ^
-      MonthBlueCount.hashCode ^
-      MaxNoBlueDay.hashCode ^
-      MaxNoBlueDayFirstDay.hashCode ^
-      MarvelCount.hashCode;
-
-  @override
-  String toString() {
-    return 'Blue{' +
-        ' UpdateTime: $UpdateTime,' +
-        ' IsTodayBlue: $IsTodayBlue,' +
-        ' WeekBlueCount: $WeekBlueCount,' +
-        ' MonthBlueCount: $MonthBlueCount,' +
-        ' MaxNoBlueDay: $MaxNoBlueDay,' +
-        ' MaxNoBlueDayFirstDay: $MaxNoBlueDayFirstDay,' +
-        ' MarvelCount: $MarvelCount,' +
-        '}';
-  }
-
-  Blue copyWith({
-    String? UpdateTime,
-    bool? IsTodayBlue,
-    int? WeekBlueCount,
-    int? MonthBlueCount,
-    int? MaxNoBlueDay,
-    String? MaxNoBlueDayFirstDay,
-    int? MarvelCount,
-  }) {
-    return Blue(
-      UpdateTime: UpdateTime ?? this.UpdateTime,
-      IsTodayBlue: IsTodayBlue ?? this.IsTodayBlue,
-      WeekBlueCount: WeekBlueCount ?? this.WeekBlueCount,
-      MonthBlueCount: MonthBlueCount ?? this.MonthBlueCount,
-      MaxNoBlueDay: MaxNoBlueDay ?? this.MaxNoBlueDay,
-      MaxNoBlueDayFirstDay: MaxNoBlueDayFirstDay ?? this.MaxNoBlueDayFirstDay,
-      MarvelCount: MarvelCount ?? this.MarvelCount,
-    );
-  }
-
-  Map<String, dynamic> toMap() {
-    return {
-      'UpdateTime': this.UpdateTime,
-      'IsTodayBlue': this.IsTodayBlue,
-      'WeekBlueCount': this.WeekBlueCount,
-      'MonthBlueCount': this.MonthBlueCount,
-      'MaxNoBlueDay': this.MaxNoBlueDay,
-      'MaxNoBlueDayFirstDay': this.MaxNoBlueDayFirstDay,
-      'MarvelCount': this.MarvelCount,
-    };
-  }
-
-  factory Blue.fromMap(Map<String, dynamic> map) {
-    return Blue(
-      UpdateTime: map['UpdateTime'] as String,
-      IsTodayBlue: map['IsTodayBlue'] as bool,
-      WeekBlueCount: map['WeekBlueCount'] as int,
-      MonthBlueCount: map['MonthBlueCount'] as int,
-      MaxNoBlueDay: map['MaxNoBlueDay'] as int,
-      MaxNoBlueDayFirstDay: map['MaxNoBlueDayFirstDay'] as String,
-      MarvelCount: map['MarvelCount'] as int,
     );
   }
 
@@ -345,7 +223,6 @@ class Blue {
 class Fitness {
   double active;
   double rest;
-  double diet;
   double goal_active;
   double goal_cut;
 
@@ -354,7 +231,6 @@ class Fitness {
   Fitness({
     required this.active,
     required this.rest,
-    required this.diet,
     required this.goal_active,
     required this.goal_cut,
   });
@@ -366,7 +242,6 @@ class Fitness {
           runtimeType == other.runtimeType &&
           active == other.active &&
           rest == other.rest &&
-          diet == other.diet &&
           goal_active == other.goal_active &&
           goal_cut == other.goal_cut);
 
@@ -374,7 +249,6 @@ class Fitness {
   int get hashCode =>
       active.hashCode ^
       rest.hashCode ^
-      diet.hashCode ^
       goal_active.hashCode ^
       goal_cut.hashCode;
 
@@ -383,7 +257,6 @@ class Fitness {
     return 'Fitness{' +
         ' active: $active,' +
         ' rest: $rest,' +
-        ' diet: $diet,' +
         ' goal-active: $goal_active,' +
         ' goal-cut: $goal_cut,' +
         '}';
@@ -392,14 +265,12 @@ class Fitness {
   Fitness copyWith({
     double? active,
     double? rest,
-    double? diet,
     double? goal_active,
     double? goal_cut,
   }) {
     return Fitness(
       active: active ?? this.active,
       rest: rest ?? this.rest,
-      diet: diet ?? this.diet,
       goal_active: goal_active ?? this.goal_active,
       goal_cut: goal_cut ?? this.goal_cut,
     );
@@ -409,7 +280,6 @@ class Fitness {
     return {
       'active': this.active,
       'rest': this.rest,
-      'diet': this.diet,
       'goal-active': this.goal_active,
       'goal-cut': this.goal_cut,
     };
@@ -419,114 +289,8 @@ class Fitness {
     return Fitness(
       active: map['active'] as double,
       rest: map['rest'] as double,
-      diet: map['diet'] as double,
       goal_active: double.parse(map['goal-active'].toString()),
       goal_cut: double.parse(map['goal-cut'].toString()),
-    );
-  }
-
-//</editor-fold>
-}
-
-///刷牙和清洁数据
-class Clean {
-  final bool MorningBrushTeeth;
-  final bool NightBrushTeeth;
-  final bool MorningCleanFace;
-  final bool NightCleanFace;
-  final int HabitCountUntilNow;
-  final String HabitHint;
-  final int MarvelCount;
-
-//<editor-fold desc="Data Methods">
-
-  const Clean({
-    required this.MorningBrushTeeth,
-    required this.NightBrushTeeth,
-    required this.MorningCleanFace,
-    required this.NightCleanFace,
-    required this.HabitCountUntilNow,
-    required this.HabitHint,
-    required this.MarvelCount,
-  });
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is Clean &&
-          runtimeType == other.runtimeType &&
-          MorningBrushTeeth == other.MorningBrushTeeth &&
-          NightBrushTeeth == other.NightBrushTeeth &&
-          MorningCleanFace == other.MorningCleanFace &&
-          NightCleanFace == other.NightCleanFace &&
-          HabitCountUntilNow == other.HabitCountUntilNow &&
-          HabitHint == other.HabitHint &&
-          MarvelCount == other.MarvelCount);
-
-  @override
-  int get hashCode =>
-      MorningBrushTeeth.hashCode ^
-      NightBrushTeeth.hashCode ^
-      MorningCleanFace.hashCode ^
-      NightCleanFace.hashCode ^
-      HabitCountUntilNow.hashCode ^
-      HabitHint.hashCode ^
-      MarvelCount.hashCode;
-
-  @override
-  String toString() {
-    return 'Clean{' +
-        ' MorningBrushTeeth: $MorningBrushTeeth,' +
-        ' NightBrushTeeth: $NightBrushTeeth,' +
-        ' MorningCleanFace: $MorningCleanFace,' +
-        ' NightCleanFace: $NightCleanFace,' +
-        ' HabitCountUntilNow: $HabitCountUntilNow,' +
-        ' HabitHint: $HabitHint,' +
-        ' MarvelCount: $MarvelCount,' +
-        '}';
-  }
-
-  Clean copyWith({
-    bool? MorningBrushTeeth,
-    bool? NightBrushTeeth,
-    bool? MorningCleanFace,
-    bool? NightCleanFace,
-    int? HabitCountUntilNow,
-    String? HabitHint,
-    int? MarvelCount,
-  }) {
-    return Clean(
-      MorningBrushTeeth: MorningBrushTeeth ?? this.MorningBrushTeeth,
-      NightBrushTeeth: NightBrushTeeth ?? this.NightBrushTeeth,
-      MorningCleanFace: MorningCleanFace ?? this.MorningCleanFace,
-      NightCleanFace: NightCleanFace ?? this.NightCleanFace,
-      HabitCountUntilNow: HabitCountUntilNow ?? this.HabitCountUntilNow,
-      HabitHint: HabitHint ?? this.HabitHint,
-      MarvelCount: MarvelCount ?? this.MarvelCount,
-    );
-  }
-
-  Map<String, dynamic> toMap() {
-    return {
-      'MorningBrushTeeth': this.MorningBrushTeeth,
-      'NightBrushTeeth': this.NightBrushTeeth,
-      'MorningCleanFace': this.MorningCleanFace,
-      'NightCleanFace': this.NightCleanFace,
-      'HabitCountUntilNow': this.HabitCountUntilNow,
-      'HabitHint': this.HabitHint,
-      'MarvelCount': this.MarvelCount,
-    };
-  }
-
-  factory Clean.fromMap(Map<String, dynamic> map) {
-    return Clean(
-      MorningBrushTeeth: map['MorningBrushTeeth'] as bool,
-      NightBrushTeeth: map['NightBrushTeeth'] as bool,
-      MorningCleanFace: map['MorningCleanFace'] as bool,
-      NightCleanFace: map['NightCleanFace'] as bool,
-      HabitCountUntilNow: map['HabitCountUntilNow'] as int,
-      HabitHint: map['HabitHint'] as String,
-      MarvelCount: map['MarvelCount'] as int,
     );
   }
 
@@ -655,11 +419,9 @@ class Todo {
 class Dashboard {
   List<Express> express;
   Work work;
-  Blue blue;
   dynamic todo;
   dynamic score;
   Fitness fitness;
-  Clean clean;
   String? dayWork;
   List<real_diary.Diary> diaries = [];
   Plant plantInfo = Plant();
@@ -681,22 +443,18 @@ class Dashboard {
   Dashboard({
     required this.express,
     required this.work,
-    required this.blue,
     required this.todo,
     required this.score,
-    required this.fitness,
-    required this.clean,
+    required this.fitness
   });
 
   Map<String, dynamic> toMap() {
     return {
       'express': express,
       'work': work,
-      'blue': blue,
       'todo': todo,
       'score': score,
-      'fitness': fitness,
-      'clean': clean,
+      'fitness': fitness
     };
   }
 
@@ -704,11 +462,9 @@ class Dashboard {
     return Dashboard(
       express: (map["express"] as List).map((e) => Express.fromMap(e)).toList(),
       work: Work.fromMap(map['work']),
-      blue: Blue.fromMap(map['blue']),
       todo: map['todo'],
       score: map['score'],
       fitness: Fitness.fromMap(map['fitness']),
-      clean: Clean.fromMap(map['clean']),
     );
   }
 
@@ -736,9 +492,9 @@ class Dashboard {
     return (todo[TimeUtil.today] as List).map((e) => Todo.fromMap(e)).toList();
   }
 
-  int get cleanCount => clean.HabitCountUntilNow;
+  int get cleanCount => 0;
 
-  int get cleanMarvelCount => clean.MarvelCount;
+  int get cleanMarvelCount => 0;
 
   double get cleanPercentInRange {
     if (cleanMarvelCount == 0) return 0;
@@ -746,9 +502,9 @@ class Dashboard {
     return res <= 1.0 ? res : 1.0;
   }
 
-  int get noBlueCount => blue.MaxNoBlueDay;
+  int get noBlueCount => 0;
 
-  int get noBlueMarvelCount => blue.MarvelCount;
+  int get noBlueMarvelCount => 0;
 
   double get noBluePercentInRange {
     if (noBlueMarvelCount == 0) return 0;
@@ -853,11 +609,11 @@ class Dashboard {
       print("Loading from CyberMe... from user: ${config.user}");
     }
     final Response r =
-        await get(Uri.parse(Config.dashboardUrl), headers: config.base64Header);
+        await get(Uri.parse(Config.dashboardUrl), headers: config.cyberBase64Header);
     final data = jsonDecode(r.body);
     final dashInfo = Dashboard.fromMap(data["data"]);
     final workResult =
-        await get(Uri.parse(Config.dayWorkUrl), headers: config.base64Header);
+        await get(Uri.parse(Config.dayWorkUrl), headers: config.cyberBase64Header);
     final workData = jsonDecode(workResult.body)["data"];
     dashInfo.dayWork = workData as String?;
     dashInfo.diaries = await real_diary.DiaryManager.loadFromApi(config);

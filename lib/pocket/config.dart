@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:hello_flutter/utils/crypto.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'models/good.dart';
@@ -41,6 +42,7 @@ class Config extends ChangeNotifier {
 
   String user = '';
   String password = '';
+  String cyberPass = '';
   bool useDashboard = false;
 
   String get token => '?user=$user&password=$password';
@@ -50,6 +52,12 @@ class Config extends ChangeNotifier {
 
   Map<String, String> get base64Header =>
       <String, String>{'authorization': base64Token};
+
+  String get cyberBase64Token =>
+      "Basic ${base64Encode(utf8.encode('$user:$cyberPass'))}";
+
+  Map<String, String> get cyberBase64Header =>
+      <String, String>{'authorization': cyberBase64Token};
 
   double position = 0.0;
 
@@ -142,6 +150,8 @@ class Config extends ChangeNotifier {
       user = prefs.getString('user') ?? '';
       useDashboard = prefs.getBool('useDashboard') ?? false;
       password = prefs.getString('password') ?? '';
+      cyberPass = encryptPassword(password, 2000);
+      print("password is $password, cyberPass is $cyberPass");
       _shortURLShowLimit = prefs.getInt('_shortURLShowLimit') ?? 10;
       _filterDuplicate = prefs.getBool('_filterDuplicate') ?? true;
       goodsShortByName = prefs.getBool('goodsShortByName') ?? true;

@@ -227,7 +227,7 @@ class _DayHomeState extends State<DayHome> {
       Transform.translate(
         offset: const Offset(0, 30),
         child: Container(
-          padding: EdgeInsets.only(top: allY - 400, left: 0, right: 0),
+          padding: EdgeInsets.only(top: allY - 370, left: 0, right: 0),
           child: Stack(
             children: [
               SizedBox(
@@ -516,15 +516,15 @@ class Habit extends StatelessWidget {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Text.rich(TextSpan(children: [
-                                        const TextSpan(text: " 已坚持"),
+                                      const Text.rich(TextSpan(children: [
+                                        TextSpan(text: " 已坚持"),
                                         TextSpan(
                                             text:
-                                                " ${dashboard.clean.HabitHint} ",
-                                            style: const TextStyle(
+                                                " 0+1? ",
+                                            style: TextStyle(
                                                 fontFamily: "consolas",
                                                 fontSize: 20)),
-                                        const TextSpan(text: "天")
+                                        TextSpan(text: "天")
                                       ])),
                                       Text(
                                         " 最长 ${dashboard.cleanMarvelCount} 天",
