@@ -166,11 +166,6 @@ class _DayHomeState extends State<DayHome> {
   bool isLoadDashboard = false;
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   void didChangeDependencies() {
     config = Provider.of<Config>(context, listen: true);
     if (config.isLoadedFromLocal) {

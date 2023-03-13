@@ -286,9 +286,10 @@ class Fitness {
   }
 
   factory Fitness.fromMap(Map<String, dynamic> map) {
+    var a = map['active'];
     return Fitness(
-      active: map['active'] as double,
-      rest: map['rest'] as double,
+      active: a is int ? a.toDouble() : a,
+      rest: double.parse(map['rest'].toString()),
       goal_active: double.parse(map['goal-active'].toString()),
       goal_cut: double.parse(map['goal-cut'].toString()),
     );
@@ -604,13 +605,17 @@ class Dashboard {
   }
 
   ///从 API 加载大屏数据
-  static Future<Dashboard> loadFromApi(Config config) async {
+  static Future<Dashboard?> loadFromApi(Config config) async {
     if (kDebugMode) {
       print("Loading from CyberMe... from user: ${config.user}");
     }
     final Response r =
         await get(Uri.parse(Config.dashboardUrl), headers: config.cyberBase64Header);
     final data = jsonDecode(r.body);
+    if (data["message"].toString().contains("access denied") && kDebugMode) {
+      print("response no auth: ${data.toString()}");
+      return null;
+    }
     final dashInfo = Dashboard.fromMap(data["data"]);
     final workResult =
         await get(Uri.parse(Config.dayWorkUrl), headers: config.cyberBase64Header);

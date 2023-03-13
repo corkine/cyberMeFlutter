@@ -1,4 +1,6 @@
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:hello_flutter/pocket/day.dart';
 import 'package:provider/provider.dart';
@@ -8,15 +10,15 @@ import 'config.dart';
 import 'auth.dart' as auth;
 import 'shortcut.dart' as short;
 import 'diary.dart' as diary;
-import 'dashboard.dart' as dash;
 
 class CMPocket {
   static Widget call() => ChangeNotifierProvider(
         create: (c) => Config(),
-        child: const MaterialApp(
+        child: MaterialApp(
           title: 'CMPocket',
           debugShowCheckedModeBanner: false,
-          home: PocketHome(),
+          theme: ThemeData(useMaterial3: true),
+          home: const PocketHome(),
         ),
       );
 }
@@ -225,22 +227,15 @@ class _PocketHomeState extends State<PocketHome> {
   @override
   void initState() {
     super.initState();
-    short.setupQuickAction(context);
+    if (Platform.isIOS || Platform.isAndroid) {
+      short.setupQuickAction(context);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Consumer<Config>(
         builder: (BuildContext context, Config config, Widget? w) {
-          ///// JUST FOR DEBUG
-          // if (Platform.isAndroid) {
-          //   SystemChrome.setEnabledSystemUIOverlays([]);
-          // }
-          // return const Scaffold(
-          //   backgroundColor: Colors.black,
-          //   body: dash.DashHome(),
-          // );
-          ///// JUST FOR DEBUG
           return Scaffold(
               drawer: auth.userMenuDrawer(config, context),
               appBar: AppBar(
