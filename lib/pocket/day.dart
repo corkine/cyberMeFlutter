@@ -341,52 +341,55 @@ class Todo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Padding(
-              padding: const EdgeInsets.fromLTRB(13, 10, 13, 15),
-              child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Tooltip(
-                      message: "双击同步 Graph API",
-                      child: GestureDetector(
-                        onDoubleTap: () => Dashboard.focusSyncTodo(config).then(
-                            (message) => ScaffoldMessenger.of(context)
-                                .showSnackBar(
-                                    SnackBar(content: Text(message)))),
-                        child: const Text("我的待办",
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 16)),
+    return ColoredBox(
+      color: Colors.white,
+      child: Padding(
+        padding: const EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Padding(
+                padding: const EdgeInsets.fromLTRB(13, 10, 13, 15),
+                child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Tooltip(
+                        message: "双击同步 Graph API",
+                        child: GestureDetector(
+                          onDoubleTap: () => Dashboard.focusSyncTodo(config).then(
+                              (message) => ScaffoldMessenger.of(context)
+                                  .showSnackBar(
+                                      SnackBar(content: Text(message)))),
+                          child: const Text("我的待办",
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 16)),
+                        ),
                       ),
-                    ),
-                    DayInfo.noticeOf([dashboard.dayWorkString],
-                        color: dashboard.alertMorningDayWork
-                            ? Colors.red[400]!
-                            : Colors.green)
-                  ])),
-          ...(dashboard.todayTodo
-              .map((todo) => ListTile(
-                  trailing: todo.isImportant
-                      ? const Icon(Icons.star)
-                      : const Icon(Icons.star_border),
-                  title: Text(todo.title,
-                      style: todo.isFinish
-                          ? const TextStyle(
-                                  decoration: TextDecoration.lineThrough)
-                              .merge(DayInfo.normal)
-                          : DayInfo.normal),
-                  dense: true,
-                  subtitle: Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: Text(todo.list, style: DayInfo.normal),
-                  )))
-              .toList()),
-        ],
+                      DayInfo.noticeOf([dashboard.dayWorkString],
+                          color: dashboard.alertMorningDayWork
+                              ? Colors.red[400]!
+                              : Colors.green)
+                    ])),
+            ...(dashboard.todayTodo
+                .map((todo) => ListTile(
+                    trailing: todo.isImportant
+                        ? const Icon(Icons.star)
+                        : const Icon(Icons.star_border),
+                    title: Text(todo.title,
+                        style: todo.isFinish
+                            ? const TextStyle(
+                                    decoration: TextDecoration.lineThrough)
+                                .merge(DayInfo.normal)
+                            : DayInfo.normal),
+                    dense: true,
+                    subtitle: Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(todo.list, style: DayInfo.normal),
+                    )))
+                .toList()),
+          ],
+        ),
       ),
     );
   }
@@ -422,6 +425,43 @@ class _WorkState extends State<Work> {
     var config = Provider.of<Config>(context, listen: false);
     return Card(
       child: Stack(children: [
+        ColoredBox(
+          color: Colors.white,
+          child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.only(right: 20, top: 20),
+              child: Column(
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Tooltip(
+                      message: "双击同步 HCM",
+                      child: GestureDetector(
+                        onDoubleTap: () => DayInfo.callAndShow(
+                            Dashboard.checkHCMCard, context, config),
+                        child: Padding(
+                            padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
+                            child: Text.rich(TextSpan(children: [
+                              const TextSpan(text: "已工作 "),
+                              TextSpan(
+                                  text: "${widget.dashboard.work.WorkHour}",
+                                  style: const TextStyle(
+                                      fontFamily: "consolas", fontSize: 20)),
+                              const TextSpan(text: " h")
+                            ]))),
+                      ),
+                    ),
+                    widget.dashboard.work.OffWork
+                        ? DayInfo.noticeOf(["无需打卡"], color: Colors.green)
+                        : widget.dashboard.work.NeedMorningCheck
+                            ? DayInfo.noticeOf(["记得打卡"], color: Colors.orange)
+                            : widget.dashboard.alertNightDayWork
+                                ? DayInfo.noticeOf(["记得打卡"], color: Colors.red)
+                                : DayInfo.noticeOf(
+                                    widget.dashboard.work.signData())
+                  ])),
+        ),
         AnimatedPositioned(
             duration: const Duration(milliseconds: 1000),
             curve: Curves.linearToEaseOut,
@@ -429,46 +469,12 @@ class _WorkState extends State<Work> {
             bottom: -10,
             child: widget.dashboard.work.NeedWork
                 ? widget.dashboard.work.OffWork
-                    ? Image.asset("images/dash/offwork.png",
-                        height: widget.constraints.maxHeight)
-                    : Image.asset("images/dash/work.png",
-                        height: widget.constraints.maxHeight)
+                ? Image.asset("images/dash/offwork.png",
+                height: widget.constraints.maxHeight)
+                : Image.asset("images/dash/work.png",
+                height: widget.constraints.maxHeight)
                 : Image.asset("images/dash/offwork.png",
-                    height: widget.constraints.maxHeight)),
-        Container(
-            width: double.infinity,
-            padding: const EdgeInsets.only(right: 20, top: 20),
-            child: Column(
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Tooltip(
-                    message: "双击同步 HCM",
-                    child: GestureDetector(
-                      onDoubleTap: () => DayInfo.callAndShow(
-                          Dashboard.checkHCMCard, context, config),
-                      child: Padding(
-                          padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
-                          child: Text.rich(TextSpan(children: [
-                            const TextSpan(text: "已工作 "),
-                            TextSpan(
-                                text: "${widget.dashboard.work.WorkHour}",
-                                style: const TextStyle(
-                                    fontFamily: "consolas", fontSize: 20)),
-                            const TextSpan(text: " h")
-                          ]))),
-                    ),
-                  ),
-                  widget.dashboard.work.OffWork
-                      ? DayInfo.noticeOf(["无需打卡"], color: Colors.green)
-                      : widget.dashboard.work.NeedMorningCheck
-                          ? DayInfo.noticeOf(["记得打卡"], color: Colors.orange)
-                          : widget.dashboard.alertNightDayWork
-                              ? DayInfo.noticeOf(["记得打卡"], color: Colors.red)
-                              : DayInfo.noticeOf(
-                                  widget.dashboard.work.signData())
-                ]))
+                height: widget.constraints.maxHeight))
       ]),
       elevation: 0.2,
     );
@@ -490,6 +496,7 @@ class Habit extends StatelessWidget {
   Widget build(BuildContext context) {
     var config = Provider.of<Config>(context);
     return Card(
+      color: Colors.white,
       child: Padding(
           padding: const EdgeInsets.only(left: 10, right: 20),
           child: Column(

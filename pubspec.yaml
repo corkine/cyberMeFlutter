@@ -105,3 +105,7 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+  module:
+    androidX: true
+    androidPackage: com.mazhangjing.landmark
+    iosBundleIdentifier: com.mazhangjing.landmark

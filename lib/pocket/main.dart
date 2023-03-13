@@ -227,7 +227,7 @@ class _PocketHomeState extends State<PocketHome> {
   @override
   void initState() {
     super.initState();
-    if (Platform.isIOS || Platform.isAndroid) {
+    if (Platform.isAndroid) {
       short.setupQuickAction(context);
     }
   }

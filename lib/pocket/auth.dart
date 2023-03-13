@@ -61,7 +61,8 @@ Widget userMenuDrawer(Config config, BuildContext context) => Drawer(
                         backgroundColor:
                             MaterialStateProperty.all(Colors.green.shade300)),
                     onPressed: () => handleLogin(config, context),
-                    child: Text(config.user.isEmpty ? '验证秘钥' : '取消登录'))),
+                    child: Text(config.user.isEmpty ? '验证秘钥' : '取消登录',
+                    style: const TextStyle(color: Colors.white),))),
             const Padding(
                 padding: EdgeInsets.only(bottom: 15),
                 child: Text(
