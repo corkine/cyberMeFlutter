@@ -32,7 +32,7 @@ class Plant {
         print("Setting to Plant to CyberMe");
       }
       final Response r =
-          await post(Uri.parse(Config.plantUrl), headers: config.base64Header);
+          await post(Uri.parse(Config.plantUrl), headers: config.cyberBase64Header);
       final result = jsonDecode(r.body)["message"];
       config.justNotify();
       return result;

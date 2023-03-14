@@ -125,7 +125,7 @@ Future<List<String?>> uploadImage(File file, Config config,
   String? message;
   try {
     var req = http.MultipartRequest("POST", Uri.parse(Config.ossUrl));
-    req.headers.addAll(config.base64Header);
+    req.headers.addAll(config.cyberBase64Header);
     var filename = file.path.split("/").last;
     var suffix = filename.split(".").last;
     filename =

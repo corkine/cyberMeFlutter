@@ -518,7 +518,7 @@ class Dashboard {
     try {
       print("Sync with Todo now..");
       var resp = await get(Uri.parse(Config.todoSyncUrl),
-          headers: config.base64Header);
+          headers: config.cyberBase64Header);
       return jsonDecode(resp.body)["message"];
     } on Exception catch (e) {
       return e.toString();
@@ -530,7 +530,7 @@ class Dashboard {
     try {
       print("Checking HCM now..");
       var resp = await get(Uri.parse(Config.hcmCardCheckUrl),
-          headers: config.base64Header);
+          headers: config.cyberBase64Header);
       //刷新 API 以获取最新更改
       config.justNotify();
       return resp.body;
@@ -551,7 +551,7 @@ class Dashboard {
         url = url + "&yesterday=true";
         print("is midnight, use yesterday!!!");
       }
-      var resp = await get(Uri.parse(url), headers: config.base64Header);
+      var resp = await get(Uri.parse(url), headers: config.cyberBase64Header);
       config.justNotify();
       return jsonDecode(resp.body)["message"];
     } on Exception catch (e) {
@@ -564,7 +564,7 @@ class Dashboard {
     try {
       print("Setting blue data, date: $date");
       var resp = await get(Uri.parse(Config.blueUrl + date),
-          headers: config.base64Header);
+          headers: config.cyberBase64Header);
       config.justNotify();
       return jsonDecode(resp.body)["message"];
     } on Exception catch (e) {
@@ -577,7 +577,7 @@ class Dashboard {
     try {
       print("fetching last note...");
       var resp = await get(Uri.parse(Config.lastNoteUrl),
-          headers: config.base64Header);
+          headers: config.cyberBase64Header);
       var data = jsonDecode(resp.body);
       return [data["message"], data["data"] != null ? data["message"] : null];
     } on Exception catch (e) {
@@ -590,7 +590,7 @@ class Dashboard {
     try {
       print("uploading one note... length ${content.length}");
       var resp = await http.post(Uri.parse(Config.uploadNoteUrl),
-          headers: config.base64Header
+          headers: config.cyberBase64Header
             ..addAll({"Content-Type": "application/json"}),
           body: jsonEncode({
             "from": "CyberMe Flutter Client",

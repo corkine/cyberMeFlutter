@@ -424,44 +424,42 @@ class _WorkState extends State<Work> {
   Widget build(BuildContext context) {
     var config = Provider.of<Config>(context, listen: false);
     return Card(
+      color: Colors.white,
       child: Stack(children: [
-        ColoredBox(
-          color: Colors.white,
-          child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.only(right: 20, top: 20),
-              child: Column(
-                  mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Tooltip(
-                      message: "双击同步 HCM",
-                      child: GestureDetector(
-                        onDoubleTap: () => DayInfo.callAndShow(
-                            Dashboard.checkHCMCard, context, config),
-                        child: Padding(
-                            padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
-                            child: Text.rich(TextSpan(children: [
-                              const TextSpan(text: "已工作 "),
-                              TextSpan(
-                                  text: "${widget.dashboard.work.WorkHour}",
-                                  style: const TextStyle(
-                                      fontFamily: "consolas", fontSize: 20)),
-                              const TextSpan(text: " h")
-                            ]))),
-                      ),
+        Container(
+            width: double.infinity,
+            padding: const EdgeInsets.only(right: 20, top: 20),
+            child: Column(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Tooltip(
+                    message: "双击同步 HCM",
+                    child: GestureDetector(
+                      onDoubleTap: () => DayInfo.callAndShow(
+                          Dashboard.checkHCMCard, context, config),
+                      child: Padding(
+                          padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
+                          child: Text.rich(TextSpan(children: [
+                            const TextSpan(text: "已工作 "),
+                            TextSpan(
+                                text: "${widget.dashboard.work.WorkHour}",
+                                style: const TextStyle(
+                                    fontFamily: "consolas", fontSize: 20)),
+                            const TextSpan(text: " h")
+                          ]))),
                     ),
-                    widget.dashboard.work.OffWork
-                        ? DayInfo.noticeOf(["无需打卡"], color: Colors.green)
-                        : widget.dashboard.work.NeedMorningCheck
-                            ? DayInfo.noticeOf(["记得打卡"], color: Colors.orange)
-                            : widget.dashboard.alertNightDayWork
-                                ? DayInfo.noticeOf(["记得打卡"], color: Colors.red)
-                                : DayInfo.noticeOf(
-                                    widget.dashboard.work.signData())
-                  ])),
-        ),
+                  ),
+                  widget.dashboard.work.OffWork
+                      ? DayInfo.noticeOf(["无需打卡"], color: Colors.green)
+                      : widget.dashboard.work.NeedMorningCheck
+                          ? DayInfo.noticeOf(["记得打卡"], color: Colors.orange)
+                          : widget.dashboard.alertNightDayWork
+                              ? DayInfo.noticeOf(["记得打卡"], color: Colors.red)
+                              : DayInfo.noticeOf(
+                                  widget.dashboard.work.signData())
+                ])),
         AnimatedPositioned(
             duration: const Duration(milliseconds: 1000),
             curve: Curves.linearToEaseOut,

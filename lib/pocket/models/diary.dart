@@ -35,7 +35,7 @@ class Diary {
     return find;
   }
 
-  String get url => "https://cyber.mazhangjing.com/diary/$id";
+  String get url => "https://cyber.mazhangjing.com/diary/by-id/$id";
 
 //<editor-fold desc="Data Methods">
 
