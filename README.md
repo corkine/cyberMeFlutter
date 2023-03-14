@@ -32,6 +32,6 @@ CyberMe Flutter 视图组件和应用，包含多个 EntryPoint，支持嵌入 i
 
 ## 参见
 
-嵌入的原生 iOS 应用参见 [CyberMe Swift](https://github.com/corkine/cybermeSwift)
+嵌入的原生 iOS 应用参见 [CyberMe Swift](https://github.com/corkine/cyberMeSwift)
 
 ![](https://static2.mazhangjing.com/20221124/2cf8_Snipaste_2022-11-24_10-20-21.png)
