@@ -274,4 +274,9 @@ class Config extends ChangeNotifier {
   justNotify() {
     notifyListeners();
   }
+
+  @override
+  String toString() {
+    return 'Config{isLoadedFromLocal: $isLoadedFromLocal, user: $user, password: ${password.isNotEmpty}, cyberPass: $cyberPass, useDashboard: $useDashboard, basicURL: $basicURL, notShowRemoved: $notShowRemoved, prefs: $prefs}';
+  }
 }

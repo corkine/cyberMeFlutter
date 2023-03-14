@@ -19,6 +19,8 @@ class DayInfo {
   static String title = TimeUtil.todayShort();
   static const Widget titleWidget = Text("我的一天");
 
+  static var debugInfo = 'no content.';
+
   static List<Widget> menuActions(BuildContext context, Config config) => [
         PopupMenuButton(
             icon: const Icon(Icons.more_vert_rounded),
@@ -68,8 +70,19 @@ class DayInfo {
                       ));*/
                     }),
                 PopupMenuItem(
+                    child:
+                    const Text("Debug Info"),
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        duration: const Duration(seconds: 100),
+                        content: Text(debugInfo),
+                      ));
+                    }),
+                PopupMenuItem(
                     child: const Text("退出 Flutter Engine"),
-                    onTap: () => SystemNavigator.pop(animated: true))
+                    onTap: () {
+                      SystemNavigator.pop(animated: true);
+                    })
               ];
             })
       ];
@@ -187,23 +200,26 @@ class _DayHomeState extends State<DayHome> {
     if (config.useDashboard && !isLoadDashboard) {
       isLoadDashboard = true;
       Future.delayed(const Duration(seconds: 2), () {
-        Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-          if (Platform.isAndroid) {
-            SystemChrome.setEnabledSystemUIOverlays([]);
-          }
-          return WillPopScope(
-              child: const Scaffold(
-                backgroundColor: Colors.black,
-                body: dash.DashHome(),
-              ),
-              onWillPop: () async {
-                if (kDebugMode) print("Pop dashboard now...");
-                if (Platform.isAndroid) {
-                  SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
-                }
-                return true;
-              });
-        }, maintainState: false));
+        Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) {
+              if (!kIsWeb && Platform.isAndroid) {
+                SystemChrome.setEnabledSystemUIOverlays([]);
+              }
+              return WillPopScope(
+                  child: const Scaffold(
+                    backgroundColor: Colors.black,
+                    body: dash.DashHome(),
+                  ),
+                  onWillPop: () async {
+                    if (kDebugMode) print("Pop dashboard now...");
+                    if (Platform.isAndroid) {
+                      SystemChrome.setEnabledSystemUIOverlays(
+                          SystemUiOverlay.values);
+                    }
+                    return true;
+                  });
+            },
+            maintainState: false));
       });
       return const Center(
           child: Text(
@@ -347,7 +363,8 @@ class Todo extends StatelessWidget {
     return ColoredBox(
       color: Colors.white,
       child: Padding(
-        padding: const EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 10),
+        padding:
+            const EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -360,8 +377,8 @@ class Todo extends StatelessWidget {
                       Tooltip(
                         message: "双击同步 Graph API",
                         child: GestureDetector(
-                          onDoubleTap: () => Dashboard.focusSyncTodo(config).then(
-                              (message) => ScaffoldMessenger.of(context)
+                          onDoubleTap: () => Dashboard.focusSyncTodo(config)
+                              .then((message) => ScaffoldMessenger.of(context)
                                   .showSnackBar(
                                       SnackBar(content: Text(message)))),
                           child: const Text("我的待办",
@@ -470,12 +487,12 @@ class _WorkState extends State<Work> {
             bottom: -10,
             child: widget.dashboard.work.NeedWork
                 ? widget.dashboard.work.OffWork
-                ? Image.asset("images/dash/offwork.png",
-                height: widget.constraints.maxHeight)
-                : Image.asset("images/dash/work.png",
-                height: widget.constraints.maxHeight)
+                    ? Image.asset("images/dash/offwork.png",
+                        height: widget.constraints.maxHeight)
+                    : Image.asset("images/dash/work.png",
+                        height: widget.constraints.maxHeight)
                 : Image.asset("images/dash/offwork.png",
-                height: widget.constraints.maxHeight))
+                    height: widget.constraints.maxHeight))
       ]),
       elevation: 0.2,
     );
@@ -522,8 +539,7 @@ class Habit extends StatelessWidget {
                                       const Text.rich(TextSpan(children: [
                                         TextSpan(text: " 已坚持"),
                                         TextSpan(
-                                            text:
-                                                " 0+1? ",
+                                            text: " 0+1? ",
                                             style: TextStyle(
                                                 fontFamily: "consolas",
                                                 fontSize: 20)),

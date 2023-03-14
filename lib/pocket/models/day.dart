@@ -1,8 +1,7 @@
-import 'dart:ffi';
 
+import 'package:cyberme_flutter/pocket/day.dart';
 import 'package:flutter/foundation.dart';
 import 'package:cyberme_flutter/pocket/models/diary.dart' as real_diary;
-import 'package:cyberme_flutter/utils/crypto.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 import 'package:sprintf/sprintf.dart';
@@ -612,6 +611,9 @@ class Dashboard {
     final Response r =
         await get(Uri.parse(Config.dashboardUrl), headers: config.cyberBase64Header);
     final data = jsonDecode(r.body);
+    DayInfo.debugInfo = sprintf("%s:%s\n",["Config",config.toString()]);
+    DayInfo.debugInfo += sprintf("%s, %s, %s, %s", [r.headers,
+      r.body.substring(0, 20), r.request, r.statusCode]);
     if (data["message"].toString().contains("access denied") && kDebugMode) {
       print("response no auth: ${data.toString()}");
       return null;

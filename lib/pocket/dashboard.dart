@@ -71,6 +71,7 @@ class _DashHomeState extends State<DashHome> {
 
   @override
   void initState() {
+    super.initState();
     controller.sink
         .addStream(Stream.periodic(const Duration(seconds: 5), (index) {
       return index;
@@ -84,7 +85,6 @@ class _DashHomeState extends State<DashHome> {
         //print("Setting state at ${TimeUtil.nowLog}");
       });
     });
-    super.initState();
   }
 
   @override
@@ -256,6 +256,8 @@ class Todo extends StatelessWidget {
                   title: Text(todo.title,
                       style: todo.isFinish
                           ? const TextStyle(
+                                  decorationColor: Colors.white,
+                                  decorationThickness: 1.5,
                                   decoration: TextDecoration.lineThrough)
                               .merge(DashInfo.normal)
                           : DashInfo.normal),
