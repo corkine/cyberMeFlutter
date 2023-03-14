@@ -1,6 +1,6 @@
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hello_flutter/utils/crypto.dart';
+import 'package:cyberme_flutter/utils/crypto.dart';
 
 main() {
   test("sha-b64 right", () {

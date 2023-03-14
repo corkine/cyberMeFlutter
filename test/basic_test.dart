@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hello_flutter/pocket/config.dart';
-import 'package:hello_flutter/pocket/main.dart';
-import 'package:hello_flutter/pocket/time.dart';
-import 'package:hello_flutter/pocket/diary.dart' as diary;
-import 'package:hello_flutter/pocket/dashboard.dart' as dash;
+import 'package:cyberme_flutter/pocket/config.dart';
+import 'package:cyberme_flutter/pocket/main.dart';
+import 'package:cyberme_flutter/pocket/time.dart';
+import 'package:cyberme_flutter/pocket/diary.dart' as diary;
+import 'package:cyberme_flutter/pocket/dashboard.dart' as dash;
 import 'package:provider/provider.dart';
 
 void main() {

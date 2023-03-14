@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
-import 'package:hello_flutter/pocket/config.dart';
-import 'package:hello_flutter/pocket/time.dart';
+import 'package:cyberme_flutter/pocket/config.dart';
+import 'package:cyberme_flutter/pocket/time.dart';
 import 'package:http/http.dart';
 
 class Diary {

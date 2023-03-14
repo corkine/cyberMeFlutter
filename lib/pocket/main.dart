@@ -2,7 +2,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:hello_flutter/pocket/day.dart';
+import 'package:cyberme_flutter/pocket/day.dart';
 import 'package:provider/provider.dart';
 import 'goods.dart';
 import 'link.dart';
@@ -18,7 +18,10 @@ class CMPocket {
           title: 'CMPocket',
           debugShowCheckedModeBanner: false,
           theme: ThemeData(useMaterial3: true),
-          home: const PocketHome(),
+          initialRoute: "/",
+          routes: {
+            "/": (c) => const PocketHome()
+          },
         ),
       );
 }

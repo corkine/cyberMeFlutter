@@ -1,8 +1,8 @@
 import 'dart:ffi';
 
 import 'package:flutter/foundation.dart';
-import 'package:hello_flutter/pocket/models/diary.dart' as real_diary;
-import 'package:hello_flutter/utils/crypto.dart';
+import 'package:cyberme_flutter/pocket/models/diary.dart' as real_diary;
+import 'package:cyberme_flutter/utils/crypto.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 import 'package:sprintf/sprintf.dart';

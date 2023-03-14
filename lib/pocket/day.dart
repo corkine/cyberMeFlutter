@@ -66,7 +66,10 @@ class DayInfo {
                         content: Text(
                             "已${config.useDashboard ? "启动" : "关闭"} Dashboard"),
                       ));*/
-                    })
+                    }),
+                PopupMenuItem(
+                    child: const Text("退出 Flutter Engine"),
+                    onTap: () => SystemNavigator.pop(animated: true))
               ];
             })
       ];

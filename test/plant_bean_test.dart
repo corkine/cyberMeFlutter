@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hello_flutter/pocket/models/plant.dart';
+import 'package:cyberme_flutter/pocket/models/plant.dart';
 
 void main() {
   group("Plant Bean Test", () {

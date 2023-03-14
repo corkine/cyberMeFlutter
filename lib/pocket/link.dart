@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:clipboard/clipboard.dart';
 import 'package:flutter/material.dart';
-import 'package:hello_flutter/util.dart';
+import 'package:cyberme_flutter/util.dart';
 import 'package:intl/intl.dart';
 import 'models/entity.dart';
 import 'package:http/http.dart' as http;
