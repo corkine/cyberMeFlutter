@@ -21,6 +21,8 @@ class DayInfo {
 
   static var debugInfo = 'no content.';
 
+  static var encryptInfo = '';
+
   static List<Widget> menuActions(BuildContext context, Config config) => [
         PopupMenuButton(
             icon: const Icon(Icons.more_vert_rounded),
@@ -75,7 +77,7 @@ class DayInfo {
                     onTap: () {
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                         duration: const Duration(seconds: 100),
-                        content: Text(debugInfo),
+                        content: Text("$encryptInfo\n$debugInfo"),
                       ));
                     }),
                 PopupMenuItem(

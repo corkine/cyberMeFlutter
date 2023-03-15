@@ -152,7 +152,7 @@ class Config extends ChangeNotifier {
       useDashboard = prefs.getBool('useDashboard') ?? false;
       password = prefs.getString('password') ?? '';
       print("user $user, pass $password");
-      cyberPass = encryptPassword(password, 2000);
+      cyberPass = encryptPassword(password, 60 * 60 * 24 * 5);
       _shortURLShowLimit = prefs.getInt('_shortURLShowLimit') ?? 10;
       _filterDuplicate = prefs.getBool('_filterDuplicate') ?? true;
       goodsShortByName = prefs.getBool('goodsShortByName') ?? true;
