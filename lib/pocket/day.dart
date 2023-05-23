@@ -205,7 +205,7 @@ class _DayHomeState extends State<DayHome> {
         Navigator.of(context).push(MaterialPageRoute(
             builder: (context) {
               if (!kIsWeb && Platform.isAndroid) {
-                SystemChrome.setEnabledSystemUIOverlays([]);
+                //SystemChrome.setEnabledSystemUIOverlays([]);
               }
               return WillPopScope(
                   child: const Scaffold(
@@ -215,8 +215,8 @@ class _DayHomeState extends State<DayHome> {
                   onWillPop: () async {
                     if (kDebugMode) print("Pop dashboard now...");
                     if (Platform.isAndroid) {
-                      SystemChrome.setEnabledSystemUIOverlays(
-                          SystemUiOverlay.values);
+                      // SystemChrome.setEnabledSystemUIOverlays(
+                      //     SystemUiOverlay.values);
                     }
                     return true;
                   });
