@@ -34,12 +34,7 @@ class Data {
   String? siteNo;
   final bool? canceled;
 
-  bool get isHistory {
-    if (dateTime == null) return true;
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    return dateTime!.isBefore(today);
-  }
+  bool get isHistory => dateTime?.isBefore(DateTime.now()) ?? true;
 
   String? get startPretty => start == null
       ? null
