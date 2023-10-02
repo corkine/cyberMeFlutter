@@ -246,91 +246,92 @@ final timeFormatter = DateFormat("HH:mm");
 
 Widget buildCard(t.Data ticket,
     Future Function(t.Data, bool, bool) deleteTicket, BuildContext context) {
-  return GestureDetector(
-    onTap: () {
-      showCupertinoModalPopup(
-          context: context,
-          builder: (context) => CupertinoActionSheet(
-                  actions: [
-                    CupertinoActionSheetAction(
-                        onPressed: () {}, child: const Text("修改")),
-                    CupertinoActionSheetAction(
-                        onPressed: () async {
-                          Navigator.of(context).pop();
-                          if (ticket.canceled == null ||
-                              ticket.canceled! == false) {
-                            await deleteTicket(ticket, true, false);
-                          } else {
-                            await deleteTicket(ticket, false, true);
-                          }
-                        },
-                        child: Text(
-                            ticket.canceled == null || ticket.canceled! == false
-                                ? "改签"
-                                : "取消改签")),
-                    CupertinoActionSheetAction(
-                        onPressed: () async {
-                          final res = await showDialog(
-                              context: context,
-                              barrierDismissible: false,
-                              builder: (context) => AlertDialog(
-                                      title: const Text("删除票据"),
-                                      content: const Text("确定删除此票据吗，此操作不可恢复。"),
-                                      actions: [
-                                        TextButton(
-                                            onPressed: () =>
-                                                Navigator.of(context)
-                                                    .pop(false),
-                                            child: const Text("取消")),
-                                        TextButton(
-                                            onPressed: () =>
-                                                Navigator.of(context).pop(true),
-                                            child: const Text("确定"))
-                                      ])) as bool;
-                          if (res) {
+  return Card(
+    elevation: 0.1,
+    child: InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: () {
+        showCupertinoModalPopup(
+            context: context,
+            builder: (context) => CupertinoActionSheet(
+                    actions: [
+                      CupertinoActionSheetAction(
+                          onPressed: () async {
                             Navigator.of(context).pop();
-                            await deleteTicket(ticket, false, false);
-                          } else {
-                            Navigator.of(context).pop();
-                          }
-                        },
-                        child: const Text("删除"),
-                        isDestructiveAction: true)
-                  ],
-                  cancelButton: CupertinoActionSheetAction(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text("取消"))));
-    },
-    child: Card(
-        elevation: 0.1,
-        child: ListTile(
-            title: Row(children: [
-              Text(ticket.startPretty ?? "未知目的地"),
-              const Padding(
-                  padding: EdgeInsets.only(left: 3, right: 3),
-                  child: Text("→")),
-              Text(ticket.endPretty ?? "未知终点"),
-              const SizedBox(width: 5),
-              Text(
-                  ticket.canceled == null || ticket.canceled! == false
-                      ? ""
-                      : "(已改签)",
-                  style: const TextStyle(fontSize: 10))
-            ]),
-            subtitle: Row(children: [
-              Text("${dateFormatter.format(ticket.dateTime!)} "),
-              Text(timeFormatter.format(ticket.dateTime!),
-                  style: const TextStyle(decoration: TextDecoration.underline)),
-              const Text("开"),
-              const Spacer(),
-              const SizedBox(width: 5),
-              SizedBox(
-                  width: 60,
-                  child: Text("${ticket.trainNo}",
-                      style: const TextStyle(fontWeight: FontWeight.bold))),
-              const SizedBox(width: 5),
-              SizedBox(child: Text(ticket.siteNo ?? ""), width: 70)
-            ]))),
+                            if (ticket.canceled == null ||
+                                ticket.canceled! == false) {
+                              await deleteTicket(ticket, true, false);
+                            } else {
+                              await deleteTicket(ticket, false, true);
+                            }
+                          },
+                          child: Text(ticket.canceled == null ||
+                                  ticket.canceled! == false
+                              ? "改签"
+                              : "取消改签")),
+                      CupertinoActionSheetAction(
+                          onPressed: () async {
+                            final res = await showDialog(
+                                context: context,
+                                barrierDismissible: false,
+                                builder: (context) => AlertDialog(
+                                        title: const Text("删除票据"),
+                                        content:
+                                            const Text("确定删除此票据吗，此操作不可恢复。"),
+                                        actions: [
+                                          TextButton(
+                                              onPressed: () =>
+                                                  Navigator.of(context)
+                                                      .pop(false),
+                                              child: const Text("取消")),
+                                          TextButton(
+                                              onPressed: () =>
+                                                  Navigator.of(context)
+                                                      .pop(true),
+                                              child: const Text("确定"))
+                                        ])) as bool;
+                            if (res) {
+                              Navigator.of(context).pop();
+                              await deleteTicket(ticket, false, false);
+                            } else {
+                              Navigator.of(context).pop();
+                            }
+                          },
+                          child: const Text("删除"),
+                          isDestructiveAction: true)
+                    ],
+                    cancelButton: CupertinoActionSheetAction(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text("取消"))));
+      },
+      child: ListTile(
+          title: Row(children: [
+            Text(ticket.startPretty ?? "未知目的地"),
+            const Padding(
+                padding: EdgeInsets.only(left: 3, right: 3), child: Text("→")),
+            Text(ticket.endPretty ?? "未知终点"),
+            const SizedBox(width: 5),
+            Text(
+                ticket.canceled == null || ticket.canceled! == false
+                    ? ""
+                    : "(已改签)",
+                style: const TextStyle(fontSize: 10))
+          ]),
+          subtitle: Row(children: [
+            Text("${dateFormatter.format(ticket.dateTime!)} "),
+            Text(timeFormatter.format(ticket.dateTime!),
+                style: const TextStyle(decoration: TextDecoration.underline)),
+            const Text("开"),
+            const Spacer(),
+            const SizedBox(width: 5),
+            SizedBox(
+                width: 60,
+                child: Text("${ticket.trainNo}",
+                    style: const TextStyle(fontWeight: FontWeight.bold))),
+            const SizedBox(width: 5),
+            SizedBox(child: Text(ticket.siteNo ?? ""), width: 70)
+          ])),
+    ),
   );
 }
 
