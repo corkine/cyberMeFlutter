@@ -31,6 +31,7 @@ class Data {
   final String? end;
   final String? trainNo;
   final String? siteNo;
+  final bool? canceled;
 
   bool get isHistory {
     if (dateTime == null) return true;
@@ -53,7 +54,13 @@ class Data {
 
   DateTime? get dateTime => date == null ? null : DateTime.tryParse(date!);
 
-  const Data({this.date, this.start, this.end, this.trainNo, this.siteNo});
+  const Data(
+      {this.date,
+      this.start,
+      this.end,
+      this.trainNo,
+      this.siteNo,
+      this.canceled});
 
   factory Data.fromJson(Map<String, dynamic> json) => _$DataFromJson(json);
 
@@ -61,6 +68,6 @@ class Data {
 
   @override
   String toString() {
-    return 'Data{date: $date, start: $start, end: $end, trainNo: $trainNo, siteNo: $siteNo}';
+    return 'Data{date: $date, start: $start, end: $end, trainNo: $trainNo, siteNo: $siteNo, canceled: $canceled}';
   }
 }

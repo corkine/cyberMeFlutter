@@ -30,8 +30,10 @@ class _TicketShowPageState extends State<TicketShowPage> {
     handleReloadTickets();
   }
 
-  Future handleDeleteTicket(t.Data ticket) async {
-    final res = await ticketDelete(config, ticket);
+  Future handleDeleteTicket(
+      t.Data ticket, bool canceled, bool undoCanceled) async {
+    final res = await ticketDelete(config, ticket,
+        canceled: canceled, undoCanceled: undoCanceled);
     await showDialog(
         context: context,
         builder: (context) =>
@@ -155,8 +157,8 @@ class _TicketParsePageState extends State<TicketParsePage> {
                                         style: Theme.of(context)
                                             .textTheme
                                             .headlineSmall)),
-                                ...data.map(
-                                    (e) => buildCard(e, (_) async {}, context)),
+                                ...data.map((e) =>
+                                    buildCard(e, (_, a, b) async {}, context)),
                                 const SizedBox(height: 20),
                                 SizedBox(
                                     width: double.infinity,
@@ -217,8 +219,8 @@ final formatter = DateFormat("yyyy-MM-dd HH:mm");
 final dateFormatter = DateFormat("yyyy-MM-dd");
 final timeFormatter = DateFormat("HH:mm");
 
-Widget buildCard(
-    t.Data ticket, Future Function(t.Data) deleteTicket, BuildContext context) {
+Widget buildCard(t.Data ticket,
+    Future Function(t.Data, bool, bool) deleteTicket, BuildContext context) {
   return GestureDetector(
     onTap: () {
       showCupertinoModalPopup(
@@ -227,6 +229,20 @@ Widget buildCard(
                   actions: [
                     CupertinoActionSheetAction(
                         onPressed: () {}, child: const Text("修改")),
+                    CupertinoActionSheetAction(
+                        onPressed: () async {
+                          Navigator.of(context).pop();
+                          if (ticket.canceled == null ||
+                              ticket.canceled! == false) {
+                            await deleteTicket(ticket, true, false);
+                          } else {
+                            await deleteTicket(ticket, false, true);
+                          }
+                        },
+                        child: Text(
+                            ticket.canceled == null || ticket.canceled! == false
+                                ? "改签"
+                                : "取消改签")),
                     CupertinoActionSheetAction(
                         onPressed: () async {
                           final res = await showDialog(
@@ -248,7 +264,7 @@ Widget buildCard(
                                       ])) as bool;
                           if (res) {
                             Navigator.of(context).pop();
-                            await deleteTicket(ticket);
+                            await deleteTicket(ticket, false, false);
                           } else {
                             Navigator.of(context).pop();
                           }
@@ -268,7 +284,13 @@ Widget buildCard(
               const Padding(
                   padding: EdgeInsets.only(left: 3, right: 3),
                   child: Text("→")),
-              Text(ticket.endPretty ?? "未知终点")
+              Text(ticket.endPretty ?? "未知终点"),
+              const SizedBox(width: 5),
+              Text(
+                  ticket.canceled == null || ticket.canceled! == false
+                      ? ""
+                      : "(已改签)",
+                  style: const TextStyle(fontSize: 10))
             ]),
             subtitle: Row(children: [
               Text("${dateFormatter.format(ticket.dateTime!)} "),
@@ -288,7 +310,8 @@ Widget buildCard(
 }
 
 Future<dynamic> ticketRecent(Config config) async {
-  final r = await get(Uri.parse(Config.recentTicketUrl),
+  final r = await get(
+      Uri.parse(Config.recentTicketUrl + "?include-canceled=true"),
       headers: config.cyberBase64Header);
   final j = jsonDecode(r.body);
   if ((j["status"] as int) > 0) {
@@ -298,10 +321,14 @@ Future<dynamic> ticketRecent(Config config) async {
   return [];
 }
 
-Future<String> ticketDelete(Config config, t.Data ticket) async {
+Future<String> ticketDelete(Config config, t.Data ticket,
+    {bool canceled = false, bool undoCanceled = false}) async {
   final date = DateFormat("yyyyMMdd_HH:mm").format(ticket.dateTime!);
   try {
-    final r = await get(Uri.parse(Config.deleteTicketUrl + date),
+    final r = await get(
+        Uri.parse(Config.deleteTicketUrl +
+            date +
+            "?is-canceled=$canceled&undo-canceled=$undoCanceled"),
         headers: config.cyberBase64Header);
     final j = jsonDecode(r.body);
     return j["message"] ?? "无返回信息";
