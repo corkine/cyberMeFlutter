@@ -14,6 +14,7 @@ import 'package:provider/provider.dart';
 import 'package:clipboard/clipboard.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '/pocket/dashboard.dart' as dash;
+import 'main.dart';
 
 class DayInfo {
   static String title = TimeUtil.todayShort();
@@ -72,8 +73,11 @@ class DayInfo {
                       ));*/
                     }),
                 PopupMenuItem(
-                    child:
-                    const Text("Debug Info"),
+                    child: const Text("12306 最近车票"),
+                    onTap: () =>
+                        Navigator.of(context).pushNamed(R.ticketShow.route)),
+                PopupMenuItem(
+                    child: const Text("Debug Info"),
                     onTap: () {
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                         duration: const Duration(seconds: 100),

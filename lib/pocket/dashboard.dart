@@ -146,45 +146,40 @@ class MainPage extends StatelessWidget {
     final now = DateTime.now();
     var time = sprintf("%02d:%02d", [now.hour, now.minute]);
     return SingleChildScrollView(
-      physics:
-          const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        //待办卡片
-        Card(
-            child: Todo(config, dashboard),
-            elevation: 0.2,
-            color: Colors.transparent),
-        //工作日卡片，包含是否打卡，是否下班，工作时长，打卡信息
-        SizedBox(
-            height: 70,
-            child: LayoutBuilder(
-                builder: (context, constraints) =>
-                    Work(dashboard, constraints))),
-        /*//习惯卡片
+        physics: const AlwaysScrollableScrollPhysics(
+            parent: BouncingScrollPhysics()),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          //待办卡片
+          Card(
+              child: Todo(config, dashboard),
+              elevation: 0.2,
+              color: Colors.transparent),
+          //工作日卡片，包含是否打卡，是否下班，工作时长，打卡信息
+          SizedBox(
+              height: 70,
+              child: LayoutBuilder(
+                  builder: (context, constraints) =>
+                      Work(dashboard, constraints))),
+          /*//习惯卡片
         SizedBox(
             height: 100,
             child: LayoutBuilder(
                 builder: (context, constraints) =>
                     Habit(dashboard, constraints))),*/
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.only(left: 20, top: 20),
-            child: GestureDetector(
-              onTap: () {
-                Navigator.of(context).pop();
-              },
-              child: Text(
-                time,
-                style: const TextStyle(fontSize: 30, color: Colors.white),
-              ),
-            ),
-          ),
-          color: Colors.transparent,
-        ),
-        //空卡片，防止下拉刷新时 ScrollView 卡在背景中
-        const SizedBox(height: 200)
-      ]),
-    );
+          Card(
+              child: Padding(
+                  padding: const EdgeInsets.only(left: 20, top: 20),
+                  child: GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: Text(time,
+                          style: const TextStyle(
+                              fontSize: 30, color: Colors.white)))),
+              color: Colors.transparent),
+          //空卡片，防止下拉刷新时 ScrollView 卡在背景中
+          const SizedBox(height: 200)
+        ]));
   }
 }
 
@@ -202,10 +197,9 @@ class Todo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
+        padding:
+            const EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 10),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
           Padding(
               padding: const EdgeInsets.fromLTRB(13, 10, 13, 15),
               child: Row(
@@ -232,16 +226,18 @@ class Todo extends StatelessWidget {
                             ),
                           ),
                           Tooltip(
-                            message: "双击记录今日浇水",
-                            child: GestureDetector(
-                              onDoubleTap: () => DashInfo.callAndShow(
-                                  Plant.setWaterRecordToDB, context, config),
-                              child: Text(
-                                  " " +
-                                      dashboard.plantInfo.weekWaterStr.join(""),
-                                  style: const TextStyle(color: Colors.white)),
-                            ),
-                          ),
+                              message: "双击记录今日浇水",
+                              child: GestureDetector(
+                                  onDoubleTap: () => DashInfo.callAndShow(
+                                      Plant.setWaterRecordToDB,
+                                      context,
+                                      config),
+                                  child: Text(
+                                      " " +
+                                          dashboard.plantInfo.weekWaterStr
+                                              .join(""),
+                                      style: const TextStyle(
+                                          color: Colors.white))))
                         ]),
                     DashInfo.noticeOf([dashboard.dayWorkString],
                         color: dashboard.alertMorningDayWork
@@ -266,10 +262,8 @@ class Todo extends StatelessWidget {
                     padding: const EdgeInsets.only(top: 4),
                     child: Text(todo.list, style: DashInfo.normal),
                   )))
-              .toList()),
-        ],
-      ),
-    );
+              .toList())
+        ]));
   }
 }
 
@@ -313,28 +307,26 @@ class _WorkState extends State<Work> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Tooltip(
-                    message: "双击同步 HCM",
-                    child: GestureDetector(
-                      onDoubleTap: () => DashInfo.callAndShow(
-                          Dashboard.checkHCMCard, context, config),
-                      child: Padding(
-                          padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
-                          child: Text.rich(TextSpan(children: [
-                            const TextSpan(
-                                text: "已工作 ",
-                                style: TextStyle(color: Colors.white)),
-                            TextSpan(
-                                text: "${widget.dashboard.work.WorkHour}",
-                                style: const TextStyle(
-                                    fontFamily: "consolas",
-                                    fontSize: 20,
-                                    color: Colors.white)),
-                            const TextSpan(
-                                text: " h",
-                                style: TextStyle(color: Colors.white))
-                          ]))),
-                    ),
-                  ),
+                      message: "双击同步 HCM",
+                      child: GestureDetector(
+                          onDoubleTap: () => DashInfo.callAndShow(
+                              Dashboard.checkHCMCard, context, config),
+                          child: Padding(
+                              padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
+                              child: Text.rich(TextSpan(children: [
+                                const TextSpan(
+                                    text: "已工作 ",
+                                    style: TextStyle(color: Colors.white)),
+                                TextSpan(
+                                    text: "${widget.dashboard.work.WorkHour}",
+                                    style: const TextStyle(
+                                        fontFamily: "consolas",
+                                        fontSize: 20,
+                                        color: Colors.white)),
+                                const TextSpan(
+                                    text: " h",
+                                    style: TextStyle(color: Colors.white))
+                              ]))))),
                   widget.dashboard.work.OffWork
                       ? DashInfo.noticeOf(["无需打卡"], color: Colors.green)
                       : widget.dashboard.work.NeedMorningCheck
@@ -390,18 +382,16 @@ class Habit extends StatelessWidget {
                                       const Text.rich(TextSpan(children: [
                                         TextSpan(text: " 已坚持"),
                                         TextSpan(
-                                            text:
-                                                " 10 ",
+                                            text: " 10 ",
                                             style: TextStyle(
                                                 fontFamily: "consolas",
                                                 fontSize: 20)),
                                         TextSpan(text: "天")
                                       ])),
                                       Text(
-                                        " 最长 ${dashboard.cleanMarvelCount} 天",
-                                        style: const TextStyle(
-                                            color: Colors.grey, fontSize: 13),
-                                      )
+                                          " 最长 ${dashboard.cleanMarvelCount} 天",
+                                          style: const TextStyle(
+                                              color: Colors.grey, fontSize: 13))
                                     ])
                               ]))),
                       Tooltip(

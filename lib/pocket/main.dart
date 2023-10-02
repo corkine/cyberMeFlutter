@@ -1,4 +1,3 @@
-
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -11,20 +10,30 @@ import 'config.dart';
 import 'auth.dart' as auth;
 import 'shortcut.dart' as short;
 import 'diary.dart' as diary;
+import 'ticket.dart';
 
 class CMPocket {
   static Widget call() => ChangeNotifierProvider(
-        create: (c) => Config(),
-        child: MaterialApp(
+      create: (c) => Config(),
+      child: MaterialApp(
           title: 'CMPocket',
           debugShowCheckedModeBanner: true,
           theme: ThemeData(useMaterial3: true),
           initialRoute: "/",
           routes: {
-            "/": (c) => const PocketHome()
-          },
-        ),
-      );
+            "/": (c) => const PocketHome(),
+            R.ticketParse.route: (c) => const TicketParsePage(),
+            R.ticketShow.route: (c) => const TicketShowPage()
+          }));
+}
+
+enum R {
+  ticketParse,
+  ticketShow;
+
+  String get route {
+    return "/" + name;
+  }
 }
 
 class PocketHome extends StatefulWidget {
@@ -240,48 +249,48 @@ class _PocketHomeState extends State<PocketHome> {
   Widget build(BuildContext context) {
     return Consumer<Config>(
         builder: (BuildContext context, Config config, Widget? w) {
-          return Scaffold(
-              drawer: auth.userMenuDrawer(config, context),
-              appBar: AppBar(
-                  elevation: 7,
-                  title: _title(config),
-                  leading: Builder(
-                      builder: (BuildContext context) => IconButton(
-                          icon: const Icon(Icons.menu),
-                          onPressed: () => Scaffold.of(context).openDrawer())),
-                  centerTitle: true,
-                  toolbarHeight: Config.toolBarHeight,
-                  actions: _buildActions(config, _index)),
-              floatingActionButton: _index == 0
-                  ? null
-                  : FloatingActionButton(
-                onPressed: () => _callActionButton(config, _index),
-                child: _buildActionButtonWidget(_index),
-              ),
-              floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-              body: _widgets(_index),
-              bottomNavigationBar: BottomNavigationBar(
-                  type: BottomNavigationBarType.fixed,
-                  currentIndex: _index,
-                  onTap: (i) => setState(() => _index = i),
-                  items: [
-                    BottomNavigationBarItem(
-                        label: DayInfo.title,
-                        icon: const Icon(Icons.calendar_today_outlined),
-                        activeIcon: const Icon(Icons.calendar_today)),
-                    BottomNavigationBarItem(
-                        label: diary.buttonTitle,
-                        icon: const Icon(Icons.sticky_note_2_outlined),
-                        activeIcon: const Icon(Icons.sticky_note_2_rounded)),
-                    const BottomNavigationBarItem(
-                        label: '短链接',
-                        icon: Icon(Icons.bookmark_border_rounded),
-                        activeIcon: Icon(Icons.bookmark)),
-                    const BottomNavigationBarItem(
-                        label: '物品管理',
-                        icon: Icon(Icons.checkroom_outlined),
-                        activeIcon: Icon(Icons.checkroom)),
-                  ]));
+      return Scaffold(
+          drawer: auth.userMenuDrawer(config, context),
+          appBar: AppBar(
+              elevation: 7,
+              title: _title(config),
+              leading: Builder(
+                  builder: (BuildContext context) => IconButton(
+                      icon: const Icon(Icons.menu),
+                      onPressed: () => Scaffold.of(context).openDrawer())),
+              centerTitle: true,
+              toolbarHeight: Config.toolBarHeight,
+              actions: _buildActions(config, _index)),
+          floatingActionButton: _index == 0
+              ? null
+              : FloatingActionButton(
+                  onPressed: () => _callActionButton(config, _index),
+                  child: _buildActionButtonWidget(_index),
+                ),
+          floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+          body: _widgets(_index),
+          bottomNavigationBar: BottomNavigationBar(
+              type: BottomNavigationBarType.fixed,
+              currentIndex: _index,
+              onTap: (i) => setState(() => _index = i),
+              items: [
+                BottomNavigationBarItem(
+                    label: DayInfo.title,
+                    icon: const Icon(Icons.calendar_today_outlined),
+                    activeIcon: const Icon(Icons.calendar_today)),
+                BottomNavigationBarItem(
+                    label: diary.buttonTitle,
+                    icon: const Icon(Icons.sticky_note_2_outlined),
+                    activeIcon: const Icon(Icons.sticky_note_2_rounded)),
+                const BottomNavigationBarItem(
+                    label: '短链接',
+                    icon: Icon(Icons.bookmark_border_rounded),
+                    activeIcon: Icon(Icons.bookmark)),
+                const BottomNavigationBarItem(
+                    label: '物品管理',
+                    icon: Icon(Icons.checkroom_outlined),
+                    activeIcon: Icon(Icons.checkroom)),
+              ]));
     });
   }
 }

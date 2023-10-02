@@ -60,6 +60,11 @@ class Config extends ChangeNotifier {
   Map<String, String> get cyberBase64Header =>
       <String, String>{'authorization': cyberBase64Token};
 
+  Map<String, String> get cyberBase64JsonContentHeader => <String, String>{
+        'Authorization': cyberBase64Token,
+        'Content-Type': 'application/json'
+      };
+
   double position = 0.0;
 
   Config() {
@@ -68,6 +73,12 @@ class Config extends ChangeNotifier {
 
   static const String dashboardUrl =
       "https://cyber.mazhangjing.com/cyber/dashboard/summary";
+  static const String recentTicketUrl =
+      "https://cyber.mazhangjing.com/cyber/ticket/recent";
+  static const String parseTicketUrl =
+      "https://cyber.mazhangjing.com/cyber/client/parse-tickets";
+  static const String deleteTicketUrl =
+      "https://cyber.mazhangjing.com/cyber/ticket/delete-date/";
   static const String dayWorkUrl =
       "https://cyber.mazhangjing.com/cyber/dashboard/day-work";
   static const String todoSyncUrl =
