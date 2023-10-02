@@ -77,6 +77,8 @@ class Config extends ChangeNotifier {
       "https://cyber.mazhangjing.com/cyber/ticket/recent";
   static const String parseTicketUrl =
       "https://cyber.mazhangjing.com/cyber/client/parse-tickets";
+  static const String addTicketsUrl =
+      "https://cyber.mazhangjing.com/cyber/ticket/add-multi";
   static const String deleteTicketUrl =
       "https://cyber.mazhangjing.com/cyber/ticket/delete-date/";
   static const String dayWorkUrl =

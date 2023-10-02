@@ -29,7 +29,9 @@ Data _$DataFromJson(Map<String, dynamic> json) => Data(
     canceled: json['canceled?'] as bool?);
 
 Map<String, dynamic> _$DataToJson(Data instance) => <String, dynamic>{
-      'date': instance.date,
+      'date': instance.dateTime != null
+          ? DateFormat("yyyyMMdd_HH:mm").format(instance.dateTime!)
+          : null,
       'start': instance.start,
       'end': instance.end,
       'trainNo': instance.trainNo,

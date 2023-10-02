@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'ticket.g.dart';
@@ -28,9 +29,9 @@ class Ticket {
 class Data {
   final String? date;
   final String? start;
-  final String? end;
+  String? end;
   final String? trainNo;
-  final String? siteNo;
+  String? siteNo;
   final bool? canceled;
 
   bool get isHistory {
@@ -54,7 +55,7 @@ class Data {
 
   DateTime? get dateTime => date == null ? null : DateTime.tryParse(date!);
 
-  const Data(
+  Data(
       {this.date,
       this.start,
       this.end,

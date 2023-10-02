@@ -60,30 +60,28 @@ class _TicketShowPageState extends State<TicketShowPage> {
           IconButton(
               onPressed: () => Navigator.of(context)
                   .pushNamed(R.ticketParse.route)
-                  .then((value) => handleReloadTickets()),
+                  .then((value) => Future.delayed(
+                      const Duration(milliseconds: 1500), handleReloadTickets)),
               icon: const Icon(Icons.add_sharp))
         ]),
         body: Padding(
             padding: const EdgeInsets.only(left: 8, right: 8),
             child: RefreshIndicator(
-              onRefresh: handleReloadTickets,
-              child: ListView(children: [
-                const Padding(
-                  padding: EdgeInsets.only(left: 8, top: 8),
-                  child: Text("待出行车票"),
-                ),
-                ...recent
-                    .map((e) => buildCard(e, handleDeleteTicket, context))
-                    .toList(growable: false),
-                const Padding(
-                  padding: EdgeInsets.only(left: 8, top: 8),
-                  child: Text("历史车票"),
-                ),
-                ...history
-                    .map((e) => buildCard(e, handleDeleteTicket, context))
-                    .toList(growable: false)
-              ]),
-            )));
+                onRefresh: handleReloadTickets,
+                child: ListView(children: [
+                  const Padding(
+                      padding: EdgeInsets.only(left: 8, top: 8),
+                      child: Text("待出行车票")),
+                  ...recent
+                      .map((e) => buildCard(e, handleDeleteTicket, context))
+                      .toList(growable: false),
+                  const Padding(
+                      padding: EdgeInsets.only(left: 8, top: 8),
+                      child: Text("历史车票")),
+                  ...history
+                      .map((e) => buildCard(e, handleDeleteTicket, context))
+                      .toList(growable: false)
+                ]))));
   }
 }
 
@@ -146,42 +144,38 @@ class _TicketParsePageState extends State<TicketParsePage> {
                   child: SingleChildScrollView(
                       child: Padding(
                           padding: const EdgeInsets.all(8.0),
-                          child: Column(
-                              mainAxisSize: MainAxisSize.max,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Row(),
-                                Padding(
-                                    padding: const EdgeInsets.all(5),
-                                    child: Text("解析结果",
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .headlineSmall)),
-                                ...data.map((e) =>
-                                    buildCard(e, (_, a, b) async {}, context)),
-                                const SizedBox(height: 20),
-                                SizedBox(
-                                    width: double.infinity,
-                                    child: Padding(
-                                        padding: const EdgeInsets.only(
-                                            left: 10, right: 10),
-                                        child: ElevatedButton(
-                                            onPressed: handleUpdateToServer,
-                                            child: const Text("更新到服务器"),
-                                            style: ButtonStyle(
-                                                foregroundColor:
-                                                    MaterialStatePropertyAll(
-                                                        Theme.of(context)
-                                                            .colorScheme
-                                                            .onPrimaryContainer),
-                                                backgroundColor:
-                                                    MaterialStatePropertyAll(Theme
-                                                            .of(context)
-                                                        .colorScheme
-                                                        .primaryContainer))))),
-                                const SizedBox(height: 20)
-                              ]))))
+                          child: buildParseResult(context))))
         ]));
+  }
+
+  Column buildParseResult(BuildContext context) {
+    return Column(
+        mainAxisSize: MainAxisSize.max,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(),
+          Padding(
+              padding: const EdgeInsets.all(5),
+              child: Text("解析结果",
+                  style: Theme.of(context).textTheme.headlineSmall)),
+          ...data.map((e) => buildCard(e, (_, a, b) async {}, context)),
+          const SizedBox(height: 20),
+          SizedBox(
+              width: double.infinity,
+              child: Padding(
+                  padding: const EdgeInsets.only(left: 10, right: 10),
+                  child: ElevatedButton(
+                      onPressed: handleUpdateToServer,
+                      child: const Text("更新到服务器"),
+                      style: ButtonStyle(
+                          foregroundColor: MaterialStatePropertyAll(
+                              Theme.of(context).colorScheme.onPrimaryContainer),
+                          backgroundColor: MaterialStatePropertyAll(
+                              Theme.of(context)
+                                  .colorScheme
+                                  .primaryContainer))))),
+          const SizedBox(height: 20)
+        ]);
   }
 
   Future handleParseTicket() async {
@@ -202,12 +196,43 @@ class _TicketParsePageState extends State<TicketParsePage> {
     }
   }
 
+  Future<String?> requireInput(String require) async {
+    var ctr = TextEditingController();
+    return showDialog(
+        context: context,
+        builder: (c) => AlertDialog(
+                title: const Text("补充数据"),
+                content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [Text(require), TextField(controller: ctr)]),
+                actions: [
+                  TextButton(
+                      onPressed: () => Navigator.of(context).pop(null),
+                      child: const Text("取消")),
+                  TextButton(
+                      onPressed: () => Navigator.of(context)
+                          .pop(ctr.text.isEmpty ? null : ctr.text),
+                      child: const Text("确定"))
+                ]));
+  }
+
   Future handleUpdateToServer() async {
-    final data = await tickerParse(config, input.text, dry: false);
-    showDialog(
+    for (final d in data) {
+      d.end ??= await requireInput(
+          "于 ${d.dateTime} 从 ${d.start} 的行程 ${d.trainNo} 需要补充终止站点");
+      if (d.siteNo == null) {
+        await Future.delayed(const Duration(seconds: 1));
+        d.siteNo = await requireInput(
+            "于 ${d.dateTime} 从 ${d.start} 到 ${d.end} 的行程需要补充座次信息");
+      }
+    }
+    final resp = await ticketUpdate(config, data);
+    setState(() {});
+    await Future.delayed(const Duration(milliseconds: 600));
+    await showDialog(
         context: context,
         builder: (c) =>
-            AlertDialog(title: const Text("结果"), content: Text(data), actions: [
+            AlertDialog(title: const Text("结果"), content: Text(resp), actions: [
               TextButton(
                   onPressed: () => Navigator.of(context).pop(),
                   child: const Text("确定"))
@@ -349,4 +374,13 @@ Future<dynamic> tickerParse(Config config, String content,
   } else {
     return jsonData["message"] ?? "服务未返回消息";
   }
+}
+
+Future<dynamic> ticketUpdate(Config config, List<t.Data> tickets) async {
+  final data =
+      jsonEncode(tickets.map((e) => e.toJson()).toList(growable: false));
+  final Response r = await post(Uri.parse(Config.addTicketsUrl),
+      headers: config.cyberBase64JsonContentHeader, body: data);
+  final jsonData = jsonDecode(r.body);
+  return jsonData["message"] ?? "服务未返回消息";
 }
