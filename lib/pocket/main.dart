@@ -8,6 +8,7 @@ import 'goods.dart';
 import 'link.dart';
 import 'config.dart';
 import 'auth.dart' as auth;
+import 'menu.dart';
 import 'shortcut.dart' as short;
 import 'diary.dart' as diary;
 import 'ticket.dart';
@@ -22,6 +23,16 @@ class CMPocket {
           initialRoute: "/",
           routes: {
             "/": (c) => const PocketHome(),
+            R.dashboard.route: (c) => const PocketHome(),
+            R.bigDashboard.route: (c) {
+              Future.delayed(const Duration(seconds: 2), () {
+                final config = Provider.of<Config>(c, listen: false);
+                config.needRefreshDashboardPage = true;
+                config.setBool('useDashboard', !config.useDashboard);
+              });
+              return const PocketHome();
+            },
+            R.menu.route: (c) => const MenuView(),
             R.ticketParse.route: (c) => const TicketParsePage(),
             R.ticketShow.route: (c) => const TicketShowPage()
           }));
@@ -29,7 +40,19 @@ class CMPocket {
 
 enum R {
   ticketParse,
-  ticketShow;
+  ticketShow,
+  dashboard,
+  bigDashboard,
+  menu;
+
+  static Map<R, Map<String, dynamic>> get toMenu {
+    return {
+      R.dashboard: {"name": "我的一天", "replace": true},
+      R.bigDashboard: {"name": "我的一天（大屏）", "replace": true},
+      R.ticketShow: {"name": "12306 车票"},
+      R.ticketParse: {"name": "12306 车票解析"}
+    };
+  }
 
   String get route {
     return "/" + name;
@@ -129,21 +152,18 @@ class _PocketHomeState extends State<PocketHome> {
       return config.useReorderableListView
           ? [
               ElevatedButton(
-                onPressed: () {
-                  final position = config.controller.offset;
-                  config.position = position;
-                  config.setUseReorderableListView(false);
-                },
-                child: Row(
-                  children: const [
+                  onPressed: () {
+                    final position = config.controller.offset;
+                    config.position = position;
+                    config.setUseReorderableListView(false);
+                  },
+                  child: const Row(children: [
                     Padding(
                       padding: EdgeInsets.only(right: 3),
                       child: Icon(Icons.done),
                     ),
                     Text('确定')
-                  ],
-                ),
-              )
+                  ]))
             ]
           : [
               PopupMenuButton<int>(

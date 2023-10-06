@@ -77,12 +77,13 @@ class DayInfo {
                     onTap: () =>
                         Navigator.of(context).pushNamed(R.ticketShow.route)),
                 PopupMenuItem(
-                    child: const Text("Debug Info"),
+                    child: const Text("Menu"),
                     onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        duration: const Duration(seconds: 100),
-                        content: Text("$encryptInfo\n$debugInfo"),
-                      ));
+                      // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      //   duration: const Duration(seconds: 100),
+                      //   content: Text("$encryptInfo\n$debugInfo"),
+                      // ));
+                      Navigator.of(context).pushReplacementNamed(R.menu.route);
                     }),
                 PopupMenuItem(
                     child: const Text("退出 Flutter Engine"),
