@@ -1,5 +1,8 @@
 import 'dart:io';
 
+import 'package:cyberme_flutter/learn/game.dart';
+import 'package:cyberme_flutter/learn/snh.dart';
+import 'package:cyberme_flutter/pocket/express.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:cyberme_flutter/pocket/day.dart';
@@ -34,7 +37,10 @@ class CMPocket {
             },
             R.menu.route: (c) => const MenuView(),
             R.ticketParse.route: (c) => const TicketParsePage(),
-            R.ticketShow.route: (c) => const TicketShowPage()
+            R.ticketShow.route: (c) => const TicketShowPage(),
+            R.game.route: (c) => const Game(info: null),
+            R.snh48.route: (c) => const SNHApp(),
+            R.express.route: (c) => const ExpressView()
           }));
 }
 
@@ -43,14 +49,20 @@ enum R {
   ticketShow,
   dashboard,
   bigDashboard,
+  game,
+  snh48,
+  express,
   menu;
 
   static Map<R, Map<String, dynamic>> get toMenu {
     return {
       R.dashboard: {"name": "我的一天", "replace": true},
       R.bigDashboard: {"name": "我的一天（大屏）", "replace": true},
+      R.game: {"name": "健康游戏"},
+      R.snh48: {"name": "SNH48 Pocket"},
       R.ticketShow: {"name": "12306 车票"},
-      R.ticketParse: {"name": "12306 车票解析"}
+      R.ticketParse: {"name": "12306 车票解析"},
+      R.express: {"name": "快递追踪"}
     };
   }
 

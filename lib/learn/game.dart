@@ -7,7 +7,7 @@ import 'package:cyberme_flutter/health/data.dart';
 import '../health/health_v2.dart';
 
 class Game extends StatefulWidget {
-  final Info info;
+  final Info? info;
 
   const Game({Key? key, required this.info}) : super(key: key);
 
@@ -34,9 +34,10 @@ class _GameState extends State<Game> {
           onTap: () {
             if (Info.needShow) {
               Info.needShow = false;
-              Navigator.of(context).push(MaterialPageRoute(builder: (c) {
-                return HealthCard(info: widget.info, scoreEvent: scoreEvent);
-              }));
+              Info.readData().then((value) =>
+                  Navigator.of(context).push(MaterialPageRoute(builder: (c) {
+                    return HealthCard(info: value, scoreEvent: scoreEvent);
+                  })));
             }
           },
           child: StreamBuilder(

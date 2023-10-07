@@ -77,7 +77,7 @@ class DayInfo {
                     onTap: () =>
                         Navigator.of(context).pushNamed(R.ticketShow.route)),
                 PopupMenuItem(
-                    child: const Text("Menu"),
+                    child: const Text("Flutter Apps"),
                     onTap: () {
                       // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                       //   duration: const Duration(seconds: 100),

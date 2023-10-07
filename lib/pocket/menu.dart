@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -15,6 +17,7 @@ class _MenuViewState extends State<MenuView> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
+          automaticallyImplyLeading: false,
           title: const Text("Flutter Apps"),
         ),
         body: SafeArea(
@@ -45,9 +48,18 @@ class _MenuViewState extends State<MenuView> {
                                 .toList(growable: false)),
                       ),
                       const Spacer(),
-                      TextButton(
-                          onPressed: () => SystemNavigator.pop(animated: true),
-                          child: const Text("退出 Flutter Engine"))
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          TextButton(
+                              onPressed: () =>
+                                  SystemNavigator.pop(animated: true),
+                              child: const Text("退出 Flutter")),
+                          TextButton(
+                              onPressed: () => exit(0),
+                              child: const Text("退出 App"))
+                        ],
+                      )
                     ]))));
   }
 }
