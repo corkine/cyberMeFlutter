@@ -57,11 +57,11 @@ enum R {
   static Map<R, Map<String, dynamic>> get toMenu {
     return {
       R.dashboard: {"name": "我的一天", "replace": true},
-      R.bigDashboard: {"name": "我的一天（大屏）", "replace": true},
+      // R.bigDashboard: {"name": "我的一天（大屏）", "replace": true},
       R.game: {"name": "健康游戏"},
       R.snh48: {"name": "SNH48 Pocket"},
       R.ticketShow: {"name": "12306 车票"},
-      R.ticketParse: {"name": "12306 车票解析"},
+      // R.ticketParse: {"name": "12306 车票解析"},
       R.express: {"name": "快递追踪"}
     };
   }

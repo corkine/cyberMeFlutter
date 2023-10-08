@@ -1,4 +1,3 @@
-
 import 'package:cyberme_flutter/pocket/day.dart';
 import 'package:flutter/foundation.dart';
 import 'package:cyberme_flutter/pocket/models/diary.dart' as real_diary;
@@ -19,26 +18,29 @@ class Express {
   String lastUpdate;
   String info;
 
+  List<(String, String)> extra;
+
 //<editor-fold desc="Data Methods">
 
-  Express({
-    required this.id,
-    required this.name,
-    required this.status,
-    required this.lastUpdate,
-    required this.info,
-  });
+  Express(
+      {required this.id,
+      required this.name,
+      required this.status,
+      required this.lastUpdate,
+      required this.info,
+      required this.extra});
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Express &&
-          runtimeType == other.runtimeType &&
-          id == other.id &&
-          name == other.name &&
-          status == other.status &&
-          lastUpdate == other.lastUpdate &&
-          info == other.info);
+              runtimeType == other.runtimeType &&
+              id == other.id &&
+              name == other.name &&
+              status == other.status &&
+              lastUpdate == other.lastUpdate &&
+              info == other.info) &&
+          extra == other.extra;
 
   @override
   int get hashCode =>
@@ -46,7 +48,8 @@ class Express {
       name.hashCode ^
       status.hashCode ^
       lastUpdate.hashCode ^
-      info.hashCode;
+      info.hashCode ^
+      extra.hashCode;
 
   @override
   String toString() {
@@ -56,23 +59,8 @@ class Express {
         ' status: $status,' +
         ' last_update: $lastUpdate,' +
         ' info: $info,' +
+        ' extra: $extra,' +
         '}';
-  }
-
-  Express copyWith({
-    String? id,
-    String? name,
-    int? status,
-    String? last_update,
-    String? info,
-  }) {
-    return Express(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      status: status ?? this.status,
-      lastUpdate: last_update ?? this.lastUpdate,
-      info: info ?? this.info,
-    );
   }
 
   Map<String, dynamic> toMap() {
@@ -87,12 +75,18 @@ class Express {
 
   factory Express.fromMap(Map<String, dynamic> map) {
     return Express(
-      id: map['id'] as String,
-      name: map['name'] as String,
-      status: map['status'] as int,
-      lastUpdate: map['last_update'] as String,
-      info: map['info'] as String,
-    );
+        id: map['id'] as String,
+        name: map['name'] as String,
+        status: map['status'] as int,
+        lastUpdate: map['last_update'] as String,
+        info: map['info'] as String,
+        extra: ((map['extra'] as List?) ?? [])
+            .map((e) => e as Map?)
+            .map((e) => (
+                  (e?["time"] as String?) ?? "无日期",
+                  (e?["status"] as String?) ?? "无状态"
+                ))
+            .toList(growable: false));
   }
 
 //</editor-fold>
@@ -440,13 +434,12 @@ class Dashboard {
 
 //<editor-fold desc="Data Methods">
 
-  Dashboard({
-    required this.express,
-    required this.work,
-    required this.todo,
-    required this.score,
-    required this.fitness
-  });
+  Dashboard(
+      {required this.express,
+      required this.work,
+      required this.todo,
+      required this.score,
+      required this.fitness});
 
   Map<String, dynamic> toMap() {
     return {
@@ -608,19 +601,19 @@ class Dashboard {
     if (kDebugMode) {
       print("Loading from CyberMe... from user: ${config.user}");
     }
-    final Response r =
-        await get(Uri.parse(Config.dashboardUrl), headers: config.cyberBase64Header);
+    final Response r = await get(Uri.parse(Config.dashboardUrl),
+        headers: config.cyberBase64Header);
     final data = jsonDecode(r.body);
-    DayInfo.debugInfo = sprintf("%s:%s\n",["Config",config.toString()]);
-    DayInfo.debugInfo += sprintf("%s, %s, %s, %s", [r.headers,
-      r.body.substring(0, 20), r.request, r.statusCode]);
+    DayInfo.debugInfo = sprintf("%s:%s\n", ["Config", config.toString()]);
+    DayInfo.debugInfo += sprintf("%s, %s, %s, %s",
+        [r.headers, r.body.substring(0, 20), r.request, r.statusCode]);
     if (data["message"].toString().contains("access denied") && kDebugMode) {
       print("response no auth: ${data.toString()}");
       return null;
     }
     final dashInfo = Dashboard.fromMap(data["data"]);
-    final workResult =
-        await get(Uri.parse(Config.dayWorkUrl), headers: config.cyberBase64Header);
+    final workResult = await get(Uri.parse(Config.dayWorkUrl),
+        headers: config.cyberBase64Header);
     final workData = jsonDecode(workResult.body)["data"];
     dashInfo.dayWork = workData as String?;
     dashInfo.diaries = await real_diary.DiaryManager.loadFromApi(config);
