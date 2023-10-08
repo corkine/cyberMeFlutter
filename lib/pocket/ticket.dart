@@ -59,7 +59,8 @@ class _TicketShowPageState extends State<TicketShowPage> {
         appBar: AppBar(title: const Text("12306 最近车票"), actions: [
           IconButton(
               onPressed: () => Navigator.of(context)
-                  .pushNamed(R.ticketParse.route)
+                  .push(MaterialPageRoute(
+                      builder: (c) => const TicketParsePage()))
                   .then((value) => Future.delayed(
                       const Duration(milliseconds: 1500), handleReloadTickets)),
               icon: const Icon(Icons.add_sharp))

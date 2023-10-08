@@ -80,6 +80,9 @@ class Config extends ChangeNotifier {
   static const String trackUrl =
       "https://cyber.mazhangjing.com/cyber/service/visits/monitor";
 
+  static String todoUrl(int start, int end) =>
+      "https://cyber.mazhangjing.com/cyber/todo/recent-page?from=$start&to=$end";
+
   static String deleteExpress(String no) =>
       "https://cyber.mazhangjing.com/cyber/express/delete?no=$no";
 

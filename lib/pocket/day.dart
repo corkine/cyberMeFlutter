@@ -75,7 +75,7 @@ class DayInfo {
                 PopupMenuItem(
                     child: const Text("12306 最近车票"),
                     onTap: () =>
-                        Navigator.of(context).pushNamed(R.ticketShow.route)),
+                        Navigator.of(context).pushNamed("/app/ticket")),
                 PopupMenuItem(
                     child: const Text("Flutter Apps"),
                     onTap: () {
@@ -83,7 +83,7 @@ class DayInfo {
                       //   duration: const Duration(seconds: 100),
                       //   content: Text("$encryptInfo\n$debugInfo"),
                       // ));
-                      Navigator.of(context).pushReplacementNamed(R.menu.route);
+                      Navigator.of(context).pushReplacementNamed("/menu");
                     }),
                 PopupMenuItem(
                     child: const Text("退出 Flutter Engine"),
@@ -328,29 +328,28 @@ class MainPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      physics:
-          const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        //待办卡片
-        Card(child: Todo(config, dashboard), elevation: 0.2),
-        //工作日卡片，包含是否打卡，是否下班，工作时长，打卡信息
-        SizedBox(
-            height: 130,
-            child: LayoutBuilder(
-                builder: (context, constraints) =>
-                    Work(dashboard, constraints))),
-        //习惯卡片
-        SizedBox(
-            height: 100,
-            child: LayoutBuilder(
-                builder: (context, constraints) =>
-                    Habit(dashboard, constraints))),
-        LayoutBuilder(
-            builder: (context, constraints) => Diary(dashboard, constraints)),
-        //空卡片，防止下拉刷新时 ScrollView 卡在背景中
-        const SizedBox(height: 200)
-      ]),
-    );
+        physics: const AlwaysScrollableScrollPhysics(
+            parent: BouncingScrollPhysics()),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          //待办卡片
+          Todo(config, dashboard),
+          //工作日卡片，包含是否打卡，是否下班，工作时长，打卡信息
+          SizedBox(
+              height: 130,
+              child: LayoutBuilder(
+                  builder: (context, constraints) =>
+                      Work(dashboard, constraints))),
+          //习惯卡片
+          SizedBox(
+              height: 100,
+              child: LayoutBuilder(
+                  builder: (context, constraints) =>
+                      Habit(dashboard, constraints))),
+          LayoutBuilder(
+              builder: (context, constraints) => Diary(dashboard, constraints)),
+          //空卡片，防止下拉刷新时 ScrollView 卡在背景中
+          const SizedBox(height: 200)
+        ]));
   }
 }
 
@@ -443,66 +442,61 @@ class _WorkState extends State<Work> {
   @override
   void didChangeDependencies() {
     Future.delayed(
-        const Duration(milliseconds: 100), () => setState(() => {left = 0}));
+        const Duration(milliseconds: 100), () => setState(() => left = 0));
     super.didChangeDependencies();
   }
 
   @override
   Widget build(BuildContext context) {
     var config = Provider.of<Config>(context, listen: false);
-    return Card(
-      color: Colors.white,
-      child: Stack(children: [
-        Container(
-            width: double.infinity,
-            padding: const EdgeInsets.only(right: 20, top: 20),
-            child: Column(
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Tooltip(
-                    message: "双击同步 HCM",
-                    child: GestureDetector(
-                      onDoubleTap: () => DayInfo.callAndShow(
-                          Dashboard.checkHCMCard, context, config),
-                      child: Padding(
-                          padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
-                          child: Text.rich(TextSpan(children: [
-                            const TextSpan(text: "已工作 "),
-                            TextSpan(
-                                text: "${widget.dashboard.work.WorkHour}",
-                                style: const TextStyle(
-                                    fontFamily: "consolas", fontSize: 20)),
-                            const TextSpan(text: " h")
-                          ]))),
-                    ),
+    return Stack(children: [
+      Container(
+          width: double.infinity,
+          padding: const EdgeInsets.only(right: 20, top: 20),
+          child: Column(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Tooltip(
+                  message: "双击同步 HCM",
+                  child: GestureDetector(
+                    onDoubleTap: () => DayInfo.callAndShow(
+                        Dashboard.checkHCMCard, context, config),
+                    child: Padding(
+                        padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
+                        child: Text.rich(TextSpan(children: [
+                          const TextSpan(text: "已工作 "),
+                          TextSpan(
+                              text: "${widget.dashboard.work.WorkHour}",
+                              style: const TextStyle(
+                                  fontFamily: "consolas", fontSize: 20)),
+                          const TextSpan(text: " h")
+                        ]))),
                   ),
-                  widget.dashboard.work.OffWork
-                      ? DayInfo.noticeOf(["无需打卡"], color: Colors.green)
-                      : widget.dashboard.work.NeedMorningCheck
-                          ? DayInfo.noticeOf(["记得打卡"], color: Colors.orange)
-                          : widget.dashboard.alertNightDayWork
-                              ? DayInfo.noticeOf(["记得打卡"], color: Colors.red)
-                              : DayInfo.noticeOf(
-                                  widget.dashboard.work.signData())
-                ])),
-        AnimatedPositioned(
-            duration: const Duration(milliseconds: 1000),
-            curve: Curves.linearToEaseOut,
-            left: left,
-            bottom: -10,
-            child: widget.dashboard.work.NeedWork
-                ? widget.dashboard.work.OffWork
-                    ? Image.asset("images/dash/offwork.png",
-                        height: widget.constraints.maxHeight)
-                    : Image.asset("images/dash/work.png",
-                        height: widget.constraints.maxHeight)
-                : Image.asset("images/dash/offwork.png",
-                    height: widget.constraints.maxHeight))
-      ]),
-      elevation: 0.2,
-    );
+                ),
+                widget.dashboard.work.OffWork
+                    ? DayInfo.noticeOf(["无需打卡"], color: Colors.green)
+                    : widget.dashboard.work.NeedMorningCheck
+                        ? DayInfo.noticeOf(["记得打卡"], color: Colors.orange)
+                        : widget.dashboard.alertNightDayWork
+                            ? DayInfo.noticeOf(["记得打卡"], color: Colors.red)
+                            : DayInfo.noticeOf(widget.dashboard.work.signData())
+              ])),
+      AnimatedPositioned(
+          duration: const Duration(milliseconds: 1000),
+          curve: Curves.linearToEaseOut,
+          left: left,
+          bottom: -10,
+          child: widget.dashboard.work.NeedWork
+              ? widget.dashboard.work.OffWork
+                  ? Image.asset("images/dash/offwork.png",
+                      height: widget.constraints.maxHeight)
+                  : Image.asset("images/dash/work.png",
+                      height: widget.constraints.maxHeight)
+              : Image.asset("images/dash/offwork.png",
+                  height: widget.constraints.maxHeight))
+    ]);
   }
 }
 
@@ -520,90 +514,86 @@ class Habit extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var config = Provider.of<Config>(context);
-    return Card(
-      color: Colors.white,
-      child: Padding(
-          padding: const EdgeInsets.only(left: 10, right: 20),
-          child: Column(
-              mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      Tooltip(
-                          message: "双击添加今日记录",
-                          child: GestureDetector(
-                              onDoubleTap: () => DayInfo.callAndShow(
-                                  Dashboard.setClean, context, config),
-                              child: Row(children: [
-                                buildProgressIcon(
-                                    dashboard.cleanPercentInRange, "comb"),
-                                Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      const Text.rich(TextSpan(children: [
-                                        TextSpan(text: " 已坚持"),
-                                        TextSpan(
-                                            text: " 0+1? ",
-                                            style: TextStyle(
-                                                fontFamily: "consolas",
-                                                fontSize: 20)),
-                                        TextSpan(text: "天")
-                                      ])),
-                                      Text(
-                                        " 最长 ${dashboard.cleanMarvelCount} 天",
-                                        style: const TextStyle(
-                                            color: Colors.grey, fontSize: 13),
-                                      )
-                                    ])
-                              ]))),
-                      Tooltip(
-                          message: "双击记录 Blue 信息",
-                          child: GestureDetector(
-                              onDoubleTap: () {
-                                showDatePicker(
-                                        context: context,
-                                        initialDate: DateTime.now(),
-                                        firstDate: DateTime.now()
-                                            .subtract(const Duration(days: 5)),
-                                        lastDate: DateTime.now())
-                                    .then((date) {
-                                  if (date == null) return;
-                                  var dateStr = date.toString().split(" ")[0];
-                                  DayInfo.callAndShow(
-                                      (c) => Dashboard.setBlue(c, dateStr),
-                                      context,
-                                      config);
-                                });
-                              },
-                              child: Row(children: [
-                                buildProgressIcon(
-                                    dashboard.noBluePercentInRange, "summer"),
-                                Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text.rich(TextSpan(children: [
-                                        const TextSpan(text: " 已坚持"),
-                                        TextSpan(
-                                            text: " ${dashboard.noBlueCount} ",
-                                            style: const TextStyle(
-                                                fontFamily: "consolas",
-                                                fontSize: 20)),
-                                        const TextSpan(text: "天")
-                                      ])),
-                                      Text(
-                                          " 最长 ${dashboard.noBlueMarvelCount} 天",
+    return Padding(
+        padding: const EdgeInsets.only(left: 10, right: 20),
+        child: Column(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    Tooltip(
+                        message: "双击添加今日记录",
+                        child: GestureDetector(
+                            onDoubleTap: () => DayInfo.callAndShow(
+                                Dashboard.setClean, context, config),
+                            child: Row(children: [
+                              buildProgressIcon(
+                                  dashboard.cleanPercentInRange, "comb"),
+                              Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    const Text.rich(TextSpan(children: [
+                                      TextSpan(text: " 已坚持"),
+                                      TextSpan(
+                                          text: " 0+1? ",
+                                          style: TextStyle(
+                                              fontFamily: "consolas",
+                                              fontSize: 20)),
+                                      TextSpan(text: "天")
+                                    ])),
+                                    Text(
+                                      " 最长 ${dashboard.cleanMarvelCount} 天",
+                                      style: const TextStyle(
+                                          color: Colors.grey, fontSize: 13),
+                                    )
+                                  ])
+                            ]))),
+                    Tooltip(
+                        message: "双击记录 Blue 信息",
+                        child: GestureDetector(
+                            onDoubleTap: () {
+                              showDatePicker(
+                                      context: context,
+                                      initialDate: DateTime.now(),
+                                      firstDate: DateTime.now()
+                                          .subtract(const Duration(days: 5)),
+                                      lastDate: DateTime.now())
+                                  .then((date) {
+                                if (date == null) return;
+                                var dateStr = date.toString().split(" ")[0];
+                                DayInfo.callAndShow(
+                                    (c) => Dashboard.setBlue(c, dateStr),
+                                    context,
+                                    config);
+                              });
+                            },
+                            child: Row(children: [
+                              buildProgressIcon(
+                                  dashboard.noBluePercentInRange, "summer"),
+                              Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Text.rich(TextSpan(children: [
+                                      const TextSpan(text: " 已坚持"),
+                                      TextSpan(
+                                          text: " ${dashboard.noBlueCount} ",
                                           style: const TextStyle(
-                                              color: Colors.grey, fontSize: 13))
-                                    ])
-                              ])))
-                    ])
-              ])),
-      elevation: 0.2,
-    );
+                                              fontFamily: "consolas",
+                                              fontSize: 20)),
+                                      const TextSpan(text: "天")
+                                    ])),
+                                    Text(
+                                        " 最长 ${dashboard.noBlueMarvelCount} 天",
+                                        style: const TextStyle(
+                                            color: Colors.grey, fontSize: 13))
+                                  ])
+                            ])))
+                  ])
+            ]));
   }
 
   Widget buildProgressIcon(double progress, String png) {
@@ -654,13 +644,10 @@ class _DiaryState extends State<Diary> {
   @override
   Widget build(BuildContext context) {
     diary = d.DiaryManager.today(widget.dashboard.diaries);
-    return Card(
-        color: Colors.white.withOpacity(1),
-        child: Container(
-            padding:
-                const EdgeInsets.only(left: 10, right: 20, top: 20, bottom: 20),
-            child: diary == null ? buildWhenNoDiary() : buildTodayDiary()),
-        elevation: 0.2);
+    return Container(
+        padding:
+            const EdgeInsets.only(left: 10, right: 20, top: 20, bottom: 20),
+        child: diary == null ? buildWhenNoDiary() : buildTodayDiary());
   }
 
   Widget buildTodayDiary() {
@@ -753,7 +740,7 @@ class _DiaryState extends State<Diary> {
                           ])),
                       ElevatedButton(
                           style: ButtonStyle(
-                              elevation: MaterialStateProperty.all(0.1)),
+                              elevation: MaterialStateProperty.all(0.01)),
                           onPressed: () {
                             launchUrl(Uri.parse(d.DiaryManager.newDiaryUrl));
                           },

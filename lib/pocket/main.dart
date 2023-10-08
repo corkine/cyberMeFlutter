@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cyberme_flutter/learn/game.dart';
 import 'package:cyberme_flutter/learn/snh.dart';
 import 'package:cyberme_flutter/pocket/express.dart';
+import 'package:cyberme_flutter/pocket/todo.dart';
 import 'package:cyberme_flutter/pocket/track.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -25,55 +26,66 @@ class CMPocket {
           debugShowCheckedModeBanner: true,
           theme: ThemeData(useMaterial3: true),
           initialRoute: "/",
-          routes: {
-            "/": (c) => const PocketHome(),
-            R.dashboard.route: (c) => const PocketHome(),
-            R.bigDashboard.route: (c) {
-              Future.delayed(const Duration(seconds: 2), () {
-                final config = Provider.of<Config>(c, listen: false);
-                config.needRefreshDashboardPage = true;
-                config.setBool('useDashboard', !config.useDashboard);
-              });
-              return const PocketHome();
-            },
-            R.menu.route: (c) => const MenuView(),
-            R.ticketParse.route: (c) => const TicketParsePage(),
-            R.ticketShow.route: (c) => const TicketShowPage(),
-            R.game.route: (c) => const Game(info: null),
-            R.snh48.route: (c) => const SNHApp(),
-            R.express.route: (c) => const ExpressView(),
-            R.track.route: (c) => const TrackView()
-          }));
+          routes: (apps.map((key, value) => MapEntry(
+              "/app/$key", value["view"] as Widget Function(BuildContext))))
+            ..addAll({
+              "/": (c) => const PocketHome(),
+              "/menu": (c) => const MenuView()
+            })));
 }
 
-enum R {
-  ticketParse,
-  ticketShow,
-  dashboard,
-  bigDashboard,
-  game,
-  snh48,
-  express,
-  track,
-  menu;
-
-  static Map<R, Map<String, dynamic>> get toMenu {
-    return {
-      R.dashboard: {"name": "我的一天", "replace": true},
-      // R.bigDashboard: {"name": "我的一天（大屏）", "replace": true},
-      R.game: {"name": "健康游戏"},
-      R.snh48: {"name": "SNH48 Pocket"},
-      R.ticketShow: {"name": "12306 车票"},
-      // R.ticketParse: {"name": "12306 车票解析"},
-      R.express: {"name": "快递追踪"},
-      R.track: {"name": "服务追踪"}
-    };
-  }
-
-  String get route {
-    return "/" + name;
-  }
-}
+final apps = {
+  "dashboard": {
+    "name": "我的一天",
+    "view": (c) => const PocketHome(),
+    "addToMenu": true,
+    "replace": true
+  },
+  "bigDashboard": {
+    "name": "我的一天（大屏）",
+    "view": (c) {
+          Future.delayed(const Duration(seconds: 2), () {
+            final config = Provider.of<Config>(c, listen: false);
+            config.needRefreshDashboardPage = true;
+            config.setBool('useDashboard', !config.useDashboard);
+          });
+          return const PocketHome();
+        },
+    "addToMenu": false,
+    "replace": true
+  },
+  "menu": {
+    "name": "我的一天",
+    "view": (c) => const PocketHome(),
+    "addToMenu": true
+  },
+  "ticket": {
+    "name": "12306 车票",
+    "view": (c) => const TicketShowPage(),
+    "addToMenu": true
+  },
+  "game": {
+    "name": "健康游戏",
+    "view": (c) => const Game(info: null),
+    "addToMenu": true
+  },
+  "snh48": {
+    "name": "SNH Pocket",
+    "view": (c) => const SNHApp(),
+    "addToMenu": true
+  },
+  "express": {
+    "name": "快递追踪",
+    "view": (c) => const ExpressView(),
+    "addToMenu": true
+  },
+  "track": {
+    "name": "服务追踪",
+    "view": (c) => const TrackView(),
+    "addToMenu": true
+  },
+  "todo": {"name": "待办事项", "view": (c) => const TodoView(), "addToMenu": true}
+};
 
 class PocketHome extends StatefulWidget {
   const PocketHome({Key? key}) : super(key: key);

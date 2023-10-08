@@ -32,35 +32,34 @@ class _ExpressViewState extends State<ExpressView> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-        child: Scaffold(
-            appBar: AppBar(title: const Text("快递追踪"), centerTitle: true),
-            body: Column(children: [
-              Expanded(
-                  child: RefreshIndicator(
-                      onRefresh: () async {
-                        dashboard = await Dashboard.loadFromApi(config!);
-                        setState(() {});
-                      },
-                      child: ListView(
-                          children: ((dashboard?.express) ?? [])
-                              .map((e) => buildExpressTile(e, context))
-                              .toList(growable: false)))),
-              ButtonBar(alignment: MainAxisAlignment.center, children: [
-                TextButton(
-                    onPressed: () async {
-                      dashboard = await Dashboard.loadFromApi(config!);
-                      setState(() {});
-                    },
-                    child: const Text("刷新")),
-                TextButton(
-                    onPressed: () {
-                      Navigator.of(context).push(MaterialPageRoute(
-                          builder: (c) => ExpressAddView(config: config!)));
-                    },
-                    child: const Text("添加快递"))
-              ])
-            ])));
+    return Scaffold(
+        appBar: AppBar(title: const Text("快递追踪"), centerTitle: true),
+        body: Column(children: [
+          Expanded(
+              child: RefreshIndicator(
+                  onRefresh: () async {
+                    dashboard = await Dashboard.loadFromApi(config!);
+                    setState(() {});
+                  },
+                  child: ListView(
+                      children: ((dashboard?.express) ?? [])
+                          .map((e) => buildExpressTile(e, context))
+                          .toList(growable: false)))),
+          ButtonBar(alignment: MainAxisAlignment.center, children: [
+            TextButton(
+                onPressed: () async {
+                  dashboard = await Dashboard.loadFromApi(config!);
+                  setState(() {});
+                },
+                child: const Text("刷新")),
+            TextButton(
+                onPressed: () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (c) => ExpressAddView(config: config!)));
+                },
+                child: const Text("添加快递"))
+          ])
+        ]));
   }
 
   ListTile buildExpressTile(Express e, BuildContext context) {

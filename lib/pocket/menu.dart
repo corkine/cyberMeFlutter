@@ -28,19 +28,19 @@ class _MenuViewState extends State<MenuView> {
               Expanded(
                 child: SingleChildScrollView(
                     child: Column(
-                        children: R.toMenu.entries
+                        children: apps.entries
                             .map((e) => ListTile(
                                 onTap: () {
                                   if ((e.value["replace"] as bool?) ?? false) {
                                     Navigator.of(context)
-                                        .pushReplacementNamed(e.key.route);
+                                        .pushReplacementNamed("/app/${e.key}");
                                   } else {
                                     Navigator.of(context)
-                                        .pushNamed(e.key.route);
+                                        .pushNamed("/app/${e.key}");
                                   }
                                 },
-                                title: Text(e.value["name"]),
-                                subtitle: Text(e.key.name)))
+                                title: Text(e.value["name"] as String),
+                                subtitle: Text(e.key)))
                             .toList(growable: false))),
               ),
               Padding(
