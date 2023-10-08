@@ -80,6 +80,22 @@ class Config extends ChangeNotifier {
   static const String trackUrl =
       "https://cyber.mazhangjing.com/cyber/service/visits/monitor";
 
+  static String deleteExpress(String no) =>
+      "https://cyber.mazhangjing.com/cyber/express/delete?no=$no";
+
+  static String expressAddUrl(
+          String note, bool rewriteIfExist, bool addToWaitList, String no) =>
+      Uri(
+          scheme: 'https',
+          host: 'cyber.mazhangjing.com',
+          path: '/cyber/express/track',
+          queryParameters: {
+            "note": note,
+            "rewriteIfExist": rewriteIfExist.toString(),
+            "addToWaitList": addToWaitList.toString(),
+            "no": no
+          }).toString();
+
   static String logsUrl(String key) =>
       "https://cyber.mazhangjing.com/cyber/service/visits/$key/logs";
   static const String parseTicketUrl =

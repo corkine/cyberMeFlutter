@@ -47,6 +47,7 @@ class _TrackViewState extends State<TrackView> {
         : data;
     return Scaffold(
         appBar: AppBar(
+          centerTitle: true,
           title: const Text("Track System"),
           actions: [
             IconButton(

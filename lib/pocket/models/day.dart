@@ -80,13 +80,15 @@ class Express {
         status: map['status'] as int,
         lastUpdate: map['last_update'] as String,
         info: map['info'] as String,
-        extra: ((map['extra'] as List?) ?? [])
-            .map((e) => e as Map?)
-            .map((e) => (
-                  (e?["time"] as String?) ?? "无日期",
-                  (e?["status"] as String?) ?? "无状态"
-                ))
-            .toList(growable: false));
+        extra: map['extra'] is String
+            ? []
+            : ((map['extra'] as List?) ?? [])
+                .map((e) => e as Map?)
+                .map((e) => (
+                      (e?["time"] as String?) ?? "无日期",
+                      (e?["status"] as String?) ?? "无状态"
+                    ))
+                .toList(growable: false));
   }
 
 //</editor-fold>
