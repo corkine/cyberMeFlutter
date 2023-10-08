@@ -75,4 +75,76 @@ class _ExpressViewState extends State<ExpressView> {
                                 ]))))
                     .toList(growable: false))));
   }
+
+  void handleAdd() {
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (c) => const ExpressAddView()));
+  }
+}
+
+class ExpressAddView extends StatefulWidget {
+  const ExpressAddView({super.key});
+
+  @override
+  State<ExpressAddView> createState() => _ExpressAddViewState();
+}
+
+class _ExpressAddViewState extends State<ExpressAddView> {
+  final formKey = GlobalKey<FormState>();
+  var rewrite = false;
+  var wait = true;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(title: const Text("添加新的快递")),
+        body: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Form(
+                key: formKey,
+                child: Column(children: [
+                  TextFormField(
+                    decoration: const InputDecoration(labelText: "快递单号*"),
+                    validator: (v) => v!.isNotEmpty ? null : "需要提供单号",
+                  ),
+                  TextFormField(
+                    decoration: const InputDecoration(labelText: "快递备注*"),
+                    validator: (v) => v!.isNotEmpty ? null : "需要提供快递备注",
+                  ),
+                  TextFormField(
+                    decoration: const InputDecoration(
+                        labelText: "收货人手机后四位", helperText: "顺丰快递需要填写"),
+                  ),
+                  const SizedBox(height: 10),
+                  Transform.translate(
+                      offset: const Offset(-10, 0),
+                      child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Checkbox(
+                                value: rewrite,
+                                onChanged: (n) => setState(() {
+                                      rewrite = n!;
+                                    })),
+                            const Text("如果存在，则覆盖")
+                          ])),
+                  Transform.translate(
+                      offset: const Offset(-10, -10),
+                      child: Row(children: [
+                        Checkbox(
+                            value: wait,
+                            onChanged: (n) => setState(() {
+                                  wait = n!;
+                                })),
+                        const Text("如果不存在，则加入等待列表")
+                      ])),
+                  ButtonBar(children: [
+                    TextButton(
+                        onPressed: () {
+                          if (formKey.currentState!.validate()) {}
+                        },
+                        child: const Text("提交"))
+                  ])
+                ]))));
+  }
 }

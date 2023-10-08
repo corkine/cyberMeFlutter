@@ -75,6 +75,13 @@ class Config extends ChangeNotifier {
       "https://cyber.mazhangjing.com/cyber/dashboard/summary";
   static const String recentTicketUrl =
       "https://cyber.mazhangjing.com/cyber/ticket/recent";
+  static const String visitsUrl =
+      "https://cyber.mazhangjing.com/cyber/service/visits";
+  static const String trackUrl =
+      "https://cyber.mazhangjing.com/cyber/service/visits/monitor";
+
+  static String logsUrl(String key) =>
+      "https://cyber.mazhangjing.com/cyber/service/visits/$key/logs";
   static const String parseTicketUrl =
       "https://cyber.mazhangjing.com/cyber/client/parse-tickets";
   static const String addTicketsUrl =
