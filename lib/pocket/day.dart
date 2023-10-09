@@ -193,7 +193,9 @@ class _DayHomeState extends State<DayHome> {
   void didChangeDependencies() {
     if (config == null) {
       config = Provider.of<Config>(context, listen: true);
-      Dashboard.loadFromApi(config!)
+      Dashboard.loadFromApi(config!,
+              failedCallback: (e) => ScaffoldMessenger.of(context)
+                  .showSnackBar(SnackBar(content: Text(e))))
           .then((value) => setState(() => dashboard = value));
     }
     if (config!.useDashboard && !isLoadDashboard) {
@@ -232,7 +234,9 @@ class _DayHomeState extends State<DayHome> {
               ]))),
       RefreshIndicator(
           onRefresh: () async {
-            dashboard = await Dashboard.loadFromApi(config!);
+            dashboard = await Dashboard.loadFromApi(config!,
+                failedCallback: (e) => ScaffoldMessenger.of(context)
+                    .showSnackBar(SnackBar(content: Text(e))));
             setState(() {});
           },
           child: dashboard == null

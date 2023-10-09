@@ -510,7 +510,7 @@ class Dashboard {
   ///强制同步 Microsoft TO DO 待办事项
   static Future<String> focusSyncTodo(Config config) async {
     try {
-      print("Sync with Todo now..");
+      debugPrint("Sync with Todo now..");
       var resp = await get(Uri.parse(Config.todoSyncUrl),
           headers: config.cyberBase64Header);
       return jsonDecode(resp.body)["message"];
@@ -522,7 +522,7 @@ class Dashboard {
   ///强制同步 HCM 打卡数据
   static Future<String> checkHCMCard(Config config) async {
     try {
-      print("Checking HCM now..");
+      debugPrint("Checking HCM now..");
       var resp = await get(Uri.parse(Config.hcmCardCheckUrl),
           headers: config.cyberBase64Header);
       //刷新 API 以获取最新更改
@@ -539,11 +539,11 @@ class Dashboard {
     var isMorningTime = now >= 4 && now <= 18;
     var isYesterday = now < 4;
     try {
-      print("Setting clean data, isMorning? $isMorningTime");
+      debugPrint("Setting clean data, isMorning? $isMorningTime");
       var url = isMorningTime ? Config.morningCleanUrl : Config.nightCleanUrl;
       if (isYesterday) {
         url = url + "&yesterday=true";
-        print("is midnight, use yesterday!!!");
+        debugPrint("is midnight, use yesterday!!!");
       }
       var resp = await get(Uri.parse(url), headers: config.cyberBase64Header);
       config.justNotify();
@@ -556,7 +556,7 @@ class Dashboard {
   ///设置 Blue 数据
   static Future<String> setBlue(Config config, String date) async {
     try {
-      print("Setting blue data, date: $date");
+      debugPrint("Setting blue data, date: $date");
       var resp = await get(Uri.parse(Config.blueUrl + date),
           headers: config.cyberBase64Header);
       config.justNotify();
@@ -569,7 +569,7 @@ class Dashboard {
   ///获取最后一条笔记
   static Future<List<String?>> fetchLastNote(Config config) async {
     try {
-      print("fetching last note...");
+      debugPrint("fetching last note...");
       var resp = await get(Uri.parse(Config.lastNoteUrl),
           headers: config.cyberBase64Header);
       var data = jsonDecode(resp.body);
@@ -582,7 +582,7 @@ class Dashboard {
   ///上传一条笔记
   static Future<String> uploadOneNote(Config config, String content) async {
     try {
-      print("uploading one note... length ${content.length}");
+      debugPrint("uploading one note... length ${content.length}");
       var resp = await http.post(Uri.parse(Config.uploadNoteUrl),
           headers: config.cyberBase64Header
             ..addAll({"Content-Type": "application/json"}),
@@ -599,9 +599,10 @@ class Dashboard {
   }
 
   ///从 API 加载大屏数据
-  static Future<Dashboard?> loadFromApi(Config config) async {
+  static Future<Dashboard?> loadFromApi(Config config,
+      {Function(String)? failedCallback}) async {
     if (kDebugMode) {
-      print("Loading from CyberMe... from user: ${config.user}");
+      debugPrint("Loading from CyberMe... from user: ${config.user}");
     }
     final Response r = await get(Uri.parse(Config.dashboardUrl),
         headers: config.cyberBase64Header);
@@ -610,7 +611,10 @@ class Dashboard {
     DayInfo.debugInfo += sprintf("%s, %s, %s, %s",
         [r.headers, r.body.substring(0, 20), r.request, r.statusCode]);
     if (data["message"].toString().contains("access denied") && kDebugMode) {
-      print("response no auth: ${data.toString()}");
+      debugPrint("response no auth: ${data.toString()}");
+      if (failedCallback != null) {
+        failedCallback("Load Failed, No Auth");
+      }
       return null;
     }
     final dashInfo = Dashboard.fromMap(data["data"]);
