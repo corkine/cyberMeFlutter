@@ -32,10 +32,10 @@ Widget Function(BuildContext, AsyncSnapshot<Object?>) commonFutureBuilder<T>(
       }
       return Container(
           alignment: Alignment.center,
-          child: Column(
+          child: const Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
-              children: const [
+              children: [
                 CircularProgressIndicator(),
                 Padding(padding: EdgeInsets.all(20), child: Text("正在联系服务器"))
               ]));

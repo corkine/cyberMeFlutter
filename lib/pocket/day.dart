@@ -14,6 +14,7 @@ import 'package:provider/provider.dart';
 import 'package:clipboard/clipboard.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '/pocket/dashboard.dart' as dash;
+import 'dashboard.dart';
 import 'main.dart';
 
 class DayInfo {
@@ -184,96 +185,62 @@ class DayHome extends StatefulWidget {
 }
 
 class _DayHomeState extends State<DayHome> {
-  late Config config;
-  Future<Dashboard?>? future;
   bool isLoadDashboard = false;
+  Dashboard? dashboard;
+  Config? config;
 
   @override
   void didChangeDependencies() {
-    config = Provider.of<Config>(context, listen: true);
-    if (config.isLoadedFromLocal) {
-      if (config.needRefreshDashboardPage) {
-        future = Dashboard.loadFromApi(config);
-        config.needRefreshDashboardPage = false;
-      } else {
-        future ??= Dashboard.loadFromApi(config);
-      }
+    if (config == null) {
+      config = Provider.of<Config>(context, listen: true);
+      Dashboard.loadFromApi(config!)
+          .then((value) => setState(() => dashboard = value));
+    }
+    if (config!.useDashboard && !isLoadDashboard) {
+      isLoadDashboard = true;
+      Future.delayed(const Duration(seconds: 2), () {
+        Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) {
+              return WillPopScope(
+                  child: const Scaffold(
+                      backgroundColor: Colors.black, body: dash.DashHome()),
+                  onWillPop: () async {
+                    if (kDebugMode) print("Pop dashboard now...");
+                    return true;
+                  });
+            },
+            maintainState: false));
+      });
     }
     super.didChangeDependencies();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (config.useDashboard && !isLoadDashboard) {
-      isLoadDashboard = true;
-      Future.delayed(const Duration(seconds: 2), () {
-        Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) {
-              if (!kIsWeb && Platform.isAndroid) {
-                //SystemChrome.setEnabledSystemUIOverlays([]);
-              }
-              return WillPopScope(
-                  child: const Scaffold(
-                    backgroundColor: Colors.black,
-                    body: dash.DashHome(),
-                  ),
-                  onWillPop: () async {
-                    if (kDebugMode) print("Pop dashboard now...");
-                    if (Platform.isAndroid) {
-                      // SystemChrome.setEnabledSystemUIOverlays(
-                      //     SystemUiOverlay.values);
-                    }
-                    return true;
-                  });
-            },
-            maintainState: false));
-      });
-      return const Center(
-          child: Text(
-        "等待进入大屏..",
-        style: TextStyle(fontSize: 16),
-      ));
-    } else {
-      return FutureBuilder(
-        future: future,
-        builder: util.commonFutureBuilder<Dashboard>(buildMainPage),
-      );
-    }
-  }
-
-  Widget buildMainPage(Dashboard dashboard) {
     final bg = DayInfo.background();
     final allY = MediaQuery.of(context).size.height;
     return Stack(alignment: Alignment.topCenter, children: [
       Transform.translate(
-        offset: const Offset(0, 30),
-        child: Container(
-          padding: EdgeInsets.only(top: allY - 370, left: 0, right: 0),
-          child: Stack(
-            children: [
-              SizedBox(
-                  width: double.infinity,
-                  child: Image.asset(bg[0], fit: BoxFit.fitWidth)),
-              Positioned.fill(child: Container(decoration: bg[1]))
-            ],
-          ),
-        ),
-      ),
+          offset: const Offset(0, 30),
+          child: Container(
+              padding: EdgeInsets.only(top: allY - 370, left: 0, right: 0),
+              child: Stack(children: [
+                SizedBox(
+                    width: double.infinity,
+                    child: Image.asset(bg[0], fit: BoxFit.fitWidth)),
+                Positioned.fill(child: Container(decoration: bg[1]))
+              ]))),
       RefreshIndicator(
           onRefresh: () async {
-            future = Dashboard.loadFromApi(config);
-            await Future.delayed(
-                const Duration(seconds: 1), () => setState(() {}));
+            dashboard = await Dashboard.loadFromApi(config!);
+            setState(() {});
           },
-          child: MainPage(config: config, dashboard: dashboard))
+          child: dashboard == null
+              ? const Text("")
+              : MainPage(config: config!, dashboard: dashboard!))
     ]);
   }
 }
-
-/*GlobalKey background = GlobalKey();
-  final bgPadding =
-      ((background.currentContext?.findRenderObject()! as RenderBox?)
-          ?.localToGlobal(Offset.zero).dy) ?? 0;*/
 
 ///一个始终显示在底部的背景图案（当 Viewpoint 高度不足则填充空白, 没有使用，
 ///其不能实现和 ScrollView 一致的动画，看起来比较突兀）
@@ -520,79 +487,74 @@ class Habit extends StatelessWidget {
             mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Tooltip(
-                        message: "双击添加今日记录",
-                        child: GestureDetector(
-                            onDoubleTap: () => DayInfo.callAndShow(
-                                Dashboard.setClean, context, config),
-                            child: Row(children: [
-                              buildProgressIcon(
-                                  dashboard.cleanPercentInRange, "comb"),
-                              Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
-                                  children: [
-                                    const Text.rich(TextSpan(children: [
-                                      TextSpan(text: " 已坚持"),
-                                      TextSpan(
-                                          text: " 0+1? ",
-                                          style: TextStyle(
-                                              fontFamily: "consolas",
-                                              fontSize: 20)),
-                                      TextSpan(text: "天")
-                                    ])),
-                                    Text(
-                                      " 最长 ${dashboard.cleanMarvelCount} 天",
+              Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
+                Tooltip(
+                    message: "双击添加今日记录",
+                    child: GestureDetector(
+                        onDoubleTap: () => DayInfo.callAndShow(
+                            Dashboard.setClean, context, config),
+                        child: Row(children: [
+                          buildProgressIcon(
+                              dashboard.cleanPercentInRange, "comb"),
+                          Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text.rich(TextSpan(children: [
+                                  TextSpan(text: " 已坚持"),
+                                  TextSpan(
+                                      text: " 0+1? ",
+                                      style: TextStyle(
+                                          fontFamily: "consolas",
+                                          fontSize: 20)),
+                                  TextSpan(text: "天")
+                                ])),
+                                Text(
+                                  " 最长 ${dashboard.cleanMarvelCount} 天",
+                                  style: const TextStyle(
+                                      color: Colors.grey, fontSize: 13),
+                                )
+                              ])
+                        ]))),
+                Tooltip(
+                    message: "双击记录 Blue 信息",
+                    child: GestureDetector(
+                        onDoubleTap: () {
+                          showDatePicker(
+                                  context: context,
+                                  initialDate: DateTime.now(),
+                                  firstDate: DateTime.now()
+                                      .subtract(const Duration(days: 5)),
+                                  lastDate: DateTime.now())
+                              .then((date) {
+                            if (date == null) return;
+                            var dateStr = date.toString().split(" ")[0];
+                            DayInfo.callAndShow(
+                                (c) => Dashboard.setBlue(c, dateStr),
+                                context,
+                                config);
+                          });
+                        },
+                        child: Row(children: [
+                          buildProgressIcon(
+                              dashboard.noBluePercentInRange, "summer"),
+                          Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text.rich(TextSpan(children: [
+                                  const TextSpan(text: " 已坚持"),
+                                  TextSpan(
+                                      text: " ${dashboard.noBlueCount} ",
                                       style: const TextStyle(
-                                          color: Colors.grey, fontSize: 13),
-                                    )
-                                  ])
-                            ]))),
-                    Tooltip(
-                        message: "双击记录 Blue 信息",
-                        child: GestureDetector(
-                            onDoubleTap: () {
-                              showDatePicker(
-                                      context: context,
-                                      initialDate: DateTime.now(),
-                                      firstDate: DateTime.now()
-                                          .subtract(const Duration(days: 5)),
-                                      lastDate: DateTime.now())
-                                  .then((date) {
-                                if (date == null) return;
-                                var dateStr = date.toString().split(" ")[0];
-                                DayInfo.callAndShow(
-                                    (c) => Dashboard.setBlue(c, dateStr),
-                                    context,
-                                    config);
-                              });
-                            },
-                            child: Row(children: [
-                              buildProgressIcon(
-                                  dashboard.noBluePercentInRange, "summer"),
-                              Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
-                                  children: [
-                                    Text.rich(TextSpan(children: [
-                                      const TextSpan(text: " 已坚持"),
-                                      TextSpan(
-                                          text: " ${dashboard.noBlueCount} ",
-                                          style: const TextStyle(
-                                              fontFamily: "consolas",
-                                              fontSize: 20)),
-                                      const TextSpan(text: "天")
-                                    ])),
-                                    Text(
-                                        " 最长 ${dashboard.noBlueMarvelCount} 天",
-                                        style: const TextStyle(
-                                            color: Colors.grey, fontSize: 13))
-                                  ])
-                            ])))
-                  ])
+                                          fontFamily: "consolas",
+                                          fontSize: 20)),
+                                  const TextSpan(text: "天")
+                                ])),
+                                Text(" 最长 ${dashboard.noBlueMarvelCount} 天",
+                                    style: const TextStyle(
+                                        color: Colors.grey, fontSize: 13))
+                              ])
+                        ])))
+              ])
             ]));
   }
 

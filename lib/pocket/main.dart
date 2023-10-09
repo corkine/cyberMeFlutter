@@ -10,29 +10,12 @@ import 'dist/goods.dart';
 import 'dist/link.dart';
 import 'config.dart';
 import 'auth.dart' as auth;
-import 'menu.dart';
 import 'dist/shortcut.dart' as short;
 import 'diary.dart' as diary;
 import 'app/ticket.dart';
 import 'app/express.dart';
 import 'app/todo.dart';
 import 'app/track.dart';
-
-class CMPocket {
-  static Widget call() => ChangeNotifierProvider(
-      create: (c) => Config(),
-      child: MaterialApp(
-          title: 'CMPocket',
-          debugShowCheckedModeBanner: true,
-          theme: ThemeData(useMaterial3: true),
-          initialRoute: "/",
-          routes: (apps.map((key, value) => MapEntry(
-              "/app/$key", value["view"] as Widget Function(BuildContext))))
-            ..addAll({
-              "/": (c) => const PocketHome(),
-              "/menu": (c) => const MenuView()
-            })));
-}
 
 final apps = {
   "dashboard": {
@@ -343,7 +326,7 @@ class _PocketHomeState extends State<PocketHome> {
                 const BottomNavigationBarItem(
                     label: '物品管理',
                     icon: Icon(Icons.checkroom_outlined),
-                    activeIcon: Icon(Icons.checkroom)),
+                    activeIcon: Icon(Icons.checkroom))
               ]));
     });
   }

@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'dart:ui';
 
 import 'package:clipboard/clipboard.dart';
@@ -50,7 +49,8 @@ void mainAction(BuildContext context, Config config) async {
     }
   }
   if (kDebugMode) print(url);
-  Future.delayed(const Duration(milliseconds: 500), () => launch(DiaryManager.newDiaryUrl));
+  Future.delayed(const Duration(milliseconds: 500),
+      () => launch(DiaryManager.newDiaryUrl));
 }
 
 class DiaryStage extends StatefulWidget {
@@ -61,26 +61,26 @@ class DiaryStage extends StatefulWidget {
 }
 
 class _DiaryStageState extends State<DiaryStage> {
-  Future<List<Diary>>? future;
-  late Config config;
+  List<Diary> diaries = [];
+  Config? config;
 
   @override
   void didChangeDependencies() {
-    config = Provider.of<Config>(context, listen: true);
-    if (config.isLoadedFromLocal) {
-      future ??= DiaryManager.loadFromApi(config);
+    if (config == null) {
+      config = Provider.of<Config>(context, listen: true);
+      DiaryManager.loadFromApi(config!)
+          .then((value) => setState(() => diaries = value));
     }
     super.didChangeDependencies();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (kDebugMode) print("Building DiaryStage");
-    return FutureBuilder(
-        future: future,
-        builder: util.commonFutureBuilder<List<Diary>>((diaries) => DiaryCards(
-            diaries: diaries.sublist(
-                0, diaries.length > 10 ? 10 : diaries.length))));
+    return diaries.isEmpty
+        ? const Text("")
+        : DiaryCards(
+            diaries:
+                diaries.sublist(0, diaries.length > 10 ? 10 : diaries.length));
   }
 }
 

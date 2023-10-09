@@ -30,6 +30,7 @@ class _TodoViewState extends State<TodoView>
   TabController? tc;
   bool useTab = true;
   late DateTime weekDayOne;
+  late DateTime lastWeekDayOne;
 
   @override
   void initState() {
@@ -41,6 +42,7 @@ class _TodoViewState extends State<TodoView>
         seconds: now.second,
         milliseconds: now.millisecond,
         microseconds: now.microsecond));
+    lastWeekDayOne = weekDayOne.subtract(const Duration(days: 7));
     super.initState();
   }
 
@@ -155,8 +157,14 @@ class _TodoViewState extends State<TodoView>
   Widget dateRich(DateTime? date) {
     if (date == null) return const Text("未知日期");
     final df = DateFormat("yyyy-MM-dd");
-    bool thisWeek = weekDayOne.isBefore(date);
-    final style = TextStyle(color: thisWeek ? Colors.green : Colors.black);
+    bool thisWeek = !weekDayOne.isAfter(date);
+    bool lastWeek = !thisWeek && !lastWeekDayOne.isAfter(date);
+    final style = TextStyle(
+        color: thisWeek
+            ? Colors.lightGreen
+            : lastWeek
+                ? Colors.blueGrey
+                : Colors.grey);
     switch (date.weekday) {
       case 1:
         return Text("${df.format(date)} 周一", style: style);
@@ -216,9 +224,9 @@ class _TodoViewState extends State<TodoView>
         }
       }
     }
-    todo.sort((t2, t1) {
-      return t1.time?.compareTo(t2.time ?? "") ?? 0;
-    });
+    todoMap.forEach((key, value) =>
+        value.sort((t2, t1) => t1.time?.compareTo(t2.time ?? "") ?? 0));
+    todo.sort((t2, t1) => t1.time?.compareTo(t2.time ?? "") ?? 0);
     //执行 filter
     updateFiltered();
     tc = TabController(length: lists.length, vsync: this);

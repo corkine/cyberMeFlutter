@@ -51,18 +51,18 @@ void setupQuickAction(BuildContext context) {
           break;
         case 'action_clean':
           var config = Provider.of<Config>(context, listen: false);
-          config.justInit().then(
+          config.init().then(
               (_) => DayInfo.callAndShow(Dashboard.setClean, context, config));
           break;
         case 'action_hcm':
           var config = Provider.of<Config>(context, listen: false);
-          config.justInit().then((_) =>
+          config.init().then((_) =>
               DayInfo.callAndShow(Dashboard.checkHCMCard, context, config));
           break;
         case 'action_upload':
           var config = Provider.of<Config>(context, listen: false);
           Future.delayed(const Duration(milliseconds: 700), () {
-            config.justInit().then((value) async {
+            config.init().then((value) async {
               String? url;
               var image = await util.pickImage(context);
               if (image != null) {

@@ -10,5 +10,5 @@ import 'package:cyberme_flutter/pocket/main.dart';
 /// call SystemNavigator.pop() but not exit() to exit dart vm
 @pragma("vm:entry-point")
 void iosEntryPoint() {
-  runApp(CMPocket.call());
+
 }

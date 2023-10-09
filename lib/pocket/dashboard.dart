@@ -63,7 +63,7 @@ class DashHome extends StatefulWidget {
 }
 
 class _DashHomeState extends State<DashHome> {
-  late Config config;
+  Config? config;
   Future<Dashboard?>? future;
   String time = "00:00";
   StreamController controller = StreamController();
@@ -79,7 +79,7 @@ class _DashHomeState extends State<DashHome> {
     subscription = controller.stream.listen((event) {
       if (event % (dashFetchSeconds / 5) == 0) {
         if (kDebugMode) print("Call API Now at ${TimeUtil.nowLog}");
-        future = Dashboard.loadFromApi(config);
+        future = Dashboard.loadFromApi(config!);
       }
       setState(() {
         //print("Setting state at ${TimeUtil.nowLog}");
@@ -96,14 +96,13 @@ class _DashHomeState extends State<DashHome> {
 
   @override
   void didChangeDependencies() {
-    //print("Rebuild at ${TimeUtil.nowLog}");
-    config = Provider.of<Config>(context, listen: true);
-    if (config.isLoadedFromLocal) {
-      if (config.needRefreshDashboardPage) {
-        future = Dashboard.loadFromApi(config);
-        config.needRefreshDashboardPage = false;
+    if (config == null) {
+      config = Provider.of<Config>(context, listen: true);
+      if (config!.needRefreshDashboardPage) {
+        future = Dashboard.loadFromApi(config!);
+        config!.needRefreshDashboardPage = false;
       } else {
-        future ??= Dashboard.loadFromApi(config);
+        future ??= Dashboard.loadFromApi(config!);
       }
     }
     super.didChangeDependencies();
@@ -120,11 +119,11 @@ class _DashHomeState extends State<DashHome> {
   Widget buildMainPage(Dashboard dashboard) {
     return RefreshIndicator(
         onRefresh: () async {
-          future = Dashboard.loadFromApi(config);
+          future = Dashboard.loadFromApi(config!);
           await Future.delayed(
               const Duration(seconds: 1), () => setState(() {}));
         },
-        child: MainPage(config: config, dashboard: dashboard, state: this));
+        child: MainPage(config: config!, dashboard: dashboard, state: this));
   }
 }
 

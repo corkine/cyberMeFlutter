@@ -28,8 +28,6 @@ String encodeSha1Base64(String plain) {
 }
 
 class Config extends ChangeNotifier {
-  bool isLoadedFromLocal = false;
-
   static const version = 'VERSION 1.2.0, Build#2023-03-13';
 
   /*
@@ -85,10 +83,6 @@ class Config extends ChangeNotifier {
       };
 
   double position = 0.0;
-
-  Config() {
-    _init();
-  }
 
   static const String dashboardUrl =
       "https://cyber.mazhangjing.com/cyber/dashboard/summary";
@@ -203,49 +197,31 @@ class Config extends ChangeNotifier {
   late SharedPreferences prefs;
   late ScrollController controller;
 
-  Future<Config> justInit() async {
-    if (!isLoadedFromLocal) {
-      prefs = await SharedPreferences.getInstance();
-      user = prefs.getString('user') ?? '';
-      useDashboard = prefs.getBool('useDashboard') ?? false;
-      password = prefs.getString('password') ?? '';
-      print("user $user, pass $password");
-      cyberPass = encryptPassword(password, 60 * 60 * 24 * 5);
-      _shortURLShowLimit = prefs.getInt('_shortURLShowLimit') ?? 10;
-      _filterDuplicate = prefs.getBool('_filterDuplicate') ?? true;
-      goodsShortByName = prefs.getBool('goodsShortByName') ?? true;
-      goodsRecentFirst = prefs.getBool('goodsRecentFirst') ?? true;
-      notShowClothes = prefs.getBool('notShowClothes') ?? true;
-      notShowRemoved = prefs.getBool('notShowRemoved') ?? true;
-      notShowArchive = prefs.getBool('notShowArchive') ?? true;
-      showUpdateButNotCreateTime =
-          prefs.getBool('showUpdateButNotCreateTime') ?? true;
-      autoCopyToClipboard = prefs.getBool('autoCopyToClipboard') ?? true;
-      useReorderableListView = prefs.getBool('useReorderableListView') ?? false;
-      map = Map<String, int>.fromEntries(
-          (prefs.getStringList('goodsOrderMap') ?? <String>[]).map((e) {
-        final r = e.split('::');
-        return MapEntry<String, int>(r[0], int.parse(r[1]));
-      }));
-    }
-    isLoadedFromLocal = true;
+  Future<Config> init() async {
+    prefs = await SharedPreferences.getInstance();
+    user = prefs.getString('user') ?? '';
+    useDashboard = prefs.getBool('useDashboard') ?? false;
+    password = prefs.getString('password') ?? '';
+    debugPrint("user $user, pass $password");
+    cyberPass = encryptPassword(password, 60 * 60 * 24 * 5);
+    _shortURLShowLimit = prefs.getInt('_shortURLShowLimit') ?? 10;
+    _filterDuplicate = prefs.getBool('_filterDuplicate') ?? true;
+    goodsShortByName = prefs.getBool('goodsShortByName') ?? true;
+    goodsRecentFirst = prefs.getBool('goodsRecentFirst') ?? true;
+    notShowClothes = prefs.getBool('notShowClothes') ?? true;
+    notShowRemoved = prefs.getBool('notShowRemoved') ?? true;
+    notShowArchive = prefs.getBool('notShowArchive') ?? true;
+    showUpdateButNotCreateTime =
+        prefs.getBool('showUpdateButNotCreateTime') ?? true;
+    autoCopyToClipboard = prefs.getBool('autoCopyToClipboard') ?? true;
+    useReorderableListView = prefs.getBool('useReorderableListView') ?? false;
+    map = Map<String, int>.fromEntries(
+        (prefs.getStringList('goodsOrderMap') ?? <String>[]).map((e) {
+      final r = e.split('::');
+      return MapEntry<String, int>(r[0], int.parse(r[1]));
+    }));
     return this;
   }
-
-  _init() async {
-    await justInit();
-    notifyListeners();
-  }
-
-  /*void waitingLoad({Duration duration = const Duration(seconds: 1)}) {
-    if (!isLoadingFromLocal) return;
-    var start = DateTime.now().millisecondsSinceEpoch;
-    while (isLoadingFromLocal &&
-        (DateTime.now().millisecondsSinceEpoch - start <
-            duration.inMilliseconds)) {
-      sleep(const Duration(milliseconds: 100));
-    }
-  }*/
 
   bool setGoodsShortByName(bool res) {
     prefs.setBool('goodsShortByName', res);
@@ -335,6 +311,6 @@ class Config extends ChangeNotifier {
 
   @override
   String toString() {
-    return 'Config{isLoadedFromLocal: $isLoadedFromLocal, user: $user, password: ${password.isNotEmpty}, cyberPass: $cyberPass, useDashboard: $useDashboard, basicURL: $basicURL, notShowRemoved: $notShowRemoved, prefs: $prefs}';
+    return 'Config{user: $user, password: ${password.isNotEmpty}, cyberPass: $cyberPass, useDashboard: $useDashboard, basicURL: $basicURL, notShowRemoved: $notShowRemoved, prefs: $prefs}';
   }
 }
