@@ -3,12 +3,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:quick_actions/quick_actions.dart';
-import 'config.dart';
-import 'day.dart';
+import '../config.dart';
+import '../day.dart';
 import 'goods.dart';
 import 'link.dart';
-import 'models/day.dart';
-import 'util.dart' as util;
+import '../models/day.dart';
+import '../util.dart' as util;
 
 const registerItems = <ShortcutItem>[
   ShortcutItem(type: 'action_hcm', localizedTitle: '检查打卡情况'),

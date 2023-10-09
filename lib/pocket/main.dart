@@ -2,21 +2,21 @@ import 'dart:io';
 
 import 'package:cyberme_flutter/learn/game.dart';
 import 'package:cyberme_flutter/learn/snh.dart';
-import 'package:cyberme_flutter/pocket/express.dart';
-import 'package:cyberme_flutter/pocket/todo.dart';
-import 'package:cyberme_flutter/pocket/track.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:cyberme_flutter/pocket/day.dart';
 import 'package:provider/provider.dart';
-import 'goods.dart';
-import 'link.dart';
+import 'day.dart';
+import 'dist/goods.dart';
+import 'dist/link.dart';
 import 'config.dart';
 import 'auth.dart' as auth;
 import 'menu.dart';
-import 'shortcut.dart' as short;
+import 'dist/shortcut.dart' as short;
 import 'diary.dart' as diary;
-import 'ticket.dart';
+import 'app/ticket.dart';
+import 'app/express.dart';
+import 'app/todo.dart';
+import 'app/track.dart';
 
 class CMPocket {
   static Widget call() => ChangeNotifierProvider(
@@ -39,52 +39,58 @@ final apps = {
     "name": "我的一天",
     "view": (c) => const PocketHome(),
     "addToMenu": true,
-    "replace": true
+    "replace": true,
+    "icon": Icons.calendar_month
   },
   "bigDashboard": {
     "name": "我的一天（大屏）",
     "view": (c) {
-          Future.delayed(const Duration(seconds: 2), () {
-            final config = Provider.of<Config>(c, listen: false);
-            config.needRefreshDashboardPage = true;
-            config.setBool('useDashboard', !config.useDashboard);
-          });
-          return const PocketHome();
-        },
+      Future.delayed(const Duration(seconds: 2), () {
+        final config = Provider.of<Config>(c, listen: false);
+        config.needRefreshDashboardPage = true;
+        config.setBool('useDashboard', !config.useDashboard);
+      });
+      return const PocketHome();
+    },
     "addToMenu": false,
     "replace": true
-  },
-  "menu": {
-    "name": "我的一天",
-    "view": (c) => const PocketHome(),
-    "addToMenu": true
   },
   "ticket": {
     "name": "12306 车票",
     "view": (c) => const TicketShowPage(),
-    "addToMenu": true
+    "addToMenu": true,
+    "icon": Icons.airplane_ticket
   },
   "game": {
     "name": "健康游戏",
     "view": (c) => const Game(info: null),
-    "addToMenu": true
+    "addToMenu": true,
+    "icon": Icons.gamepad
   },
   "snh48": {
     "name": "SNH Pocket",
     "view": (c) => const SNHApp(),
-    "addToMenu": true
+    "addToMenu": true,
+    "icon": Icons.heart_broken_rounded
   },
   "express": {
     "name": "快递追踪",
     "view": (c) => const ExpressView(),
-    "addToMenu": true
+    "addToMenu": true,
+    "icon": Icons.card_giftcard
   },
   "track": {
     "name": "服务追踪",
     "view": (c) => const TrackView(),
-    "addToMenu": true
+    "addToMenu": true,
+    "icon": Icons.remove_red_eye
   },
-  "todo": {"name": "待办事项", "view": (c) => const TodoView(), "addToMenu": true}
+  "todo": {
+    "name": "待办事项",
+    "view": (c) => const TodoView(),
+    "addToMenu": true,
+    "icon": Icons.check_box
+  }
 };
 
 class PocketHome extends StatefulWidget {

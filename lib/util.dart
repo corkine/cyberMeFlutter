@@ -32,15 +32,25 @@ class Util {
     }
   }
 
-  static Widget waiting = Center(
+  static Widget waiting = const Center(
       child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
-          children: const [
+          children: [
         CircularProgressIndicator(),
         Padding(
           padding: EdgeInsets.all(18.0),
           child: Text('正在检索数据'),
         )
       ]));
+
+  static const pt10 = Padding(padding: EdgeInsets.only(top: 10));
+  static const pt20 = Padding(padding: EdgeInsets.only(top: 20));
+  static const pt30 = Padding(padding: EdgeInsets.only(top: 30));
+  static const pl10 = Padding(padding: EdgeInsets.only(left: 10));
+  static const Padding pl20 = Padding(padding: EdgeInsets.only(left: 20));
+  static const pl30 = Padding(padding: EdgeInsets.only(left: 30));
+  static const Padding pa10 = Padding(padding: EdgeInsets.all(10));
+  static const pa20 = Padding(padding: EdgeInsets.all(20));
+  static const Padding pa30 = Padding(padding: EdgeInsets.all(30));
 }

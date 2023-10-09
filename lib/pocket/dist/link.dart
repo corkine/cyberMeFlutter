@@ -1,15 +1,15 @@
 import 'dart:io';
+import 'dart:convert';
 
 import 'package:clipboard/clipboard.dart';
 import 'package:flutter/material.dart';
-import 'package:cyberme_flutter/util.dart';
 import 'package:intl/intl.dart';
-import 'models/entity.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:provider/provider.dart';
-import 'config.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:provider/provider.dart';
+import '../../util.dart';
+import '../config.dart';
+import '../models/entity.dart';
 
 class QuickLinkPage extends StatefulWidget {
   const QuickLinkPage({Key? key}) : super(key: key);
@@ -73,7 +73,7 @@ class _QuickLinkPageState extends State<QuickLinkPage> {
           }
           if (s.hasData) {
             Map<String, List<EntityLog>> map =
-            _count(s.data as List<EntityLog>);
+                _count(s.data as List<EntityLog>);
             List<EntityLog> logs;
             config.filterDuplicate
                 ? logs = map.values.map((e) => e[0]).toList()
@@ -83,26 +83,24 @@ class _QuickLinkPageState extends State<QuickLinkPage> {
                 itemCount: logs.length,
                 itemExtent: 65,
                 itemBuilder: (c, i) => ListTile(
-                  key: ValueKey(logs[i].entityId),
-                  onTap: () => launchUrl(Uri.parse(logs[i].url)),
-                  leading: Padding(
-                    padding: const EdgeInsets.only(top: 5, right: 9),
-                    child: CircleAvatar(
-                      backgroundColor: Colors.blueGrey.shade200,
-                      foregroundColor: Colors.white,
-                      child: Text(logs[i]
-                          .keyword
-                          .substring(0, 1)
-                          .toUpperCase()),
-                    ),
-                  ),
-                  horizontalTitleGap: 0,
-                  title: RichText(
-                      text: TextSpan(
-                          text: logs[i].keyword,
-                          style: const TextStyle(
-                              color: Colors.black, fontSize: 18),
-                          children: [
+                      key: ValueKey(logs[i].entityId),
+                      onTap: () => launchUrl(Uri.parse(logs[i].url)),
+                      leading: Padding(
+                        padding: const EdgeInsets.only(top: 5, right: 9),
+                        child: CircleAvatar(
+                          backgroundColor: Colors.blueGrey.shade200,
+                          foregroundColor: Colors.white,
+                          child: Text(
+                              logs[i].keyword.substring(0, 1).toUpperCase()),
+                        ),
+                      ),
+                      horizontalTitleGap: 0,
+                      title: RichText(
+                          text: TextSpan(
+                              text: logs[i].keyword,
+                              style: const TextStyle(
+                                  color: Colors.black, fontSize: 18),
+                              children: [
                             TextSpan(
                                 text: '  ' +
                                     DateFormat('yy/M/d HH:mm')
@@ -110,18 +108,18 @@ class _QuickLinkPageState extends State<QuickLinkPage> {
                                 style: const TextStyle(
                                     color: Colors.grey, fontSize: 12))
                           ])),
-                  subtitle: Text(
-                    logs[i].iPInfo,
-                    style: TextStyle(
-                        color: Colors.grey.shade700, fontSize: 13),
-                  ),
-                  trailing: config.filterDuplicate
-                      ? Chip(
-                      backgroundColor: Colors.grey.shade200,
-                      label: Text(
-                          map[logs[i].keyword]!.length.toString()))
-                      : null,
-                ));
+                      subtitle: Text(
+                        logs[i].iPInfo,
+                        style: TextStyle(
+                            color: Colors.grey.shade700, fontSize: 13),
+                      ),
+                      trailing: config.filterDuplicate
+                          ? Chip(
+                              backgroundColor: Colors.grey.shade200,
+                              label:
+                                  Text(map[logs[i].keyword]!.length.toString()))
+                          : null,
+                    ));
           }
           return const Center(
             child: Text('没有数据'),

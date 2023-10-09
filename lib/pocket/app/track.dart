@@ -6,8 +6,8 @@ import 'package:http/http.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
-import 'config.dart';
-import 'models/track.dart';
+import '../config.dart';
+import '../models/track.dart';
 
 class TrackView extends StatefulWidget {
   const TrackView({super.key});
