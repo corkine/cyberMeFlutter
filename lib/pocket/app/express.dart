@@ -88,7 +88,7 @@ class _ExpressViewState extends State<ExpressView> {
                   .showSnackBar(const SnackBar(content: Text("已拷贝快递单号到剪贴板。"))));
         },
         title: Padding(
-            padding: const EdgeInsets.only(bottom: 5),
+            padding: const EdgeInsets.only(bottom: 10),
             child: Row(children: [
               Text(e.name, style: const TextStyle(fontWeight: FontWeight.bold)),
               const Spacer(),
@@ -100,15 +100,36 @@ class _ExpressViewState extends State<ExpressView> {
             ])),
         subtitle: DefaultTextStyle(
             style: const TextStyle(fontSize: 13, color: Colors.black87),
-            child:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              ...e.extra.map((e) => Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(e.$1),
-                        Text(e.$2),
-                        const SizedBox(height: 5)
-                      ]))
+            child: Stack(children: [
+              Positioned(
+                top: 3,
+                left: 8.5,
+                bottom: 0,
+                child: Container(
+                    width: 1, height: 50, color: Colors.grey.withOpacity(0.3)),
+              ),
+              Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ...e.extra.map((e) => Stack(children: [
+                          const Text("🟢"),
+                          Padding(
+                              padding: const EdgeInsets.only(left: 30),
+                              child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(e.$1,
+                                        softWrap: true,
+                                        style: const TextStyle(
+                                            fontFamily: "consolas")),
+                                    const SizedBox(height: 2),
+                                    Text(e.$2, softWrap: true),
+                                    const SizedBox(height: 5)
+                                  ]))
+                        ]))
+                  ])
             ])));
   }
 
