@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:ui';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:provider/provider.dart';
@@ -22,6 +21,7 @@ class _MovieViewState extends State<MovieView> {
   bool showTv = true;
   bool showHot = true;
   List<Movie> movie = [];
+  bool loading = false;
 
   @override
   void initState() {
@@ -33,9 +33,16 @@ class _MovieViewState extends State<MovieView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        backgroundColor: Colors.transparent,
         appBar: AppBar(
-            title: Text(
-                "Mini4k ${showHot ? "Hot" : "New"} ${showTv ? "Series" : "Movie"}"),
+            foregroundColor: Colors.white,
+            backgroundColor: Colors.black26,
+            title: loading
+                ? Column(children: [
+                    buildTitle(),
+                    const Text("Loading...", style: TextStyle(fontSize: 10))
+                  ])
+                : buildTitle(),
             centerTitle: true,
             actions: [
               IconButton(
@@ -68,50 +75,20 @@ class _MovieViewState extends State<MovieView> {
                 itemBuilder: (c, i) {
                   final e = movie[i];
                   return InkWell(
-                      onTap: () {},
                       onLongPress: () => launchUrlString(e.url!),
-                      child:
-                          Stack(alignment: Alignment.bottomCenter, children: [
-                        Positioned.fill(
-                            child: Image.network(e.img!, fit: BoxFit.cover)),
-                        Positioned(
-                            bottom: 0,
-                            left: 0,
-                            right: 0,
-                            height: 30,
-                            child: ClipRRect(
-                                child: BackdropFilter(
-                                    filter: ImageFilter.blur(
-                                        sigmaX: 10, sigmaY: 10),
-                                    child: Container(
-                                        alignment: Alignment.centerLeft,
-                                        padding: const EdgeInsets.only(
-                                            left: 10, right: 10),
-                                        color: null, //const Color(0x20FFFFFF)
-                                        child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Expanded(
-                                                child: Text(e.title!,
-                                                    style: const TextStyle(
-                                                        color: Colors.white),
-                                                    softWrap: false,
-                                                    overflow:
-                                                        TextOverflow.fade),
-                                              ),
-                                              Text(
-                                                  e.star! == "N/A"
-                                                      ? ""
-                                                      : e.star!,
-                                                  style: const TextStyle(
-                                                      color: Colors.white))
-                                            ])))))
-                      ]));
+                      child: MovieCard(e: e));
                 })));
   }
 
+  Text buildTitle() {
+    return Text(
+        "Mini4k ${showHot ? "Hot" : "New"} ${showTv ? "Series" : "Movie"}");
+  }
+
   Future<List<Movie>> fetchData(Config config) async {
+    setState(() {
+      loading = true;
+    });
     final r = await get(
         Uri.parse(
             Config.movieUrl(showTv ? "tv" : "movie", showHot ? "hot" : "new")),
@@ -128,6 +105,54 @@ class _MovieViewState extends State<MovieView> {
             .map((e) => Movie.fromJson(e))
             .toList(growable: false) ??
         [];
+    setState(() {
+      loading = false;
+    });
     return md;
+  }
+}
+
+class MovieCard extends StatelessWidget {
+  const MovieCard({
+    super.key,
+    required this.e,
+  });
+
+  final Movie e;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(alignment: Alignment.bottomCenter, children: [
+      Positioned.fill(
+          child: Ink(
+        decoration: BoxDecoration(
+            image: DecorationImage(
+                image: NetworkImage(e.img!), fit: BoxFit.cover)),
+      )),
+      Positioned(
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: 30,
+          child: ClipRRect(
+              child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: Container(
+                      alignment: Alignment.centerLeft,
+                      padding: const EdgeInsets.only(left: 10, right: 10),
+                      color: null, //const Color(0x20FFFFFF)
+                      child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(e.title!,
+                                  style: const TextStyle(color: Colors.white),
+                                  softWrap: false,
+                                  overflow: TextOverflow.fade),
+                            ),
+                            Text(e.star! == "N/A" ? "" : e.star!,
+                                style: const TextStyle(color: Colors.white))
+                          ])))))
+    ]);
   }
 }
