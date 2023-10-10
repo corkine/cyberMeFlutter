@@ -21,14 +21,24 @@ class _ExpressViewState extends State<ExpressView> {
   void didChangeDependencies() {
     if (dashboard == null) {
       config = Provider.of<Config>(context, listen: false);
-      Dashboard.loadFromApi(config!)
-          .then((value) => setState(() => dashboard = value));
+      loadData();
     }
     super.didChangeDependencies();
   }
 
   Config? config;
   Dashboard? dashboard;
+
+  loadData() async {
+    dashboard = await Dashboard.loadFromApi(config!);
+    if (dashboard?.express.isEmpty ?? false) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: const Text("没有正在追踪的快递"),
+        action: SnackBarAction(label: "确定", onPressed: () {}),
+      ));
+    }
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,28 +47,27 @@ class _ExpressViewState extends State<ExpressView> {
         body: Column(children: [
           Expanded(
               child: RefreshIndicator(
-                  onRefresh: () async {
-                    dashboard = await Dashboard.loadFromApi(config!);
-                    setState(() {});
-                  },
+                  onRefresh: () async => loadData(),
                   child: ListView(
                       children: ((dashboard?.express) ?? [])
                           .map((e) => buildExpressTile(e, context))
                           .toList(growable: false)))),
-          ButtonBar(alignment: MainAxisAlignment.center, children: [
+          SafeArea(
+              child: ButtonBar(alignment: MainAxisAlignment.center, children: [
             TextButton(
-                onPressed: () async {
-                  dashboard = await Dashboard.loadFromApi(config!);
-                  setState(() {});
-                },
-                child: const Text("刷新")),
+                onPressed: () async => loadData(), child: const Text("刷新")),
             TextButton(
                 onPressed: () {
-                  Navigator.of(context).push(MaterialPageRoute(
-                      builder: (c) => ExpressAddView(config: config!)));
+                  showModalBottomSheet(
+                      context: context,
+                      builder: (c) => BottomSheet(
+                          onClosing: () {},
+                          builder: (c) => ExpressAddView(config: config!)));
+                  // Navigator.of(context).push(MaterialPageRoute(
+                  //     builder: (c) => ExpressAddView(config: config!)));
                 },
                 child: const Text("添加快递"))
-          ])
+          ]))
         ]));
   }
 

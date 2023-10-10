@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:clipboard/clipboard.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
@@ -127,7 +128,25 @@ class TrackDetailView extends StatefulWidget {
 }
 
 class _TrackDetailViewState extends State<TrackDetailView> {
+  late DateTime weekDayOne;
+  late DateTime lastWeekDayOne;
+  late DateTime today;
   Config? config;
+
+  @override
+  void initState() {
+    final now = DateTime.now();
+    today = DateTime(now.year, now.month, now.day);
+    weekDayOne = now.subtract(Duration(
+        days: now.weekday - 1,
+        hours: now.hour,
+        minutes: now.minute,
+        seconds: now.second,
+        milliseconds: now.millisecond,
+        microseconds: now.microsecond));
+    lastWeekDayOne = weekDayOne.subtract(const Duration(days: 7));
+    super.initState();
+  }
 
   @override
   void didChangeDependencies() {
@@ -183,8 +202,7 @@ class _TrackDetailViewState extends State<TrackDetailView> {
                             "https://www.ipshudi.com/${c.ip}.htm");
                       },
                       title: Text(c.ip ?? "No IP"),
-                      subtitle:
-                          Text(c.timestamp?.split(".").first ?? "No Info"),
+                      subtitle: dateRich(c.timestamp?.split(".").first),
                       trailing: Text(c.ipInfo ?? ""));
                 },
                 itemCount: logs.length)));
@@ -211,5 +229,40 @@ class _TrackDetailViewState extends State<TrackDetailView> {
     final data = jsonDecode(r.body);
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(data["message"])));
+  }
+
+  Widget dateRich(String? date) {
+    if (date == null) return const Text("未知日期");
+    final date1 = DateFormat("yyyy-MM-dd'T'HH:mm:ss").parse(date);
+    final df = DateFormat("yyyy-MM-dd");
+    bool isToday = !today.isAfter(date1);
+    bool thisWeek = !weekDayOne.isAfter(date1);
+    bool lastWeek = !thisWeek && !lastWeekDayOne.isAfter(date1);
+    final style = TextStyle(
+        decoration: isToday ? TextDecoration.underline : null,
+        decorationColor: Colors.lightGreen,
+        color: isToday
+            ? Colors.lightGreen
+            : thisWeek
+                ? Colors.lightGreen
+                : lastWeek
+                    ? Colors.blueGrey
+                    : Colors.grey);
+    switch (date1.weekday) {
+      case 1:
+        return Text("${df.format(date1)} 周一", style: style);
+      case 2:
+        return Text("${df.format(date1)} 周二", style: style);
+      case 3:
+        return Text("${df.format(date1)} 周三", style: style);
+      case 4:
+        return Text("${df.format(date1)} 周四", style: style);
+      case 5:
+        return Text("${df.format(date1)} 周五", style: style);
+      case 6:
+        return Text("${df.format(date1)} 周六", style: style);
+      default:
+        return Text("${df.format(date1)} 周日", style: style);
+    }
   }
 }

@@ -9,8 +9,6 @@ import 'package:http/http.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-import '../main.dart';
-
 class TicketShowPage extends StatefulWidget {
   const TicketShowPage({super.key});
 
@@ -53,36 +51,60 @@ class _TicketShowPageState extends State<TicketShowPage> {
     setState(() {});
   }
 
+  bool showJustTake = true;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(title: const Text("12306 最近车票"), actions: [
           IconButton(
-              onPressed: () => Navigator.of(context)
-                  .push(MaterialPageRoute(
-                      builder: (c) => const TicketParsePage()))
-                  .then((value) => Future.delayed(
-                      const Duration(milliseconds: 1500), handleReloadTickets)),
-              icon: const Icon(Icons.add_sharp))
+              onPressed: () {
+                setState(() {
+                  showJustTake = !showJustTake;
+                });
+              },
+              icon:
+                  Icon(showJustTake ? Icons.filter_alt : Icons.filter_alt_off))
         ]),
-        body: Padding(
-            padding: const EdgeInsets.only(left: 8, right: 8),
-            child: RefreshIndicator(
-                onRefresh: handleReloadTickets,
-                child: ListView(children: [
-                  const Padding(
-                      padding: EdgeInsets.only(left: 8, top: 8),
-                      child: Text("待出行车票")),
-                  ...recent
-                      .map((e) => buildCard(e, handleDeleteTicket, context))
-                      .toList(growable: false),
-                  const Padding(
-                      padding: EdgeInsets.only(left: 8, top: 8),
-                      child: Text("历史车票")),
-                  ...history
-                      .map((e) => buildCard(e, handleDeleteTicket, context))
-                      .toList(growable: false)
-                ]))));
+        body: Column(
+          children: [
+            Expanded(
+                child: Padding(
+                    padding: const EdgeInsets.only(left: 8, right: 8),
+                    child: RefreshIndicator(
+                        onRefresh: handleReloadTickets,
+                        child: ListView(children: [
+                          const Padding(
+                              padding: EdgeInsets.only(left: 8, top: 8),
+                              child: Text("待出行车票")),
+                          ...recent
+                              .map((e) =>
+                                  buildCard(e, handleDeleteTicket, context))
+                              .toList(growable: false),
+                          const Padding(
+                              padding: EdgeInsets.only(left: 8, top: 8),
+                              child: Text("历史车票")),
+                          ...history
+                              .where((element) => showJustTake
+                                  ? (element.canceled ?? false) == false
+                                  : true)
+                              .map((e) =>
+                                  buildCard(e, handleDeleteTicket, context))
+                              .toList(growable: false)
+                        ])))),
+            ButtonBar(alignment: MainAxisAlignment.center, children: [
+              TextButton(
+                  onPressed: () async {
+                    await showModalBottomSheet(
+                        context: context,
+                        builder: (c) => const TicketParsePage());
+                    await handleReloadTickets();
+                  },
+                  child: const Text("解析票据"))
+            ]),
+            const SizedBox(height: 20)
+          ],
+        ));
   }
 }
 
@@ -113,7 +135,7 @@ class _TicketParsePageState extends State<TicketParsePage> {
               padding: const EdgeInsets.all(8.0),
               child: TextField(
                   controller: input,
-                  maxLines: 10,
+                  maxLines: 3,
                   decoration:
                       const InputDecoration(border: OutlineInputBorder()))),
           Row(
@@ -138,7 +160,6 @@ class _TicketParsePageState extends State<TicketParsePage> {
                     },
                     child: const Text("清空"))
               ]),
-          const SizedBox(height: 20),
           data.isEmpty
               ? const Text("")
               : Expanded(
@@ -156,11 +177,11 @@ class _TicketParsePageState extends State<TicketParsePage> {
         children: [
           const Row(),
           Padding(
-              padding: const EdgeInsets.all(5),
-              child: Text("解析结果",
-                  style: Theme.of(context).textTheme.headlineSmall)),
+              padding: const EdgeInsets.only(left: 8, top: 5),
+              child:
+                  Text("解析结果", style: Theme.of(context).textTheme.bodyLarge)),
           ...data.map((e) => buildCard(e, (_, a, b) async {}, context)),
-          const SizedBox(height: 20),
+          const SizedBox(height: 10),
           SizedBox(
               width: double.infinity,
               child: Padding(

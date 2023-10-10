@@ -72,4 +72,23 @@ class Movie {
     map['star'] = _star;
     return map;
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Movie &&
+          runtimeType == other.runtimeType &&
+          _url == other._url &&
+          _img == other._img &&
+          _title == other._title &&
+          _update == other._update &&
+          _star == other._star;
+
+  @override
+  int get hashCode =>
+      _url.hashCode ^
+      _img.hashCode ^
+      _title.hashCode ^
+      _update.hashCode ^
+      _star.hashCode;
 }

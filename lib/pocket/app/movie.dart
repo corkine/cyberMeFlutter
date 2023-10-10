@@ -43,7 +43,7 @@ class _MovieViewState extends State<MovieView> {
                 itemCount: movie.length,
                 itemBuilder: (c, i) {
                   final e = movie[i];
-                  return MovieCard(e: e, key: ValueKey(e.url));
+                  return MovieCard(e: e, key: ObjectKey(e));
                 })));
   }
 
