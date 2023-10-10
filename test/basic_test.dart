@@ -7,7 +7,10 @@
 // import 'package:cyberme_flutter/pocket/diary.dart' as diary;
 // import 'package:cyberme_flutter/pocket/dashboard.dart' as dash;
 // import 'package:provider/provider.dart';
-//
+
+void main() {
+
+}
 // void main() {
 //   group("Basic Usage Test", () {
 //     testWidgets('Page Switch Test', (WidgetTester tester) async {
