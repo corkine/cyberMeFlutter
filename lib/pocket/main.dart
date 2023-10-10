@@ -6,6 +6,7 @@ import 'package:cyberme_flutter/pocket/app/body_mass.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'app/movie.dart';
 import 'day.dart';
 import 'dist/goods.dart';
 import 'dist/link.dart';
@@ -80,6 +81,12 @@ final apps = {
     "view": (c) => const BodyMassView(),
     "addToMenu": true,
     "icon": Icons.fit_screen
+  },
+  "movie": {
+    "name": "影视热榜",
+    "view": (c) => const MovieView(),
+    "addToMenu": true,
+    "icon": Icons.movie
   }
 };
 

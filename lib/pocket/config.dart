@@ -93,6 +93,9 @@ class Config extends ChangeNotifier {
   static const String trackUrl =
       "https://cyber.mazhangjing.com/cyber/service/visits/monitor";
 
+  static String movieUrl(String type, String sort) =>
+      "https://cyber.mazhangjing.com/cyber/movie/dashboard?type=$type&sort=$sort";
+
   static String todoUrl(int start, int end) =>
       "https://cyber.mazhangjing.com/cyber/todo/recent-page?from=$start&to=$end";
 
