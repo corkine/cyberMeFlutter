@@ -14,6 +14,7 @@ class BodyMassView extends StatefulWidget {
 
 class _BodyMassViewState extends State<BodyMassView> {
   List<double> recentBodyMass = [];
+  String value = "";
 
   @override
   void initState() {
@@ -36,12 +37,13 @@ class _BodyMassViewState extends State<BodyMassView> {
           const SizedBox(height: 10),
           SizedBox(
               width: MediaQuery.of(context).size.width - 30,
-              height: MediaQuery.of(context).size.height / 3.5,
+              height: MediaQuery.of(context).size.height / 4.5,
               child: CustomPaint(
                   painter: ViewPainter(recentBodyMass),
                   child: nonAvailableData
                       ? const Center(child: Text("数据不足，再收集些数据后再来吧"))
                       : null)),
+          const SizedBox(height: 10),
           const Spacer(),
           Center(
               child: Container(
@@ -65,6 +67,7 @@ class _BodyMassViewState extends State<BodyMassView> {
                                   SnackBar(content: Text(e.toString())));
                             }
                           },
+                          onChanged: (e) => value = e,
                           decoration: BoxDecoration(
                               color: const Color.fromARGB(40, 17, 126, 13),
                               borderRadius: BorderRadius.circular(3)),
@@ -78,7 +81,34 @@ class _BodyMassViewState extends State<BodyMassView> {
                               padding: EdgeInsets.only(right: 10),
                               child: Text("kg",
                                   style: TextStyle(fontFamily: "consolas"))),
-                        ))
+                        )),
+                    TapRegion(
+                      onTapInside: (_) {
+                        final v = double.tryParse(value);
+                        if (v != null) {
+                          handleWriteBodyMass(v);
+                          setState(() {
+                            recentBodyMass.add(v);
+                          });
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text("输入的值非法")));
+                        }
+                        FocusManager.instance.primaryFocus?.unfocus();
+                      },
+                      child: Padding(
+                          padding: const EdgeInsets.only(top: 40),
+                          child: Center(
+                              child: Container(
+                            child: const Padding(
+                                padding: EdgeInsets.only(
+                                    left: 4, right: 4, top: 2, bottom: 2),
+                                child: Text("记录")),
+                            decoration: BoxDecoration(
+                                border: Border.all(color: Colors.grey),
+                                borderRadius: BorderRadius.circular(3)),
+                          ))),
+                    )
                   ]),
                   decoration: BoxDecoration(
                       border: Border.all(color: Colors.black45),
@@ -93,7 +123,7 @@ class _BodyMassViewState extends State<BodyMassView> {
       var types = [HealthDataType.WEIGHT];
       var permissions = [HealthDataAccess.READ_WRITE];
       bool req =
-      await health.requestAuthorization(types, permissions: permissions);
+          await health.requestAuthorization(types, permissions: permissions);
       if (req) {
         final now = DateTime.now();
         final start = now.subtract(const Duration(days: 30));
@@ -196,14 +226,14 @@ class ViewPainter extends CustomPainter {
           ..addText((bodyMass[i]).toStringAsFixed(1));
         canvas.drawParagraph(
             p.build()..layout(const ui.ParagraphConstraints(width: 30)),
-            Offset(dx + radius + 3, dy - radius + 6));
+            Offset(dx + radius + 3, dy - radius + 7));
       } else if (i == lastIdx) {
         final p = ui.ParagraphBuilder(ui.ParagraphStyle(fontSize: 13))
           ..pushStyle(ui.TextStyle(color: Colors.grey))
           ..addText((bodyMass[i] - bodyMass[0]).toStringAsFixed(1));
         canvas.drawParagraph(
             p.build()..layout(const ui.ParagraphConstraints(width: 30)),
-            Offset(dx + radius + 3, dy - radius + 6));
+            Offset(dx + radius + 3, dy - radius + 7));
       }
     }
   }
