@@ -2,17 +2,27 @@
 
 [![Flutter](https://github.com/corkine/cyberMeClient/actions/workflows/dart.yml/badge.svg)](https://github.com/corkine/cyberMeClient/actions/workflows/dart.yml) [![codecov](https://codecov.io/gh/corkine/cyberMeClient/branch/master/graph/badge.svg?token=NLFN44U8PT)](https://codecov.io/gh/corkine/cyberMeClient)
 
-CyberMe Flutter 视图组件和应用，包含多个 EntryPoint，支持嵌入 iOS 原生 App 或作为独立的 iOS、Android 和 Windows、macOS 应用。
+CyberMe 客户端，基于 Flutter 开发，主要用于嵌入 iOS 原生 App，也可作为独立的 iOS、Android 和 Windows、macOS 应用。
 
 ## 特性
 
-如下特性基于 Clojure、ClojureScript 和 Luminus、PostgreSQL 实现。 
+### 作为 iOS Embedded 的 Flutter 工程
 
-- HCM 打卡信息
-- 每日日报信息
-- Microsoft TODO 待办
-- 习惯改善追踪
-- 日记记录
+- 我的一天（待办、打卡、工时、日报、加班、锻炼、日记、冥想）
+- 日记管理（Web 集成）
+- 12306 车片管理、一键解析
+- 健康游戏和通行码模拟
+- 快递追踪和 Slack 通知
+- 服务访问管理和监控 Slack 通知
+- Microsoft TODO 待办事项（无限列表）
+- 体重管理和展示（HealthKit 集成）
+
+![](https://static2.mazhangjing.com/cyber/202310/bc8f16e6_cyberme_flutter.png)
+
+### 独立 iOS, Android, Windows 应用
+
+- 我的一天
+- 日记管理
 - 短链接查找与管理（新）
 - 物品管理（新）
 
@@ -32,6 +42,8 @@ CyberMe Flutter 视图组件和应用，包含多个 EntryPoint，支持嵌入 i
 
 ## 参见
 
-嵌入的原生 iOS 应用参见 [CyberMe Swift](https://github.com/corkine/cyberMeSwift)
+被嵌入的原生 iOS 应用参见 [CyberMe Swift Client](https://github.com/corkine/cyberMeSwift)
 
 ![](https://static2.mazhangjing.com/20221124/2cf8_Snipaste_2022-11-24_10-20-21.png)
+
+服务端接口参见 [CyberMe Clojure/Script App](https://github.com/corkine/cyberMe) 和开源版本 [OpenCyberMe Project](https://github.com/corkine/OpenCyberMe)
