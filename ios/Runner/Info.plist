@@ -45,5 +45,9 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSHealthShareUsageDescription</key>
+    <string>需要读取 HealthKit 数据以供用户查看。</string>
+    <key>NSHealthUpdateUsageDescription</key>
+    <string>需要写入 HealthKit 数据以供数据持久化。</string>
 </dict>
 </plist>

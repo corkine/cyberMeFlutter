@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:cyberme_flutter/learn/game.dart';
 import 'package:cyberme_flutter/learn/snh.dart';
+import 'package:cyberme_flutter/pocket/app/body_mass.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -73,6 +74,12 @@ final apps = {
     "view": (c) => const TodoView(),
     "addToMenu": true,
     "icon": Icons.check_box
+  },
+  "bodyMass": {
+    "name": "体重记录",
+    "view": (c) => const BodyMassView(),
+    "addToMenu": true,
+    "icon": Icons.fit_screen
   }
 };
 
