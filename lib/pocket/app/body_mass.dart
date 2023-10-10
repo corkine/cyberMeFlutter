@@ -43,7 +43,6 @@ class _BodyMassViewState extends State<BodyMassView> {
                   child: nonAvailableData
                       ? const Center(child: Text("数据不足，再收集些数据后再来吧"))
                       : null)),
-          const SizedBox(height: 10),
           const Spacer(),
           Center(
               child: Container(
@@ -90,9 +89,6 @@ class _BodyMassViewState extends State<BodyMassView> {
                           setState(() {
                             recentBodyMass.add(v);
                           });
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text("输入的值非法")));
                         }
                         FocusManager.instance.primaryFocus?.unfocus();
                       },
@@ -113,7 +109,7 @@ class _BodyMassViewState extends State<BodyMassView> {
                   decoration: BoxDecoration(
                       border: Border.all(color: Colors.black45),
                       borderRadius: BorderRadius.circular(30)))),
-          const SizedBox(height: 100)
+          const Spacer()
         ]));
   }
 
@@ -122,14 +118,15 @@ class _BodyMassViewState extends State<BodyMassView> {
       final health = HealthFactory(useHealthConnectIfAvailable: false);
       var types = [HealthDataType.WEIGHT];
       var permissions = [HealthDataAccess.READ_WRITE];
+      var take = 7;
       bool req =
           await health.requestAuthorization(types, permissions: permissions);
       if (req) {
         final now = DateTime.now();
-        final start = now.subtract(const Duration(days: 30));
+        final start = now.subtract(const Duration(days: 50));
         final data = await health.getHealthDataFromTypes(start, now, types);
         final takeData = data.getRange(
-            data.length - 7 >= 0 ? data.length - 7 : 0, data.length);
+            data.length - take >= 0 ? data.length - take : 0, data.length);
         recentBodyMass = [];
         for (final d in takeData) {
           final v = (d.value as NumericHealthValue?)?.numericValue;

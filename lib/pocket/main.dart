@@ -41,12 +41,6 @@ final apps = {
     "addToMenu": false,
     "replace": true
   },
-  "ticket": {
-    "name": "12306 车票",
-    "view": (c) => const TicketShowPage(),
-    "addToMenu": true,
-    "icon": Icons.airplane_ticket
-  },
   "game": {
     "name": "健康游戏",
     "view": (c) => const Game(info: null),
@@ -58,6 +52,12 @@ final apps = {
     "view": (c) => const SNHApp(),
     "addToMenu": true,
     "icon": Icons.heart_broken_rounded
+  },
+  "ticket": {
+    "name": "12306 车票",
+    "view": (c) => const TicketShowPage(),
+    "addToMenu": true,
+    "icon": Icons.airplane_ticket
   },
   "express": {
     "name": "快递追踪",

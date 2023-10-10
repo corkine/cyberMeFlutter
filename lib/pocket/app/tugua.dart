@@ -26,8 +26,29 @@ class _TuguaViewState extends State<TuguaView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        backgroundColor:
+            MediaQuery.of(context).platformBrightness == Brightness.dark
+                ? const Color(0xff2c2c2c)
+                : const Color(0xffffffff),
         body: support
-            ? InAppWebView(initialUrlRequest: URLRequest(url: Uri.parse(url)))
+            ? Stack(children: [
+                SafeArea(
+                  top: true,
+                  bottom: false,
+                  child: InAppWebView(
+                      initialUrlRequest: URLRequest(url: Uri.parse(url))),
+                ),
+                Positioned(
+                    right: 10,
+                    top: 50,
+                    child: IconButton(
+                        color: MediaQuery.of(context).platformBrightness ==
+                                Brightness.dark
+                            ? Colors.white.withOpacity(0.3)
+                            : Colors.black26,
+                        onPressed: () => Navigator.of(context).pop(),
+                        icon: const Icon(Icons.close)))
+              ])
             : Center(
                 child: TextButton(
                     child: const Text("Open In Web Browser"),
