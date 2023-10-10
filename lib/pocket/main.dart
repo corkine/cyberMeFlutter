@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'app/movie.dart';
+import 'app/tugua.dart';
 import 'day.dart';
 import 'dist/goods.dart';
 import 'dist/link.dart';
@@ -87,6 +88,12 @@ final apps = {
     "view": (c) => const MovieView(),
     "addToMenu": true,
     "icon": Icons.movie
+  },
+  "dapenti": {
+    "name": "喷嚏图卦",
+    "view": (c) => const TuguaView(),
+    "addToMenu": true,
+    "icon": Icons.newspaper
   }
 };
 
