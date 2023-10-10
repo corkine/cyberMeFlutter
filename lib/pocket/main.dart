@@ -305,6 +305,7 @@ class _PocketHomeState extends State<PocketHome> {
                   child: _buildActionButtonWidget(_index),
                 ),
           floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+          backgroundColor: Colors.white,
           body: _widgets(_index),
           bottomNavigationBar: BottomNavigationBar(
               type: BottomNavigationBarType.fixed,

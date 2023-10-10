@@ -5,6 +5,7 @@ import 'pocket/main.dart';
 import 'pocket/menu.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   final config = await Config().init();
   runApp(ChangeNotifierProvider(
       create: (c) => config,

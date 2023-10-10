@@ -21,6 +21,7 @@ class _TodoViewState extends State<TodoView> with TickerProviderStateMixin {
   int indent = 0;
   late DateTime weekDayOne;
   late DateTime lastWeekDayOne;
+  late DateTime today;
 
   var loading = false;
   var reachedLimit = false;
@@ -42,6 +43,7 @@ class _TodoViewState extends State<TodoView> with TickerProviderStateMixin {
   @override
   void initState() {
     final now = DateTime.now();
+    today = DateTime(now.year, now.month, now.day);
     weekDayOne = now.subtract(Duration(
         days: now.weekday - 1,
         hours: now.hour,
@@ -127,7 +129,8 @@ class _TodoViewState extends State<TodoView> with TickerProviderStateMixin {
                         return Center(
                             child: Padding(
                                 padding: const EdgeInsets.all(8.0),
-                                child: Text(reachedLimit ? "没有更多数据" : "正在加载...")));
+                                child:
+                                    Text(reachedLimit ? "没有更多数据" : "正在加载...")));
                       }
                       final t = tl[i];
                       return ListTile(
@@ -148,10 +151,13 @@ class _TodoViewState extends State<TodoView> with TickerProviderStateMixin {
                     itemCount: tl.length + 1);
               }).toList(growable: false),
               controller: tc)),
-      TabBar(
-          labelPadding: const EdgeInsets.only(bottom: 10, top: 10),
-          tabs: lists.map((e) => Text(e)).toList(growable: false),
-          controller: tc)
+      SafeArea(
+          child: TabBar(
+              indicatorColor: Colors.transparent,
+              dividerColor: Colors.transparent,
+              labelPadding: const EdgeInsets.only(bottom: 10, top: 10),
+              tabs: lists.map((e) => Text(e)).toList(growable: false),
+              controller: tc))
     ]);
   }
 
@@ -230,14 +236,18 @@ class _TodoViewState extends State<TodoView> with TickerProviderStateMixin {
   Widget dateRich(DateTime? date) {
     if (date == null) return const Text("未知日期");
     final df = DateFormat("yyyy-MM-dd");
+    bool isToday = !today.isAfter(date);
     bool thisWeek = !weekDayOne.isAfter(date);
     bool lastWeek = !thisWeek && !lastWeekDayOne.isAfter(date);
     final style = TextStyle(
-        color: thisWeek
+        decoration: isToday ? TextDecoration.underline : null,
+        color: isToday
             ? Colors.lightGreen
-            : lastWeek
-                ? Colors.blueGrey
-                : Colors.grey);
+            : thisWeek
+                ? Colors.lightGreen
+                : lastWeek
+                    ? Colors.blueGrey
+                    : Colors.grey);
     switch (date.weekday) {
       case 1:
         return Text("${df.format(date)} 周一", style: style);
