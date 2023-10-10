@@ -234,7 +234,7 @@ class _TrackDetailViewState extends State<TrackDetailView> {
   Widget dateRich(String? date) {
     if (date == null) return const Text("未知日期");
     final date1 = DateFormat("yyyy-MM-dd'T'HH:mm:ss").parse(date);
-    final df = DateFormat("yyyy-MM-dd");
+    final df = DateFormat("yyyy-MM-dd HH:mm");
     bool isToday = !today.isAfter(date1);
     bool thisWeek = !weekDayOne.isAfter(date1);
     bool lastWeek = !thisWeek && !lastWeekDayOne.isAfter(date1);

@@ -50,7 +50,7 @@ final apps = {
   "snh48": {
     "name": "SNH Pocket",
     "view": (c) => const SNHApp(),
-    "addToMenu": true,
+    "addToMenu": false,
     "icon": Icons.heart_broken_rounded
   },
   "ticket": {

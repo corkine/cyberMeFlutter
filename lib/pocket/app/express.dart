@@ -177,7 +177,7 @@ class _ExpressAddViewState extends State<ExpressAddView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: const Text("添加快递"), centerTitle: true),
+        //appBar: AppBar(title: const Text("添加快递"), centerTitle: true),
         body: Padding(
             padding: const EdgeInsets.all(8.0),
             child: Form(

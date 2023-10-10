@@ -129,45 +129,41 @@ class _TicketParsePageState extends State<TicketParsePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: const Text("12306 票据解析")),
+        //appBar: AppBar(title: const Text("12306 票据解析")),
         body: Column(mainAxisSize: MainAxisSize.max, children: [
-          Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: TextField(
-                  controller: input,
-                  maxLines: 3,
-                  decoration:
-                      const InputDecoration(border: OutlineInputBorder()))),
-          Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                ElevatedButton(
-                    onPressed: () async {
-                      final str = await FlutterClipboard.paste();
-                      input.text = str;
-                      data = [];
-                      setState(() {});
-                    },
-                    child: const Text("从剪贴板读取")),
-                ElevatedButton(
-                    onPressed: handleParseTicket, child: const Text("解析票据")),
-                ElevatedButton(
-                    onPressed: () {
-                      input.text = "";
-                      data = [];
-                      setState(() {});
-                    },
-                    child: const Text("清空"))
-              ]),
-          data.isEmpty
-              ? const Text("")
-              : Expanded(
-                  child: SingleChildScrollView(
-                      child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: buildParseResult(context))))
-        ]));
+      const SizedBox(height: 10),
+      Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: TextField(
+              controller: input,
+              maxLines: 3,
+              decoration: const InputDecoration(border: OutlineInputBorder()))),
+      ButtonBar(alignment: MainAxisAlignment.spaceAround, children: [
+        TextButton(
+            onPressed: () async {
+              final str = await FlutterClipboard.paste();
+              input.text = str;
+              data = [];
+              setState(() {});
+            },
+            child: const Text("从剪贴板读取")),
+        TextButton(onPressed: handleParseTicket, child: const Text("解析票据")),
+        TextButton(
+            onPressed: () {
+              input.text = "";
+              data = [];
+              setState(() {});
+            },
+            child: const Text("清空"))
+      ]),
+      data.isEmpty
+          ? const Text("")
+          : Expanded(
+              child: SingleChildScrollView(
+                  child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: buildParseResult(context))))
+    ]));
   }
 
   Column buildParseResult(BuildContext context) {
@@ -203,7 +199,10 @@ class _TicketParsePageState extends State<TicketParsePage> {
   Future handleParseTicket() async {
     data = await tickerParse(config, input.text);
     if (data.isEmpty) {
-      showDialog(
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: const Text("未返回任何解析结果"),
+          action: SnackBarAction(label: "确定", onPressed: () {})));
+      /*showDialog(
           context: context,
           builder: (c) => AlertDialog(
                   title: const Text("结果"),
@@ -212,7 +211,7 @@ class _TicketParsePageState extends State<TicketParsePage> {
                     TextButton(
                         onPressed: () => Navigator.of(context).pop(),
                         child: const Text("确定"))
-                  ]));
+                  ]));*/
     } else {
       setState(() {});
     }
