@@ -21,6 +21,7 @@ Depends on all your plugins, and provides a function to register them.
   s.dependency 'Flutter'
   s.dependency 'device_info_plus'
   s.dependency 'flutter_image_compress'
+  s.dependency 'flutter_inappwebview'
   s.dependency 'health'
   s.dependency 'image_picker_ios'
   s.dependency 'quick_actions_ios'

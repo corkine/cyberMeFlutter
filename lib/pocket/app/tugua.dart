@@ -21,7 +21,14 @@ class _TuguaViewState extends State<TuguaView> {
     if (!support) {
       launchUrlString(url).then((value) => Navigator.of(context).pop());
     }
+    Future.delayed(const Duration(seconds: 1), () {
+      webView =
+          InAppWebView(initialUrlRequest: URLRequest(url: Uri.parse(url)));
+      setState(() {});
+    });
   }
+
+  Widget? webView;
 
   @override
   Widget build(BuildContext context) {
@@ -33,11 +40,9 @@ class _TuguaViewState extends State<TuguaView> {
         body: support
             ? Stack(children: [
                 SafeArea(
-                  top: true,
-                  bottom: false,
-                  child: InAppWebView(
-                      initialUrlRequest: URLRequest(url: Uri.parse(url))),
-                ),
+                    top: true,
+                    bottom: false,
+                    child: webView == null ? const SizedBox() : webView!),
                 Positioned(
                     right: 10,
                     top: 50,

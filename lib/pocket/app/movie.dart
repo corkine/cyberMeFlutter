@@ -33,39 +33,8 @@ class _MovieViewState extends State<MovieView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: AppBar(
-            foregroundColor: Colors.white,
-            backgroundColor: Colors.black26,
-            title: loading
-                ? Column(children: [
-                    buildTitle(),
-                    const Text("Loading...", style: TextStyle(fontSize: 10))
-                  ])
-                : buildTitle(),
-            centerTitle: true,
-            actions: [
-              IconButton(
-                  onPressed: () {
-                    setState(() {
-                      showTv = !showTv;
-                    });
-                    fetchData(config)
-                        .then((value) => setState(() => movie = value));
-                  },
-                  icon: Icon(showTv ? Icons.tv : Icons.movie)),
-              IconButton(
-                  onPressed: () {
-                    setState(() {
-                      showHot = !showHot;
-                    });
-                    fetchData(config)
-                        .then((value) => setState(() => movie = value));
-                  },
-                  icon: Icon(showHot
-                      ? Icons.local_fire_department_outlined
-                      : Icons.new_releases))
-            ]),
+        backgroundColor: Colors.black,
+        appBar: buildAppBar(),
         body: RefreshIndicator(
             onRefresh: () async => movie = await fetchData(config),
             child: GridView.builder(
@@ -74,10 +43,43 @@ class _MovieViewState extends State<MovieView> {
                 itemCount: movie.length,
                 itemBuilder: (c, i) {
                   final e = movie[i];
-                  return InkWell(
-                      onLongPress: () => launchUrlString(e.url!),
-                      child: MovieCard(e: e));
+                  return MovieCard(e: e, key: ValueKey(e.url));
                 })));
+  }
+
+  AppBar buildAppBar() {
+    return AppBar(
+        foregroundColor: Colors.white,
+        backgroundColor: Colors.black26,
+        title: loading
+            ? Column(children: [
+                buildTitle(),
+                const Text("Loading...", style: TextStyle(fontSize: 10))
+              ])
+            : buildTitle(),
+        centerTitle: true,
+        actions: [
+          IconButton(
+              onPressed: () {
+                setState(() {
+                  showTv = !showTv;
+                });
+                fetchData(config)
+                    .then((value) => setState(() => movie = value));
+              },
+              icon: Icon(showTv ? Icons.tv : Icons.movie)),
+          IconButton(
+              onPressed: () {
+                setState(() {
+                  showHot = !showHot;
+                });
+                fetchData(config)
+                    .then((value) => setState(() => movie = value));
+              },
+              icon: Icon(showHot
+                  ? Icons.local_fire_department_outlined
+                  : Icons.new_releases))
+        ]);
   }
 
   Text buildTitle() {
@@ -122,37 +124,41 @@ class MovieCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(alignment: Alignment.bottomCenter, children: [
-      Positioned.fill(
-          child: Ink(
-        decoration: BoxDecoration(
-            image: DecorationImage(
-                image: NetworkImage(e.img!), fit: BoxFit.cover)),
-      )),
-      Positioned(
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: 30,
-          child: ClipRRect(
-              child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                  child: Container(
-                      alignment: Alignment.centerLeft,
-                      padding: const EdgeInsets.only(left: 10, right: 10),
-                      color: null, //const Color(0x20FFFFFF)
-                      child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Text(e.title!,
-                                  style: const TextStyle(color: Colors.white),
-                                  softWrap: false,
-                                  overflow: TextOverflow.fade),
-                            ),
-                            Text(e.star! == "N/A" ? "" : e.star!,
-                                style: const TextStyle(color: Colors.white))
-                          ])))))
-    ]);
+    return InkWell(
+      onLongPress: () => launchUrlString(e.url!),
+      child: Stack(alignment: Alignment.bottomCenter, children: [
+        Positioned.fill(
+            child: Ink(
+          decoration: BoxDecoration(
+              image: DecorationImage(
+                  image: NetworkImage(e.img!), fit: BoxFit.cover)),
+        )),
+        Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: 30,
+            child: Container(
+                alignment: Alignment.centerLeft,
+                padding: const EdgeInsets.only(left: 10, right: 10),
+                color: const Color(0x9E2F2F2F), //
+                child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                          child: Text(e.title!,
+                              style: const TextStyle(color: Colors.white),
+                              softWrap: false,
+                              overflow: TextOverflow.fade)),
+                      Text(e.star! == "N/A" ? "" : e.star!,
+                          style: const TextStyle(color: Colors.white))
+                    ]))
+            /*ClipRRect(
+                child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: ))*/
+            )
+      ]),
+    );
   }
 }
