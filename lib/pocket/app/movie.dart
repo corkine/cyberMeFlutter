@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:ui';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:provider/provider.dart';
@@ -32,32 +34,31 @@ class _MovieViewState extends State<MovieView> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text(
-              "Mini4k ${showHot ? "Hot" : "New"} ${showTv ? "Series" : "Movie"}"),
-          centerTitle: true,
-          actions: [
-            IconButton(
-                onPressed: () {
-                  setState(() {
-                    showTv = !showTv;
-                  });
-                  fetchData(config)
-                      .then((value) => setState(() => movie = value));
-                },
-                icon: Icon(showTv ? Icons.tv : Icons.movie)),
-            IconButton(
-                onPressed: () {
-                  setState(() {
-                    showHot = !showHot;
-                  });
-                  fetchData(config)
-                      .then((value) => setState(() => movie = value));
-                },
-                icon: Icon(showHot
-                    ? Icons.local_fire_department_outlined
-                    : Icons.new_releases))
-          ],
-        ),
+            title: Text(
+                "Mini4k ${showHot ? "Hot" : "New"} ${showTv ? "Series" : "Movie"}"),
+            centerTitle: true,
+            actions: [
+              IconButton(
+                  onPressed: () {
+                    setState(() {
+                      showTv = !showTv;
+                    });
+                    fetchData(config)
+                        .then((value) => setState(() => movie = value));
+                  },
+                  icon: Icon(showTv ? Icons.tv : Icons.movie)),
+              IconButton(
+                  onPressed: () {
+                    setState(() {
+                      showHot = !showHot;
+                    });
+                    fetchData(config)
+                        .then((value) => setState(() => movie = value));
+                  },
+                  icon: Icon(showHot
+                      ? Icons.local_fire_department_outlined
+                      : Icons.new_releases))
+            ]),
         body: RefreshIndicator(
             onRefresh: () async => movie = await fetchData(config),
             child: GridView.builder(
@@ -74,28 +75,38 @@ class _MovieViewState extends State<MovieView> {
                         Positioned.fill(
                             child: Image.network(e.img!, fit: BoxFit.cover)),
                         Positioned(
-                            left: 10,
-                            top: 4,
-                            child: Text("${e.star == "N/A" ? "" : e.star}",
-                                style: const TextStyle(color: Colors.white))),
-                        Positioned(
                             bottom: 0,
                             left: 0,
                             right: 0,
-                            child: Container(
-                                color: Colors.black.withOpacity(0.5),
-                                child: Padding(
-                                    padding: const EdgeInsets.only(
-                                        top: 3, bottom: 3, left: 3, right: 3),
-                                    child: Text(e.title!,
-                                        style: const TextStyle(
-                                            color: Colors.transparent))))),
-                        Padding(
-                          padding: const EdgeInsets.only(
-                              top: 3, bottom: 3, left: 3, right: 3),
-                          child: Text(e.title!,
-                              style: const TextStyle(color: Colors.white)),
-                        )
+                            height: 30,
+                            child: ClipRRect(
+                                child: BackdropFilter(
+                                    filter: ImageFilter.blur(
+                                        sigmaX: 10, sigmaY: 10),
+                                    child: Container(
+                                        alignment: Alignment.centerLeft,
+                                        padding: const EdgeInsets.only(
+                                            left: 10, right: 10),
+                                        color: null, //const Color(0x20FFFFFF)
+                                        child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Expanded(
+                                                child: Text(e.title!,
+                                                    style: const TextStyle(
+                                                        color: Colors.white),
+                                                    softWrap: false,
+                                                    overflow:
+                                                        TextOverflow.fade),
+                                              ),
+                                              Text(
+                                                  e.star! == "N/A"
+                                                      ? ""
+                                                      : e.star!,
+                                                  style: const TextStyle(
+                                                      color: Colors.white))
+                                            ])))))
                       ]));
                 })));
   }
