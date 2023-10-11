@@ -125,8 +125,11 @@ class _BodyMassViewState extends State<BodyMassView> {
         final now = DateTime.now();
         final start = now.subtract(const Duration(days: 50));
         final data = await health.getHealthDataFromTypes(start, now, types);
-        final takeData = data.getRange(
-            data.length - take >= 0 ? data.length - take : 0, data.length);
+        data.sort((a, b) => a.dateFrom.compareTo(b.dateFrom));
+        final takeData = data
+            .getRange(
+                data.length - take >= 0 ? data.length - take : 0, data.length)
+            .toList(growable: false);
         recentBodyMass = [];
         for (final d in takeData) {
           final v = (d.value as NumericHealthValue?)?.numericValue;
@@ -216,18 +219,21 @@ class ViewPainter extends CustomPainter {
           radius,
           Paint()
             ..strokeWidth = 3.0
-            ..color = i == 0 || i == lastIdx ? Colors.red : Colors.grey);
+            ..color = i == 0 || i == lastIdx
+                ? Colors.red
+                : Colors.grey.withOpacity(0.2));
       if (i == 0) {
         final p = ui.ParagraphBuilder(ui.ParagraphStyle(fontSize: 13))
           ..pushStyle(ui.TextStyle(color: Colors.grey))
-          ..addText((bodyMass[i]).toStringAsFixed(1));
+          ..addText((bodyMass[i]).toStringAsFixed(1) + "kg");
         canvas.drawParagraph(
-            p.build()..layout(const ui.ParagraphConstraints(width: 30)),
+            p.build()..layout(const ui.ParagraphConstraints(width: 50)),
             Offset(dx + radius + 3, dy - radius + 7));
       } else if (i == lastIdx) {
+        final delta = bodyMass[i] - bodyMass[0];
         final p = ui.ParagraphBuilder(ui.ParagraphStyle(fontSize: 13))
           ..pushStyle(ui.TextStyle(color: Colors.grey))
-          ..addText((bodyMass[i] - bodyMass[0]).toStringAsFixed(1));
+          ..addText((delta > 0 ? "+" : "") + delta.toStringAsFixed(1));
         canvas.drawParagraph(
             p.build()..layout(const ui.ParagraphConstraints(width: 30)),
             Offset(dx + radius + 3, dy - radius + 7));

@@ -125,17 +125,33 @@ class _StoryReadViewState extends State<StoryReadView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: Text(widget.storyName), centerTitle: true),
+        //appBar: AppBar(title: Text(widget.storyName), centerTitle: true),
         body: ListView.builder(
             itemBuilder: (c, i) {
-              final s = content[i];
+              if (i == 0) {
+                return Padding(
+                    padding:
+                        const EdgeInsets.only(right: 20, bottom: 20, left: 20),
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          TapRegion(
+                              onTapInside: (_) => Navigator.of(context).pop(),
+                              child: Text(widget.storyName,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyLarge
+                                      ?.copyWith(fontWeight: FontWeight.bold)))
+                        ]));
+              }
+              final s = content[i - 1];
               return Padding(
                   padding:
-                      const EdgeInsets.only(left: 10, right: 10, bottom: 10),
+                      const EdgeInsets.only(left: 20, right: 20, bottom: 10),
                   child: Text("       " + s,
-                      style: const TextStyle(fontSize: 15)));
+                      style: const TextStyle(fontSize: 16, letterSpacing: 1)));
             },
-            itemCount: content.length));
+            itemCount: content.length + 1));
   }
 
   Future handleLoadStory() async {
