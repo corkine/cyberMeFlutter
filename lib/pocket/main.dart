@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cyberme_flutter/learn/game.dart';
 import 'package:cyberme_flutter/learn/snh.dart';
 import 'package:cyberme_flutter/pocket/app/body_mass.dart';
+import 'package:cyberme_flutter/pocket/app/story.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -94,6 +95,12 @@ final apps = {
     "view": (c) => const TuguaView(),
     "addToMenu": true,
     "icon": Icons.newspaper
+  },
+  "story": {
+    "name": "故事社",
+    "view": (c) => const StoryView(),
+    "addToMenu": true,
+    "icon": Icons.bookmark_add
   }
 };
 

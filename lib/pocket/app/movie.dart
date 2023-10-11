@@ -1,6 +1,7 @@
 import 'dart:convert';
-import 'dart:ui';
+import 'dart:math';
 
+import 'package:clipboard/clipboard.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:provider/provider.dart';
@@ -43,7 +44,10 @@ class _MovieViewState extends State<MovieView> {
                 itemCount: movie.length,
                 itemBuilder: (c, i) {
                   final e = movie[i];
-                  return MovieCard(e: e, key: ObjectKey(e));
+                  return InkWell(
+                      onTap: () => launchUrlString(e.url!),
+                      onLongPress: () => handleAddShortLink(config, e.url!),
+                      child: MovieCard(e: e, key: ObjectKey(e)));
                 })));
   }
 
@@ -112,6 +116,23 @@ class _MovieViewState extends State<MovieView> {
     });
     return md;
   }
+
+  Future handleAddShortLink(Config config, String url) async {
+    final keyword = "mo" + (Random().nextInt(90000) + 10000).toString();
+    final r = await get(Config.goUrl(keyword, url),
+        headers: config.cyberBase64Header);
+    final d = jsonDecode(r.body);
+    final m = d["message"] ?? "没有消息";
+    final s = (d["status"] as int?) ?? -1;
+    var fm = m;
+    if (s > 0) {
+      await FlutterClipboard.copy("https://go.mazhangjing.com/$keyword");
+      fm = fm + "，已将链接拷贝到剪贴板。";
+    }
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(fm),
+        action: SnackBarAction(label: "OK", onPressed: () {})));
+  }
 }
 
 class MovieCard extends StatelessWidget {
@@ -124,41 +145,45 @@ class MovieCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onLongPress: () => launchUrlString(e.url!),
-      child: Stack(alignment: Alignment.bottomCenter, children: [
-        Positioned.fill(
-            child: Ink(
-          decoration: BoxDecoration(
-              image: DecorationImage(
-                  image: NetworkImage(e.img!), fit: BoxFit.cover)),
-        )),
-        Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: 30,
-            child: Container(
-                alignment: Alignment.centerLeft,
-                padding: const EdgeInsets.only(left: 10, right: 10),
-                color: const Color(0x9E2F2F2F), //
-                child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                          child: Text(e.title!,
+    return Stack(alignment: Alignment.bottomCenter, children: [
+      Positioned.fill(
+          child: Ink(
+        decoration: BoxDecoration(
+            image: DecorationImage(
+                image: NetworkImage(e.img!), fit: BoxFit.cover)),
+      )),
+      Positioned(
+          bottom: 0,
+          left: 0,
+          right: 0,
+          child: Container(
+              alignment: Alignment.centerLeft,
+              padding:
+                  const EdgeInsets.only(left: 10, right: 10, bottom: 5, top: 5),
+              color: const Color(0x9E2F2F2F), //
+              child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                          Text(e.title!,
                               style: const TextStyle(color: Colors.white),
                               softWrap: false,
-                              overflow: TextOverflow.fade)),
-                      Text(e.star! == "N/A" ? "" : e.star!,
-                          style: const TextStyle(color: Colors.white))
-                    ]))
-            /*ClipRRect(
-                child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                    child: ))*/
-            )
-      ]),
-    );
+                              overflow: TextOverflow.fade),
+                          Text(e.update!,
+                              style: const TextStyle(
+                                  color: Colors.white, fontSize: 10))
+                        ])),
+                    Text(e.star! == "N/A" ? "" : e.star!,
+                        style: const TextStyle(color: Colors.white))
+                  ]))
+          /*ClipRRect(
+            child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: ))*/
+          )
+    ]);
   }
 }

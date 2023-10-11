@@ -93,6 +93,32 @@ class Config extends ChangeNotifier {
   static const String trackUrl =
       "https://cyber.mazhangjing.com/cyber/service/visits/monitor";
 
+  static Uri goUrl(String keyword, String redirectURL, {String? note}) => Uri(
+          scheme: 'https',
+          host: 'cyber.mazhangjing.com',
+          path: '/cyber/go/add',
+          queryParameters: {
+            "keyword": keyword,
+            "redirectURL": redirectURL,
+            "note": note ?? "CyberMe Flutter Client"
+          });
+
+  static const String storyListUrl =
+      "https://cyber.mazhangjing.com/cyber/story/all-book-and-story-name";
+
+  static String storyReadUrl(String bookName, String storyName) => Uri.encodeFull(
+      "https://cyber.mazhangjing.com/cyber/story/read-story/$bookName/$storyName");
+
+  static Uri goNoteUrl(String keyword, String noteContent) => Uri(
+          scheme: 'https',
+          host: 'cyber.mazhangjing.com',
+          path: '/cyber/go/add',
+          queryParameters: {
+            "keyword": keyword,
+            "redirectURL": ":note",
+            "note": noteContent
+          });
+
   static String movieUrl(String type, String sort) =>
       "https://cyber.mazhangjing.com/cyber/movie/dashboard?type=$type&sort=$sort";
 
