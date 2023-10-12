@@ -26,28 +26,29 @@ class _MenuViewState extends State<MenuView> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
               Expanded(
-                child: SingleChildScrollView(
-                    child: Column(
-                        children: apps.entries
-                            .where((element) =>
-                                (element.value["addToMenu"] as bool?) ?? false)
-                            .map((e) => ListTile(
-                                visualDensity: VisualDensity.compact,
-                                onTap: () {
-                                  if ((e.value["replace"] as bool?) ?? false) {
-                                    Navigator.of(context)
-                                        .pushReplacementNamed("/app/${e.key}");
-                                  } else {
-                                    Navigator.of(context)
-                                        .pushNamed("/app/${e.key}");
-                                  }
-                                },
-                                leading: Icon((e.value["icon"] as IconData?) ??
-                                    Icons.apps),
-                                title: Text(e.value["name"] as String),
-                                subtitle: Text(e.key)))
-                            .toList(growable: false))),
-              ),
+                  child: GridView(
+                      gridDelegate:
+                          const SliverGridDelegateWithMaxCrossAxisExtent(
+                              maxCrossAxisExtent: 280, childAspectRatio: 3),
+                      children: apps.entries
+                          .where((element) =>
+                              (element.value["addToMenu"] as bool?) ?? false)
+                          .map((e) => ListTile(
+                              visualDensity: VisualDensity.compact,
+                              onTap: () {
+                                if ((e.value["replace"] as bool?) ?? false) {
+                                  Navigator.of(context)
+                                      .pushReplacementNamed("/app/${e.key}");
+                                } else {
+                                  Navigator.of(context)
+                                      .pushNamed("/app/${e.key}");
+                                }
+                              },
+                              leading: Icon(
+                                  (e.value["icon"] as IconData?) ?? Icons.apps),
+                              title: Text(e.value["name"] as String),
+                              subtitle: Text(e.key)))
+                          .toList(growable: false))),
               Padding(
                   padding: const EdgeInsets.only(bottom: 10),
                   child: Row(

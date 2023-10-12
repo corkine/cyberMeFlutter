@@ -11,6 +11,24 @@ import 'package:http_parser/http_parser.dart';
 
 import 'config.dart';
 
+const Map<String, dynamic> emptyMap = {};
+
+/// 执行 Redis Lua 脚本，see taoensso.carmine/lua:
+///
+/// (lua "redis.call('set', _:my-key, _:my-arg)" {:my-key "foo"} {:my-arg "bar"})
+///
+/// eg. evalRedis(config, "return redis.call('LRANGE', _:my-key, _:from, _:to)", keys: {"my-key": "recent-oss-files"}, args: {"from": 0, "to": -1})
+Future<(bool, dynamic)> evalRedis(Config config, String script,
+    {Map<String, dynamic> keys = emptyMap,
+    Map<String, dynamic> args = emptyMap}) async {
+  final data = jsonEncode({"script": script, "keys": keys, "args": args});
+  final r = await http.post(Uri.parse(Config.redisUrl),
+      headers: config.cyberBase64JsonContentHeader, body: data);
+  final d = jsonDecode(r.body);
+  final s = (d["status"] as int?) ?? -1;
+  return (s > 0, d["data"]);
+}
+
 Widget Function(BuildContext, AsyncSnapshot<Object?>) commonFutureBuilder<T>(
         Widget Function(T) buildMainPage) =>
     (BuildContext context, AsyncSnapshot<Object?> future) {
@@ -129,7 +147,9 @@ Future<List<String?>> uploadImage(File file, Config config,
     var filename = file.path.split("/").last;
     var suffix = filename.split(".").last;
     filename =
-        filename.substring(0, filename.length > 15 ? 15 : filename.length) + "." + suffix;
+        filename.substring(0, filename.length > 15 ? 15 : filename.length) +
+            "." +
+            suffix;
     req.files.add(http.MultipartFile.fromBytes("file", file.readAsBytesSync(),
         filename: filename, contentType: MediaType.parse(type)));
     var resp = await req.send();

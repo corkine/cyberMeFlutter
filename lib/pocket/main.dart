@@ -3,7 +3,10 @@ import 'dart:io';
 import 'package:cyberme_flutter/learn/game.dart';
 import 'package:cyberme_flutter/learn/snh.dart';
 import 'package:cyberme_flutter/pocket/app/body_mass.dart';
+import 'package:cyberme_flutter/pocket/app/eat.dart';
 import 'package:cyberme_flutter/pocket/app/story.dart';
+import 'app/cloth.dart';
+import 'app/medic.dart';
 import 'dashboard.dart' as dash;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -29,6 +32,24 @@ final apps = {
     "addToMenu": true,
     "replace": true,
     "icon": Icons.calendar_month
+  },
+  "bigDashboard": {
+    "name": "我的一天 · 大屏",
+    "view": (c) => const dash.DashHome(),
+    "addToMenu": true,
+    "replace": false
+  },
+  "game": {
+    "name": "健康游戏",
+    "view": (c) => const Game(info: null),
+    "addToMenu": true,
+    "icon": Icons.gamepad
+  },
+  "snh48": {
+    "name": "SNH Pocket",
+    "view": (c) => const SNHApp(),
+    "addToMenu": true,
+    "icon": Icons.heart_broken_rounded
   },
   "ticket": {
     "name": "12306 车票",
@@ -78,23 +99,23 @@ final apps = {
     "addToMenu": true,
     "icon": Icons.bookmark_add
   },
-  "bigDashboard": {
-    "name": "我的一天 - 大屏",
-    "view": (c) => const dash.DashHome(),
+  "eat": {
+    "name": "饮食管理",
+    "view": (c) => const EatView(),
     "addToMenu": true,
-    "replace": false
+    "icon": Icons.fastfood
   },
-  "game": {
-    "name": "健康游戏",
-    "view": (c) => const Game(info: null),
+  "cloth": {
+    "name": "衣物管理",
+    "view": (c) => const ClothView(),
     "addToMenu": true,
-    "icon": Icons.gamepad
+    "icon": Icons.ice_skating_outlined
   },
-  "snh48": {
-    "name": "SNH Pocket",
-    "view": (c) => const SNHApp(),
+  "medic": {
+    "name": "药物管理",
+    "view": (c) => const MedicView(),
     "addToMenu": true,
-    "icon": Icons.heart_broken_rounded
+    "icon": Icons.medical_services_sharp
   }
 };
 

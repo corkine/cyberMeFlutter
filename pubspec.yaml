@@ -27,6 +27,7 @@ dependencies:
   crypto: ^3.0.2
   json_annotation: ^4.8.1
   flutter_inappwebview: ^5.8.0
+  cached_network_image: ^3.3.0
   health: ^8.0.0 #https://pub.dev/packages/health/example
 
 dev_dependencies:

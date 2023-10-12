@@ -170,6 +170,9 @@ class Config extends ChangeNotifier {
   static const String plantUrl =
       "https://cyber.mazhangjing.com/cyber/dashboard/plant-week";
 
+  static const String redisUrl =
+      "https://cyber.mazhangjing.com/cyber/service/eval";
+
   String addURL = 'https://go.mazhangjing.com/add';
   String basicURL = 'https://go.mazhangjing.com';
 
