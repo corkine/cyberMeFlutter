@@ -24,7 +24,9 @@ Depends on all your plugins, and provides a function to register them.
   s.dependency 'flutter_inappwebview'
   s.dependency 'health'
   s.dependency 'image_picker_ios'
+  s.dependency 'path_provider_foundation'
   s.dependency 'quick_actions_ios'
   s.dependency 'shared_preferences_foundation'
+  s.dependency 'sqflite'
   s.dependency 'url_launcher_ios'
 end

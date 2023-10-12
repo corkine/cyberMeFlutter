@@ -59,7 +59,7 @@ class _StoryViewState extends State<StoryView> {
               onRefresh: () async => await handleLoadBooks(),
               child: GridView.builder(
                   gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                      maxCrossAxisExtent: 200, childAspectRatio: 0.7),
+                      maxCrossAxisExtent: 180, childAspectRatio: 0.7),
                   itemBuilder: (c, i) {
                     final s = model[i];
                     return InkWell(
@@ -141,47 +141,47 @@ class _BookStoryViewState extends State<BookStoryView> {
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: Colors.black,
-        body: Stack(
-          children: [
-            Positioned.fill(
-                child: CachedNetworkImage(
-                    fit: BoxFit.cover,
-                    imageUrl: cover[widget.bookName] ?? defaultCover)),
-            Positioned.fill(child: Container(color: Colors.black54)),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TapRegion(
-                    onTapInside: (_) => Navigator.of(context).pop(),
-                    child: Padding(
-                        padding: const EdgeInsets.only(
-                            left: 16, top: 20, bottom: 20, right: 20),
-                        child: Row(children: [
-                          Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(widget.bookName,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .headlineMedium
-                                        ?.copyWith(color: Colors.white)),
-                                Text("${widget.storyNames.length} 篇",
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodySmall
-                                        ?.copyWith(color: Colors.white))
-                              ]),
-                          const Spacer(),
-                          ClipRRect(
-                              borderRadius: BorderRadius.circular(3),
-                              child: SizedBox(
-                                  width: 50,
-                                  child: CachedNetworkImage(
-                                      fit: BoxFit.cover,
-                                      imageUrl: cover[widget.bookName] ??
-                                          defaultCover)))
-                        ]))),
-                Expanded(
+        body: Stack(children: [
+          Positioned.fill(
+              child: CachedNetworkImage(
+                  fit: BoxFit.cover,
+                  imageUrl: cover[widget.bookName] ?? defaultCover)),
+          Positioned.fill(child: Container(color: Colors.black54)),
+          SafeArea(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              TapRegion(
+                  onTapInside: (_) => Navigator.of(context).pop(),
+                  child: Padding(
+                      padding: const EdgeInsets.only(
+                          left: 16, top: 20, bottom: 0, right: 20),
+                      child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(widget.bookName,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .headlineMedium
+                                          ?.copyWith(color: Colors.white)),
+                                  Text("${widget.storyNames.length} 篇",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
+                                          ?.copyWith(color: Colors.white))
+                                ]),
+                            const Spacer(),
+                            ClipRRect(
+                                borderRadius: BorderRadius.circular(3),
+                                child: SizedBox(
+                                    width: 50,
+                                    child: CachedNetworkImage(
+                                        fit: BoxFit.cover,
+                                        imageUrl: cover[widget.bookName] ??
+                                            defaultCover)))
+                          ]))),
+              Expanded(
                   child: ListView.builder(
                       itemBuilder: (c, i) {
                         final s = widget.storyNames[i];
@@ -194,12 +194,10 @@ class _BookStoryViewState extends State<BookStoryView> {
                                         bookName: widget.bookName,
                                         storyName: s))));
                       },
-                      itemCount: widget.storyNames.length),
-                )
-              ],
-            )
-          ],
-        ));
+                      itemCount: widget.storyNames.length))
+            ]),
+          )
+        ]));
   }
 }
 
@@ -255,7 +253,7 @@ class _StoryReadViewState extends State<StoryReadView> {
               final s = content[i - 1];
               return Padding(
                   padding:
-                      const EdgeInsets.only(left: 20, right: 20, bottom: 10),
+                      const EdgeInsets.only(left: 15, right: 5, bottom: 10),
                   child: Text(s,
                       style: const TextStyle(
                           fontSize: 16,

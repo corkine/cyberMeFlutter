@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:clipboard/clipboard.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
@@ -226,7 +227,7 @@ class MovieCard extends StatelessWidget {
           child: Ink(
         decoration: BoxDecoration(
             image: DecorationImage(
-                image: NetworkImage(e.img!), fit: BoxFit.cover)),
+                image: CachedNetworkImageProvider(e.img!), fit: BoxFit.cover)),
       )),
       Positioned(
           bottom: 0,

@@ -36,6 +36,12 @@
 @import image_picker_ios;
 #endif
 
+#if __has_include(<path_provider_foundation/PathProviderPlugin.h>)
+#import <path_provider_foundation/PathProviderPlugin.h>
+#else
+@import path_provider_foundation;
+#endif
+
 #if __has_include(<quick_actions_ios/FLTQuickActionsPlugin.h>)
 #import <quick_actions_ios/FLTQuickActionsPlugin.h>
 #else
@@ -46,6 +52,12 @@
 #import <shared_preferences_foundation/SharedPreferencesPlugin.h>
 #else
 @import shared_preferences_foundation;
+#endif
+
+#if __has_include(<sqflite/SqflitePlugin.h>)
+#import <sqflite/SqflitePlugin.h>
+#else
+@import sqflite;
 #endif
 
 #if __has_include(<url_launcher_ios/FLTURLLauncherPlugin.h>)
@@ -62,8 +74,10 @@
   [InAppWebViewFlutterPlugin registerWithRegistrar:[registry registrarForPlugin:@"InAppWebViewFlutterPlugin"]];
   [HealthPlugin registerWithRegistrar:[registry registrarForPlugin:@"HealthPlugin"]];
   [FLTImagePickerPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTImagePickerPlugin"]];
+  [PathProviderPlugin registerWithRegistrar:[registry registrarForPlugin:@"PathProviderPlugin"]];
   [FLTQuickActionsPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTQuickActionsPlugin"]];
   [SharedPreferencesPlugin registerWithRegistrar:[registry registrarForPlugin:@"SharedPreferencesPlugin"]];
+  [SqflitePlugin registerWithRegistrar:[registry registrarForPlugin:@"SqflitePlugin"]];
   [FLTURLLauncherPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTURLLauncherPlugin"]];
 }
 
