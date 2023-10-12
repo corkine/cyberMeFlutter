@@ -61,7 +61,6 @@ class Config extends ChangeNotifier {
   String user = '';
   String password = '';
   String cyberPass = '';
-  bool useDashboard = false;
 
   String get token => '?user=$user&password=$password';
 
@@ -209,8 +208,6 @@ class Config extends ChangeNotifier {
 
   bool get filterDuplicate => _filterDuplicate;
 
-  bool needRefreshDashboardPage = false;
-
   int goodsLastDay = 300;
   bool goodsShortByName = true;
   bool goodsRecentFirst = true;
@@ -229,7 +226,6 @@ class Config extends ChangeNotifier {
   Future<Config> init() async {
     prefs = await SharedPreferences.getInstance();
     user = prefs.getString('user') ?? '';
-    useDashboard = prefs.getBool('useDashboard') ?? false;
     password = prefs.getString('password') ?? '';
     cyberPass = encryptPassword(password, 60 * 60 * 24 * 5);
     _shortURLShowLimit = prefs.getInt('_shortURLShowLimit') ?? 10;
@@ -329,7 +325,6 @@ class Config extends ChangeNotifier {
       print("set $key to $set");
     }
     prefs.setBool(key, set);
-    useDashboard = set;
     notifyListeners();
   }
 
@@ -339,6 +334,6 @@ class Config extends ChangeNotifier {
 
   @override
   String toString() {
-    return 'Config{user: $user, password: ${password.isNotEmpty}, cyberPass: $cyberPass, useDashboard: $useDashboard, basicURL: $basicURL, notShowRemoved: $notShowRemoved, prefs: $prefs}';
+    return 'Config{user: $user, password: ${password.isNotEmpty}, cyberPass: $cyberPass, basicURL: $basicURL, notShowRemoved: $notShowRemoved, prefs: $prefs}';
   }
 }

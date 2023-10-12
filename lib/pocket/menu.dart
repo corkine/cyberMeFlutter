@@ -32,6 +32,7 @@ class _MenuViewState extends State<MenuView> {
                             .where((element) =>
                                 (element.value["addToMenu"] as bool?) ?? false)
                             .map((e) => ListTile(
+                                visualDensity: VisualDensity.compact,
                                 onTap: () {
                                   if ((e.value["replace"] as bool?) ?? false) {
                                     Navigator.of(context)

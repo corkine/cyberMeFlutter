@@ -63,17 +63,6 @@ class DayInfo {
                       ));
                     }),
                 PopupMenuItem(
-                    child:
-                        Text("${!config.useDashboard ? "启动" : "关闭"} Dashboard"),
-                    onTap: () async {
-                      config.needRefreshDashboardPage = true;
-                      config.setBool('useDashboard', !config.useDashboard);
-                      /*ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text(
-                            "已${config.useDashboard ? "启动" : "关闭"} Dashboard"),
-                      ));*/
-                    }),
-                PopupMenuItem(
                     child: const Text("12306 最近车票"),
                     onTap: () =>
                         Navigator.of(context).pushNamed("/app/ticket")),
@@ -173,8 +162,7 @@ class DayInfo {
           Future Function(Config) f, BuildContext context, Config config) =>
       f(config)
           .then((message) => ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text(message))))
-          .then((value) => config.needRefreshDashboardPage = true);
+              .showSnackBar(SnackBar(content: Text(message))));
 }
 
 class DayHome extends StatefulWidget {
@@ -185,7 +173,6 @@ class DayHome extends StatefulWidget {
 }
 
 class _DayHomeState extends State<DayHome> {
-  bool isLoadDashboard = false;
   Dashboard? dashboard;
   Config? config;
 
@@ -197,22 +184,6 @@ class _DayHomeState extends State<DayHome> {
               failedCallback: (e) => ScaffoldMessenger.of(context)
                   .showSnackBar(SnackBar(content: Text(e))))
           .then((value) => setState(() => dashboard = value));
-    }
-    if (config!.useDashboard && !isLoadDashboard) {
-      isLoadDashboard = true;
-      Future.delayed(const Duration(seconds: 2), () {
-        Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) {
-              return WillPopScope(
-                  child: const Scaffold(
-                      backgroundColor: Colors.black, body: dash.DashHome()),
-                  onWillPop: () async {
-                    if (kDebugMode) print("Pop dashboard now...");
-                    return true;
-                  });
-            },
-            maintainState: false));
-      });
     }
     super.didChangeDependencies();
   }

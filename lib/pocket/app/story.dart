@@ -83,7 +83,17 @@ class _BookStoryViewState extends State<BookStoryView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: Text(widget.bookName), centerTitle: true),
+        appBar: AppBar(
+            title: Column(children: [
+              Text(widget.bookName,
+                  style: Theme.of(context)
+                      .textTheme
+                      .labelMedium
+                      ?.copyWith(fontSize: 15)),
+              Text("${widget.storyNames.length} 篇",
+                  style: Theme.of(context).textTheme.bodySmall)
+            ]),
+            centerTitle: true),
         body: ListView.builder(
             itemBuilder: (c, i) {
               final s = widget.storyNames[i];
@@ -148,10 +158,11 @@ class _StoryReadViewState extends State<StoryReadView> {
               return Padding(
                   padding:
                       const EdgeInsets.only(left: 20, right: 20, bottom: 10),
-                  child: Text("       " + s,
+                  child: Text(s,
                       style: const TextStyle(fontSize: 16, letterSpacing: 1)));
             },
-            itemCount: content.length + 1));
+            itemCount: content.length + 1,
+            cacheExtent: 999));
   }
 
   Future handleLoadStory() async {

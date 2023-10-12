@@ -49,10 +49,8 @@ class DashInfo {
 
   static callAndShow(
           Future Function(Config) f, BuildContext context, Config config) =>
-      f(config)
-          .then((message) => ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text(message))))
-          .then((value) => config.needRefreshDashboardPage = true);
+      f(config).then((message) => ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(message))));
 }
 
 class DashHome extends StatefulWidget {
@@ -63,7 +61,7 @@ class DashHome extends StatefulWidget {
 }
 
 class _DashHomeState extends State<DashHome> {
-  Config? config;
+  late Config config;
   Future<Dashboard?>? future;
   String time = "00:00";
   StreamController controller = StreamController();
@@ -72,17 +70,19 @@ class _DashHomeState extends State<DashHome> {
   @override
   void initState() {
     super.initState();
-    controller.sink
-        .addStream(Stream.periodic(const Duration(seconds: 5), (index) {
-      return index;
-    }));
-    subscription = controller.stream.listen((event) {
-      if (event % (dashFetchSeconds / 5) == 0) {
-        if (kDebugMode) print("Call API Now at ${TimeUtil.nowLog}");
-        future = Dashboard.loadFromApi(config!);
-      }
-      setState(() {
-        //print("Setting state at ${TimeUtil.nowLog}");
+    Future.delayed(Duration.zero, () {
+      config = Provider.of<Config>(context, listen: false);
+      future = Dashboard.loadFromApi(config);
+      controller.sink
+          .addStream(Stream.periodic(const Duration(seconds: 5), (index) {
+        return index;
+      }));
+      subscription = controller.stream.listen((event) {
+        if (event % (dashFetchSeconds / 5) == 0) {
+          if (kDebugMode) print("Call API Now at ${TimeUtil.nowLog}");
+          future = Dashboard.loadFromApi(config);
+        }
+        setState(() {});
       });
     });
   }
@@ -95,35 +95,23 @@ class _DashHomeState extends State<DashHome> {
   }
 
   @override
-  void didChangeDependencies() {
-    if (config == null) {
-      config = Provider.of<Config>(context, listen: true);
-      if (config!.needRefreshDashboardPage) {
-        future = Dashboard.loadFromApi(config!);
-        config!.needRefreshDashboardPage = false;
-      } else {
-        future ??= Dashboard.loadFromApi(config!);
-      }
-    }
-    super.didChangeDependencies();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: future,
-      builder: util.commonFutureBuilder<Dashboard>(buildMainPage),
-    );
+    return Scaffold(
+        backgroundColor: Colors.transparent,
+        body: SafeArea(
+            child: FutureBuilder(
+                future: future,
+                builder: util.commonFutureBuilder<Dashboard>(buildMainPage))));
   }
 
   Widget buildMainPage(Dashboard dashboard) {
     return RefreshIndicator(
         onRefresh: () async {
-          future = Dashboard.loadFromApi(config!);
+          future = Dashboard.loadFromApi(config);
           await Future.delayed(
               const Duration(seconds: 1), () => setState(() {}));
         },
-        child: MainPage(config: config!, dashboard: dashboard, state: this));
+        child: MainPage(config: config, dashboard: dashboard, state: this));
   }
 }
 
@@ -287,7 +275,7 @@ class _WorkState extends State<Work> {
   @override
   void didChangeDependencies() {
     Future.delayed(
-        const Duration(milliseconds: 100), () => setState(() => {left = 0}));
+        const Duration(milliseconds: 100), () => setState(() => left = 0));
     super.didChangeDependencies();
   }
 
@@ -481,7 +469,7 @@ class _DiaryState extends State<Diary> {
   @override
   void didChangeDependencies() {
     Future.delayed(
-        const Duration(milliseconds: 500), () => setState(() => {scale = 0.8}));
+        const Duration(milliseconds: 500), () => setState(() => scale = 0.8));
     super.didChangeDependencies();
   }
 

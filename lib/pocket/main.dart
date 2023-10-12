@@ -4,6 +4,7 @@ import 'package:cyberme_flutter/learn/game.dart';
 import 'package:cyberme_flutter/learn/snh.dart';
 import 'package:cyberme_flutter/pocket/app/body_mass.dart';
 import 'package:cyberme_flutter/pocket/app/story.dart';
+import 'dashboard.dart' as dash;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -28,31 +29,6 @@ final apps = {
     "addToMenu": true,
     "replace": true,
     "icon": Icons.calendar_month
-  },
-  "bigDashboard": {
-    "name": "我的一天（大屏）",
-    "view": (c) {
-      Future.delayed(const Duration(seconds: 2), () {
-        final config = Provider.of<Config>(c, listen: false);
-        config.needRefreshDashboardPage = true;
-        config.setBool('useDashboard', !config.useDashboard);
-      });
-      return const PocketHome();
-    },
-    "addToMenu": false,
-    "replace": true
-  },
-  "game": {
-    "name": "健康游戏",
-    "view": (c) => const Game(info: null),
-    "addToMenu": true,
-    "icon": Icons.gamepad
-  },
-  "snh48": {
-    "name": "SNH Pocket",
-    "view": (c) => const SNHApp(),
-    "addToMenu": false,
-    "icon": Icons.heart_broken_rounded
   },
   "ticket": {
     "name": "12306 车票",
@@ -101,6 +77,24 @@ final apps = {
     "view": (c) => const StoryView(),
     "addToMenu": true,
     "icon": Icons.bookmark_add
+  },
+  "bigDashboard": {
+    "name": "我的一天 - 大屏",
+    "view": (c) => const dash.DashHome(),
+    "addToMenu": true,
+    "replace": false
+  },
+  "game": {
+    "name": "健康游戏",
+    "view": (c) => const Game(info: null),
+    "addToMenu": true,
+    "icon": Icons.gamepad
+  },
+  "snh48": {
+    "name": "SNH Pocket",
+    "view": (c) => const SNHApp(),
+    "addToMenu": true,
+    "icon": Icons.heart_broken_rounded
   }
 };
 
