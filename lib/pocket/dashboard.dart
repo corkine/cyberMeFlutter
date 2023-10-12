@@ -97,7 +97,7 @@ class _DashHomeState extends State<DashHome> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.black,
         body: SafeArea(
             child: FutureBuilder(
                 future: future,

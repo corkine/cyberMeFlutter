@@ -315,83 +315,83 @@ class _MovieFilterViewState extends State<MovieFilterView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Colors.black.withOpacity(0.8),
+        backgroundColor: Colors.black,
         body: SingleChildScrollView(
             child: Padding(
-                padding: const EdgeInsets.only(top: 10, left: 10, right: 10),
+                padding: const EdgeInsets.only(top: 20, left: 10, right: 10),
                 child: DefaultTextStyle(
-                  style: const TextStyle(color: Colors.white),
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                            padding: const EdgeInsets.only(bottom: 5),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text("按类别过滤"),
-                                TextButton(
-                                    onPressed: () => setState(
-                                        () => widget.filter.filteredTypes = {}),
-                                    child: const Text("清空过滤器"))
-                              ],
-                            )),
-                        Wrap(
-                            children: types
-                                .map((e) => FilterChip(
-                                    visualDensity: VisualDensity.compact,
-                                    padding: const EdgeInsets.only(
-                                        left: 0, right: 0),
-                                    labelPadding: const EdgeInsets.only(
-                                        left: 10, right: 10),
-                                    color: const MaterialStatePropertyAll(
-                                        Colors.black),
-                                    showCheckmark: false,
-                                    checkmarkColor: Colors.white,
-                                    side: BorderSide(
-                                        color: widget.filter.filteredTypes
-                                                .contains(e)
-                                            ? Colors.white
-                                            : Colors.transparent),
-                                    label: Text(e,
-                                        style: const TextStyle(
-                                            color: Colors.white)),
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(15)),
-                                    selected:
-                                        widget.filter.filteredTypes.contains(e),
-                                    onSelected: (_) => setState(() {
-                                          if (widget.filter.filteredTypes
-                                              .contains(e)) {
-                                            widget.filter.filteredTypes
-                                                .remove(e);
-                                          } else {
-                                            widget.filter.filteredTypes.add(e);
-                                          }
-                                        })))
-                                .toList(growable: false),
-                            spacing: 5,
-                            runSpacing: 5),
-                        const Padding(
-                            padding: EdgeInsets.only(bottom: 0, top: 20),
-                            child: Text("按星级过滤")),
-                        Slider(
-                            thumbColor: Colors.white,
-                            secondaryTrackValue: avgStar,
-                            value: widget.filter.star.toDouble(),
-                            min: 0,
-                            max: 9,
-                            divisions: 9,
-                            label: widget.filter.star == 0
-                                ? " 任意星级 "
-                                : " 大于 ${widget.filter.star} 星 ",
-                            onChanged: (v) {
-                              setState(() {
-                                widget.filter.star = v;
-                              });
-                            })
-                      ]),
-                ))));
+                    style: const TextStyle(color: Colors.white),
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                              padding: const EdgeInsets.only(bottom: 5),
+                              child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text("按类别过滤"),
+                                    TextButton(
+                                        onPressed: () => setState(() =>
+                                            widget.filter.filteredTypes = {}),
+                                        child: const Text("清空过滤器"))
+                                  ])),
+                          Wrap(
+                              children: types
+                                  .map((e) => FilterChip(
+                                      visualDensity: VisualDensity.compact,
+                                      padding: const EdgeInsets.only(
+                                          left: 0, right: 0),
+                                      labelPadding: const EdgeInsets.only(
+                                          left: 10, right: 10),
+                                      color: const MaterialStatePropertyAll(
+                                          Colors.black),
+                                      showCheckmark: false,
+                                      checkmarkColor: Colors.white,
+                                      side: BorderSide(
+                                          color: widget.filter.filteredTypes
+                                                  .contains(e)
+                                              ? Colors.white
+                                              : Colors.transparent),
+                                      label: Text(e,
+                                          style: const TextStyle(
+                                              color: Colors.white)),
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(15)),
+                                      selected: widget.filter.filteredTypes
+                                          .contains(e),
+                                      onSelected: (_) => setState(() {
+                                            if (widget.filter.filteredTypes
+                                                .contains(e)) {
+                                              widget.filter.filteredTypes
+                                                  .remove(e);
+                                            } else {
+                                              widget.filter.filteredTypes
+                                                  .add(e);
+                                            }
+                                          })))
+                                  .toList(growable: false),
+                              spacing: 5,
+                              runSpacing: 5),
+                          const Padding(
+                              padding: EdgeInsets.only(bottom: 0, top: 20),
+                              child: Text("按星级过滤")),
+                          Slider(
+                              thumbColor: Colors.white,
+                              secondaryTrackValue: avgStar,
+                              value: widget.filter.star.toDouble(),
+                              min: 0,
+                              max: 9,
+                              divisions: 9,
+                              label: widget.filter.star == 0
+                                  ? " 任意星级 "
+                                  : " 大于 ${widget.filter.star} 星 ",
+                              onChanged: (v) {
+                                setState(() {
+                                  widget.filter.star = v;
+                                });
+                              })
+                        ])))));
   }
 }
