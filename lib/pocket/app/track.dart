@@ -177,8 +177,16 @@ class _TrackDetailViewState extends State<TrackDetailView> {
                   isTrack = d?.monitor ?? false;
                   setState(() {});
                 },
-                icon: Icon(
-                    isTrack ? Icons.visibility : Icons.visibility_off_outlined))
+                icon: Icon(isTrack
+                    ? Icons.visibility
+                    : Icons.visibility_off_outlined)),
+            IconButton(
+                onPressed: () async {
+                  await handleAddShortLink(config!);
+                  setState(() {});
+                },
+                icon:
+                    const RotatedBox(quarterTurns: 1, child: Icon(Icons.link)))
           ],
         ),
         body: RefreshIndicator(
@@ -229,6 +237,65 @@ class _TrackDetailViewState extends State<TrackDetailView> {
     final data = jsonDecode(r.body);
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(data["message"])));
+  }
+
+  Future handleAddShortLink(Config config) async {
+    final kw = TextEditingController();
+    var overwrite = false;
+    var keyword = await showDialog<String>(
+        context: context,
+        builder: (c) => AlertDialog(
+                title: const Text("请输入短链接关键字"),
+                content: StatefulBuilder(
+                    builder: (c, setState) =>
+                        Column(mainAxisSize: MainAxisSize.min, children: [
+                          TextField(
+                            controller: kw,
+                            decoration: const InputDecoration(
+                                labelText: "短链",
+                                prefix: Text("go.mazhangjing.com/")),
+                          ),
+                          const SizedBox(height: 10),
+                          Transform.translate(
+                              offset: const Offset(-5, 0),
+                              child: Row(children: [
+                                Checkbox(
+                                    value: overwrite,
+                                    onChanged: (v) => setState(() {
+                                          overwrite = v!;
+                                        })),
+                                const Text("覆盖现有关键字")
+                              ]))
+                        ])),
+                actions: [
+                  TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop(kw.text);
+                      },
+                      child: const Text("确定"))
+                ]),
+        barrierDismissible: false);
+    if (keyword!.isEmpty) return;
+    final r = await post(Uri.parse(Config.goPostUrl),
+        headers: config.cyberBase64JsonContentHeader,
+        body: jsonEncode({
+          "keyword": keyword,
+          "redirectURL":
+              "https://cyber.mazhangjing.com/visits/${base64Encode(utf8.encode(widget.url))}/logs",
+          "note": "由 CyberMe Flutter 添加",
+          "override": overwrite
+        }));
+    final d = jsonDecode(r.body);
+    final m = d["message"] ?? "没有消息";
+    final s = (d["status"] as int?) ?? -1;
+    var fm = m;
+    if (s > 0) {
+      await FlutterClipboard.copy("https://go.mazhangjing.com/$keyword");
+      fm = fm + "，已将链接拷贝到剪贴板。";
+    }
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(fm),
+        action: SnackBarAction(label: "OK", onPressed: () {})));
   }
 
   Widget dateRich(String? date) {

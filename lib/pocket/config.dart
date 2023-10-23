@@ -102,6 +102,8 @@ class Config extends ChangeNotifier {
             "note": note ?? "CyberMe Flutter Client"
           });
 
+  static const String goPostUrl = "https://cyber.mazhangjing.com/cyber/go/add";
+
   static const String storyListUrl =
       "https://cyber.mazhangjing.com/cyber/story/all-book-and-story-name";
 
