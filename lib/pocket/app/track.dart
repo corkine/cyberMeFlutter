@@ -130,7 +130,11 @@ class TrackDetailView extends StatefulWidget {
 class _TrackDetailViewState extends State<TrackDetailView> {
   late DateTime weekDayOne;
   late DateTime lastWeekDayOne;
+  late DateTime monthDayOne;
   late DateTime today;
+  int todayCount = -1;
+  int weekCount = -1;
+  int monthCount = -1;
   Config? config;
 
   @override
@@ -144,6 +148,7 @@ class _TrackDetailViewState extends State<TrackDetailView> {
         seconds: now.second,
         milliseconds: now.millisecond,
         microseconds: now.microsecond));
+    monthDayOne = DateTime(now.year, now.month, 1);
     lastWeekDayOne = weekDayOne.subtract(const Duration(days: 7));
     super.initState();
   }
@@ -195,25 +200,39 @@ class _TrackDetailViewState extends State<TrackDetailView> {
               logs = d?.logs ?? [];
               debugPrint("reload svc details done!");
             },
-            child: ListView.builder(
-                itemBuilder: (ctx, idx) {
-                  final c = logs[idx];
-                  return ListTile(
-                      visualDensity: VisualDensity.compact,
-                      onTap: () async {
-                        await FlutterClipboard.copy(c.ip ?? "");
-                        ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("已拷贝地址到剪贴板")));
-                      },
-                      onLongPress: () async {
-                        await launchUrlString(
-                            "https://www.ipshudi.com/${c.ip}.htm");
-                      },
-                      title: Text(c.ip ?? "No IP"),
-                      subtitle: dateRich(c.timestamp?.split(".").first),
-                      trailing: Text(c.ipInfo ?? ""));
-                },
-                itemCount: logs.length)));
+            child: Column(children: [
+              Expanded(
+                child: ListView.builder(
+                    itemBuilder: (ctx, idx) {
+                      final c = logs[idx];
+                      return ListTile(
+                          visualDensity: VisualDensity.compact,
+                          onTap: () async {
+                            await FlutterClipboard.copy(c.ip ?? "");
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text("已拷贝地址到剪贴板")));
+                          },
+                          onLongPress: () async {
+                            await launchUrlString(
+                                "https://www.ipshudi.com/${c.ip}.htm");
+                          },
+                          title: Text(c.ip ?? "No IP"),
+                          subtitle: dateRich(c.timestamp?.split(".").first),
+                          trailing: Text(c.ipInfo ?? ""));
+                    },
+                    itemCount: logs.length),
+              ),
+              SafeArea(
+                child: Padding(
+                    padding: const EdgeInsets.only(
+                        left: 15, right: 15, top: 3, bottom: 5),
+                    child: Row(children: [
+                      Text("今日访问：$todayCount"),
+                      Text("本周访问：$weekCount"),
+                      Text("本月访问：$monthCount")
+                    ], mainAxisAlignment: MainAxisAlignment.spaceBetween)),
+              )
+            ])));
   }
 
   Future<Track?> fetchDetail(Config config) async {
@@ -221,8 +240,21 @@ class _TrackDetailViewState extends State<TrackDetailView> {
         Uri.parse(Config.logsUrl(base64Encode(utf8.encode(widget.url)))),
         headers: config.cyberBase64Header);
     final d = jsonDecode(r.body);
+    todayCount = 0;
+    weekCount = 0;
+    monthCount = 0;
     if ((d["status"] as int?) == 1) {
-      return Track.fromJson(d["data"]);
+      final data = Track.fromJson(d["data"]);
+      for (final log in (data.logs ?? <Logs>[])) {
+        final dateStr = log.timestamp?.split(".").first;
+        if (dateStr != null) {
+          final date = DateFormat("yyyy-MM-dd'T'HH:mm:ss").parse(dateStr);
+          if (date.isAfter(today)) todayCount += 1;
+          if (date.isAfter(weekDayOne)) weekCount += 1;
+          if (date.isAfter(monthDayOne)) monthCount += 1;
+        }
+      }
+      return data;
     } else {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(d["message"])));
