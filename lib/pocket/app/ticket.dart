@@ -96,8 +96,14 @@ class _TicketShowPageState extends State<TicketShowPage> {
               TextButton(
                   onPressed: () async {
                     await showModalBottomSheet(
+                        showDragHandle: false,
+                        isScrollControlled: true,
                         context: context,
-                        builder: (c) => const TicketParsePage());
+                        builder: (c) => SizedBox(
+                              height:
+                                  MediaQuery.maybeSizeOf(context)!.height / 1.5,
+                              child: const TicketParsePage(),
+                            ));
                     await handleReloadTickets();
                   },
                   child: const Text("解析票据"))
@@ -154,7 +160,10 @@ class _TicketParsePageState extends State<TicketParsePage> {
               data = [];
               setState(() {});
             },
-            child: const Text("清空"))
+            child: const Text("清空")),
+        TextButton(
+            onPressed: () => FocusScope.of(context).unfocus(),
+            child: const Text("隐藏键盘"))
       ]),
       data.isEmpty
           ? const Text("")
