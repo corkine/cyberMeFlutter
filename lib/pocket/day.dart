@@ -1,21 +1,14 @@
-import 'dart:io';
 import 'dart:ui';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import '/pocket/config.dart';
 import '/pocket/time.dart';
-import '/pocket/util.dart' as util;
 import '/pocket/models/day.dart';
 import '/pocket/models/diary.dart' as d;
-import 'package:provider/provider.dart';
 import 'package:clipboard/clipboard.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '/pocket/dashboard.dart' as dash;
-import 'dashboard.dart';
-import 'main.dart';
 
 class DayInfo {
   static String title = TimeUtil.todayShort();
@@ -174,17 +167,13 @@ class DayHome extends StatefulWidget {
 
 class _DayHomeState extends State<DayHome> {
   Dashboard? dashboard;
-  Config? config;
 
   @override
   void didChangeDependencies() {
-    if (config == null) {
-      config = Provider.of<Config>(context, listen: true);
-      Dashboard.loadFromApi(config!,
-              failedCallback: (e) => ScaffoldMessenger.of(context)
-                  .showSnackBar(SnackBar(content: Text(e))))
-          .then((value) => setState(() => dashboard = value));
-    }
+    Dashboard.loadFromApi(config,
+        failedCallback: (e) => ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(e))))
+        .then((value) => setState(() => dashboard = value));
     super.didChangeDependencies();
   }
 
@@ -205,14 +194,14 @@ class _DayHomeState extends State<DayHome> {
               ]))),
       RefreshIndicator(
           onRefresh: () async {
-            dashboard = await Dashboard.loadFromApi(config!,
+            dashboard = await Dashboard.loadFromApi(config,
                 failedCallback: (e) => ScaffoldMessenger.of(context)
                     .showSnackBar(SnackBar(content: Text(e))));
             setState(() {});
           },
           child: dashboard == null
               ? const Text("")
-              : MainPage(config: config!, dashboard: dashboard!))
+              : MainPage(dashboard: dashboard!))
     ]);
   }
 }
@@ -261,10 +250,8 @@ class MainPage extends StatelessWidget {
   const MainPage({
     Key? key,
     required this.dashboard,
-    required this.config,
   }) : super(key: key);
 
-  final Config config;
   final Dashboard dashboard;
 
   @override
@@ -274,7 +261,7 @@ class MainPage extends StatelessWidget {
             parent: BouncingScrollPhysics()),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           //待办卡片
-          Todo(config, dashboard),
+          Todo(dashboard),
           //工作日卡片，包含是否打卡，是否下班，工作时长，打卡信息
           SizedBox(
               height: 130,
@@ -298,10 +285,8 @@ class MainPage extends StatelessWidget {
 ///待办卡片
 class Todo extends StatelessWidget {
   final Dashboard dashboard;
-  final Config config;
 
   const Todo(
-    this.config,
     this.dashboard, {
     Key? key,
   }) : super(key: key);
@@ -390,7 +375,6 @@ class _WorkState extends State<Work> {
 
   @override
   Widget build(BuildContext context) {
-    var config = Provider.of<Config>(context, listen: false);
     return Stack(children: [
       Container(
           width: double.infinity,
@@ -455,7 +439,6 @@ class Habit extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var config = Provider.of<Config>(context);
     return Padding(
         padding: const EdgeInsets.only(left: 10, right: 20),
         child: Column(
@@ -574,7 +557,7 @@ class _DiaryState extends State<Diary> {
   @override
   void didChangeDependencies() {
     Future.delayed(
-        const Duration(milliseconds: 500), () => setState(() => {scale = 0.8}));
+        const Duration(milliseconds: 500), () => setState(() => scale = 0.8));
     super.didChangeDependencies();
   }
 

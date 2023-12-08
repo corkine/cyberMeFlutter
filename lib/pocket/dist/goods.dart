@@ -11,7 +11,6 @@ import '../../util.dart';
 import '../models/good.dart';
 import '../config.dart';
 import 'package:http/http.dart' as http;
-import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:clipboard/clipboard.dart';
@@ -46,36 +45,32 @@ class _GoodsHomeState extends State<GoodsHome> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<Config>(
-      builder: (BuildContext context, Config config, Widget? w) {
-        _data = fetchData(config);
-        return FutureBuilder(
-            future: _data,
-            builder: (b, s) {
-              if (s.connectionState != ConnectionState.done) {
-                return Util.waiting;
-              }
-              if (s.hasError) {
-                return InkWell(
-                    radius: 20,
-                    onTap: () => _retry(config),
-                    child: const Center(child: Text('检索出错，点击重试')));
-              }
-              if (s.hasData) {
-                final List<Good> data = s.data as List<Good>;
-                data.sort((Good a, Good b) => Good.compare(config, a, b));
-                return GoodList(config.notShowArchive
-                    ? data
-                        .where((element) => element.currentStateEn != 'Archive')
-                        .toList()
-                    : data);
-              }
-              return const Center(
-                child: Text('没有数据'),
-              );
-            });
-      },
-    );
+    _data = fetchData(config);
+    return FutureBuilder(
+        future: _data,
+        builder: (b, s) {
+          if (s.connectionState != ConnectionState.done) {
+            return Util.waiting;
+          }
+          if (s.hasError) {
+            return InkWell(
+                radius: 20,
+                onTap: () => _retry(config),
+                child: const Center(child: Text('检索出错，点击重试')));
+          }
+          if (s.hasData) {
+            final List<Good> data = s.data as List<Good>;
+            data.sort((Good a, Good b) => Good.compare(config, a, b));
+            return GoodList(config.notShowArchive
+                ? data
+                    .where((element) => element.currentStateEn != 'Archive')
+                    .toList()
+                : data);
+          }
+          return const Center(
+            child: Text('没有数据'),
+          );
+        });
   }
 }
 
@@ -92,7 +87,6 @@ class _GoodListState extends State<GoodList> {
   @override
   Widget build(BuildContext context) {
     final goods = widget.goods;
-    final config = Provider.of<Config>(context, listen: false);
     final map = config.map;
     Good good; //现在已经排过序了，根据排序结果将其顺序规整化
     //print('sorting now.');
@@ -113,7 +107,6 @@ class _GoodListState extends State<GoodList> {
             itemBuilder: (c, i) => GoodCard(
                 key: ValueKey(goods[i].id),
                 controller: config.controller,
-                config: config,
                 goods: goods,
                 i: i,
                 onDismiss: () => goods.removeAt(i)),
@@ -141,7 +134,6 @@ class _GoodListState extends State<GoodList> {
             itemBuilder: (c, i) => GoodCard(
                 key: ValueKey(goods[i].id),
                 controller: config.controller,
-                config: config,
                 goods: goods,
                 i: i,
                 onDismiss: () => goods.removeAt(i)));
@@ -150,7 +142,6 @@ class _GoodListState extends State<GoodList> {
 
 class GoodCard extends StatelessWidget {
   final ScrollController controller;
-  final Config config;
   final List<Good> goods;
   final int i;
   final Function onDismiss;
@@ -158,7 +149,6 @@ class GoodCard extends StatelessWidget {
   const GoodCard(
       {required Key key,
       required this.controller,
-      required this.config,
       required this.goods,
       required this.i,
       required this.onDismiss})
@@ -224,7 +214,6 @@ class GoodCard extends StatelessWidget {
                 ))
               : InkWell(
                   onTap: () {
-                    final config = Provider.of<Config>(context, listen: false);
                     launch(config.goodsView(goods[i]));
                     if (config.autoCopyToClipboard) {
                       FlutterClipboard.copy(config.goodsViewNoToken(goods[i]))
@@ -235,7 +224,6 @@ class GoodCard extends StatelessWidget {
                     }
                   },
                   onLongPress: () {
-                    final config = Provider.of<Config>(context, listen: false);
                     config.position = controller.offset;
                     Navigator.of(context).push(
                         MaterialPageRoute(builder: (BuildContext context) {
@@ -256,7 +244,6 @@ class GoodCard extends StatelessWidget {
 
   static Future<bool> handleDismiss(
       DismissDirection direction, Good good, BuildContext context) async {
-    final config = Provider.of<Config>(context, listen: false);
     if (direction == DismissDirection.startToEnd) return false;
     return showDialog(
         barrierDismissible: false,
@@ -639,7 +626,6 @@ class _GoodAddState extends State<GoodAdd> {
   }
 
   _resetRequest() {
-    final config = Provider.of<Config>(context, listen: false);
     request = http.MultipartRequest(
         'POST',
         Uri.parse(widget.good == null
@@ -688,8 +674,6 @@ class _GoodAddState extends State<GoodAdd> {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(result['message'])));
         Navigator.of(context).pop();
-        final model = Provider.of<Config>(context, listen: false);
-        model.justNotify();
         failed = false;
         return result;
       } finally {

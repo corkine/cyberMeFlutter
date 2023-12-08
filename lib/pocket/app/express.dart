@@ -5,7 +5,6 @@ import 'package:cyberme_flutter/pocket/models/day.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
-import 'package:provider/provider.dart';
 
 import '../config.dart';
 
@@ -20,13 +19,11 @@ class _ExpressViewState extends State<ExpressView> {
   @override
   void didChangeDependencies() {
     if (dashboard == null) {
-      config = Provider.of<Config>(context, listen: false);
       loadData();
     }
     super.didChangeDependencies();
   }
 
-  Config? config;
   Dashboard? dashboard;
 
   loadData() async {
@@ -62,7 +59,7 @@ class _ExpressViewState extends State<ExpressView> {
                       context: context,
                       builder: (c) => BottomSheet(
                           onClosing: () {},
-                          builder: (c) => ExpressAddView(config: config!)));
+                          builder: (c) => const ExpressAddView()));
                   // Navigator.of(context).push(MaterialPageRoute(
                   //     builder: (c) => ExpressAddView(config: config!)));
                 },
@@ -152,9 +149,7 @@ class _ExpressViewState extends State<ExpressView> {
 }
 
 class ExpressAddView extends StatefulWidget {
-  final Config config;
-
-  const ExpressAddView({super.key, required this.config});
+  const ExpressAddView({super.key});
 
   @override
   State<ExpressAddView> createState() => _ExpressAddViewState();
@@ -239,7 +234,6 @@ class _ExpressAddViewState extends State<ExpressAddView> {
                         onPressed: () {
                           if (formKey.currentState!.validate()) {
                             handleAdd(
-                                widget.config,
                                 sfPhone.isNotEmpty
                                     ? "${id.text}:$sfPhone"
                                     : id.text,
@@ -253,10 +247,10 @@ class _ExpressAddViewState extends State<ExpressAddView> {
                 ]))));
   }
 
-  handleAdd(Config c, String no, String note, bool rewrite, bool wait) async {
+  handleAdd(String no, String note, bool rewrite, bool wait) async {
     final r = await get(
         Uri.parse(Config.expressAddUrl(note, rewrite, wait, no)),
-        headers: c.cyberBase64Header);
+        headers: config.cyberBase64Header);
     final d = jsonDecode(r.body);
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(d["message"])));

@@ -21,20 +21,19 @@ Map<String, dynamic> _$TicketToJson(Ticket instance) => <String, dynamic>{
     };
 
 Data _$DataFromJson(Map<String, dynamic> json) => Data(
-    date: json['date'] as String?,
-    start: json['start'] as String?,
-    end: json['end'] as String?,
-    trainNo: json['trainNo'] as String?,
-    siteNo: json['siteNo'] as String?,
-    canceled: json['canceled?'] as bool?);
+      date: json['date'] as String?,
+      start: json['start'] as String?,
+      end: json['end'] as String?,
+      trainNo: json['trainNo'] as String?,
+      siteNo: json['siteNo'] as String?,
+      canceled: json['canceled'] as bool?,
+    );
 
 Map<String, dynamic> _$DataToJson(Data instance) => <String, dynamic>{
-      'date': instance.dateTime != null
-          ? DateFormat("yyyyMMdd_HH:mm").format(instance.dateTime!)
-          : null,
+      'date': instance.date,
       'start': instance.start,
       'end': instance.end,
       'trainNo': instance.trainNo,
       'siteNo': instance.siteNo,
-      'canceled?': instance.canceled
+      'canceled': instance.canceled,
     };

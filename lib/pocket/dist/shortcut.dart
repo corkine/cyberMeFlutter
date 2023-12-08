@@ -1,7 +1,6 @@
 import 'package:clipboard/clipboard.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:quick_actions/quick_actions.dart';
 import '../config.dart';
 import '../day.dart';
@@ -28,8 +27,7 @@ void setupQuickAction(BuildContext context) {
     quickActions.initialize((shortcutType) {
       switch (shortcutType) {
         case "action_quicklink":
-          Config config = Provider.of<Config>(context, listen: false);
-          showSearch(context: context, delegate: ItemSearchDelegate(config));
+          showSearch(context: context, delegate: ItemSearchDelegate());
           break;
         case 'action_add_good':
           Navigator.of(context)
@@ -50,17 +48,14 @@ void setupQuickAction(BuildContext context) {
           }));
           break;
         case 'action_clean':
-          var config = Provider.of<Config>(context, listen: false);
           config.init().then(
               (_) => DayInfo.callAndShow(Dashboard.setClean, context, config));
           break;
         case 'action_hcm':
-          var config = Provider.of<Config>(context, listen: false);
           config.init().then((_) =>
               DayInfo.callAndShow(Dashboard.checkHCMCard, context, config));
           break;
         case 'action_upload':
-          var config = Provider.of<Config>(context, listen: false);
           Future.delayed(const Duration(milliseconds: 700), () {
             config.init().then((value) async {
               String? url;

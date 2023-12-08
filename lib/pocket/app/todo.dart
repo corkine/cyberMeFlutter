@@ -4,7 +4,6 @@ import 'package:cyberme_flutter/pocket/models/todo.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
 
 import '../config.dart';
 
@@ -16,7 +15,6 @@ class TodoView extends StatefulWidget {
 }
 
 class _TodoViewState extends State<TodoView> with TickerProviderStateMixin {
-  Config? config;
   int step = 60;
   int indent = 0;
   late DateTime weekDayOne;
@@ -102,10 +100,7 @@ class _TodoViewState extends State<TodoView> with TickerProviderStateMixin {
 
   @override
   void didChangeDependencies() {
-    if (config == null) {
-      config = Provider.of<Config>(context);
-      fetchTodo().then((value) => setState(() {}));
-    }
+    fetchTodo().then((value) => setState(() {}));
     super.didChangeDependencies();
   }
 

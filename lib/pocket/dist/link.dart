@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
-import 'package:provider/provider.dart';
 import '../../util.dart';
 import '../config.dart';
 import '../models/entity.dart';
@@ -56,8 +55,6 @@ class _QuickLinkPageState extends State<QuickLinkPage> {
 
   @override
   Widget build(BuildContext context) {
-    //这里 Config 变更所有 Child 节点都需要重绘，因此没必要使用 Consumer
-    final config = Provider.of<Config>(context, listen: true);
     _data = fetchData(config, config.shortURLShowLimit);
     return FutureBuilder(
         future: _data,
@@ -140,33 +137,27 @@ class _SearchPageState extends State<SearchPage> {
   void initState() {
     super.initState();
     Future.delayed(const Duration(milliseconds: 100), () {
-      final config = Provider.of(context, listen: false);
-      showSearch(context: context, delegate: ItemSearchDelegate(config));
+      showSearch(context: context, delegate: ItemSearchDelegate());
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<Config>(
-      builder: (BuildContext context, Config config, Widget? widget) {
-        return Scaffold(
-          appBar: AppBar(
-            title: const Text('Keyword'),
-            toolbarHeight: Config.toolBarHeight,
-          ),
-          body: Container(
-            color: Colors.transparent,
-          ),
-        );
-      },
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Keyword'),
+        toolbarHeight: Config.toolBarHeight,
+      ),
+      body: Container(
+        color: Colors.transparent,
+      ),
     );
   }
 }
 
 class ItemSearchDelegate extends SearchDelegate<String> {
-  final Config config;
 
-  ItemSearchDelegate(this.config)
+  ItemSearchDelegate()
       : super(
             searchFieldLabel: '查找或插入',
             searchFieldStyle: const TextStyle(color: Colors.grey));
@@ -334,8 +325,7 @@ class _SearchResultState extends State<SearchResult> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final config = Provider.of<Config>(context, listen: false);
+  Widget build(BuildContext context) {;
     _future = _loadData(config);
     return FutureBuilder(
         future: _future,
@@ -483,7 +473,6 @@ class _AddDialogState extends State<AddDialog> {
       short = '';
       long = widget.query;
     }
-    final config = Provider.of<Config>(context, listen: false);
     final _s = TextEditingController(text: short);
     final _l = TextEditingController(text: long);
     return SimpleDialog(title: Text('添加关键字 $short'), children: [

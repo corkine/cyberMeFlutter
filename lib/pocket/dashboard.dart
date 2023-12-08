@@ -9,7 +9,6 @@ import '/pocket/time.dart';
 import '/pocket/util.dart' as util;
 import '/pocket/models/day.dart';
 import '/pocket/models/diary.dart' as d;
-import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'models/plant.dart';
@@ -61,7 +60,6 @@ class DashHome extends StatefulWidget {
 }
 
 class _DashHomeState extends State<DashHome> {
-  late Config config;
   Future<Dashboard?>? future;
   String time = "00:00";
   StreamController controller = StreamController();
@@ -71,7 +69,6 @@ class _DashHomeState extends State<DashHome> {
   void initState() {
     super.initState();
     Future.delayed(Duration.zero, () {
-      config = Provider.of<Config>(context, listen: false);
       future = Dashboard.loadFromApi(config);
       controller.sink
           .addStream(Stream.periodic(const Duration(seconds: 5), (index) {
@@ -111,7 +108,7 @@ class _DashHomeState extends State<DashHome> {
           await Future.delayed(
               const Duration(seconds: 1), () => setState(() {}));
         },
-        child: MainPage(config: config, dashboard: dashboard, state: this));
+        child: MainPage(dashboard: dashboard, state: this));
   }
 }
 
@@ -120,11 +117,9 @@ class MainPage extends StatelessWidget {
   const MainPage({
     Key? key,
     required this.dashboard,
-    required this.config,
     required this.state,
   }) : super(key: key);
 
-  final Config config;
   final Dashboard dashboard;
   final _DashHomeState state;
 
@@ -138,7 +133,7 @@ class MainPage extends StatelessWidget {
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           //待办卡片
           Card(
-              child: Todo(config, dashboard),
+              child: Todo(dashboard),
               elevation: 0.2,
               color: Colors.transparent),
           //工作日卡片，包含是否打卡，是否下班，工作时长，打卡信息
@@ -173,10 +168,8 @@ class MainPage extends StatelessWidget {
 ///待办卡片
 class Todo extends StatelessWidget {
   final Dashboard dashboard;
-  final Config config;
 
   const Todo(
-    this.config,
     this.dashboard, {
     Key? key,
   }) : super(key: key);
@@ -281,7 +274,6 @@ class _WorkState extends State<Work> {
 
   @override
   Widget build(BuildContext context) {
-    var config = Provider.of<Config>(context, listen: false);
     return Card(
       color: Colors.transparent,
       child: Stack(children: [
@@ -343,7 +335,6 @@ class Habit extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var config = Provider.of<Config>(context);
     return Card(
       child: Padding(
           padding: const EdgeInsets.only(left: 10, right: 20),

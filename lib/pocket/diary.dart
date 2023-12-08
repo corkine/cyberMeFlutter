@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'models/diary.dart';
 import 'util.dart' as util;
-import 'package:provider/provider.dart';
 import 'package:swipable_stack/swipable_stack.dart';
 
 import 'config.dart';
@@ -62,15 +61,11 @@ class DiaryStage extends StatefulWidget {
 
 class _DiaryStageState extends State<DiaryStage> {
   List<Diary> diaries = [];
-  Config? config;
 
   @override
   void didChangeDependencies() {
-    if (config == null) {
-      config = Provider.of<Config>(context, listen: true);
-      DiaryManager.loadFromApi(config!)
-          .then((value) => setState(() => diaries = value));
-    }
+    DiaryManager.loadFromApi(config)
+        .then((value) => setState(() => diaries = value));
     super.didChangeDependencies();
   }
 

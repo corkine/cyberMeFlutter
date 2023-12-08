@@ -7,10 +7,10 @@ import 'package:cyberme_flutter/pocket/app/eat.dart';
 import 'package:cyberme_flutter/pocket/app/story.dart';
 import 'app/cloth.dart';
 import 'app/medic.dart';
+import 'app/statistics.dart';
 import 'dashboard.dart' as dash;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'app/movie.dart';
 import 'app/tugua.dart';
 import 'day.dart';
@@ -116,6 +116,18 @@ final apps = {
     "view": (c) => const MedicView(),
     "addToMenu": true,
     "icon": Icons.medical_services_sharp
+  },
+  "statistics": {
+    "name": "统计信息",
+    "view": (c) => const StatisticsView(),
+    "addToMenu": true,
+    "icon": Icons.stacked_line_chart_sharp
+  },
+  "service": {
+    "name": "服务状态",
+    "view": (c) => const ServiceView(),
+    "addToMenu": true,
+    "icon": Icons.apps
   }
 };
 
@@ -290,7 +302,7 @@ class _PocketHomeState extends State<PocketHome> {
         diary.mainAction(context, config);
         break;
       case 2:
-        showSearch(context: context, delegate: ItemSearchDelegate(config));
+        showSearch(context: context, delegate: ItemSearchDelegate());
         break;
       case 3:
         Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext c) {
@@ -327,51 +339,48 @@ class _PocketHomeState extends State<PocketHome> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<Config>(
-        builder: (BuildContext context, Config config, Widget? w) {
-      return Scaffold(
-          drawer: auth.userMenuDrawer(config, context),
-          appBar: AppBar(
-              elevation: 7,
-              title: _title(config),
-              leading: Builder(
-                  builder: (BuildContext context) => IconButton(
-                      icon: const Icon(Icons.menu),
-                      onPressed: () => Scaffold.of(context).openDrawer())),
-              centerTitle: true,
-              toolbarHeight: Config.toolBarHeight,
-              actions: _buildActions(config, _index)),
-          floatingActionButton: _index == 0
-              ? null
-              : FloatingActionButton(
-                  onPressed: () => _callActionButton(config, _index),
-                  child: _buildActionButtonWidget(_index),
-                ),
-          floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-          backgroundColor: Colors.white,
-          body: _widgets(_index),
-          bottomNavigationBar: BottomNavigationBar(
-              type: BottomNavigationBarType.fixed,
-              currentIndex: _index,
-              onTap: (i) => setState(() => _index = i),
-              items: [
-                BottomNavigationBarItem(
-                    label: DayInfo.title,
-                    icon: const Icon(Icons.calendar_today_outlined),
-                    activeIcon: const Icon(Icons.calendar_today)),
-                BottomNavigationBarItem(
-                    label: diary.buttonTitle,
-                    icon: const Icon(Icons.sticky_note_2_outlined),
-                    activeIcon: const Icon(Icons.sticky_note_2_rounded)),
-                const BottomNavigationBarItem(
-                    label: '短链接',
-                    icon: Icon(Icons.bookmark_border_rounded),
-                    activeIcon: Icon(Icons.bookmark)),
-                const BottomNavigationBarItem(
-                    label: '物品管理',
-                    icon: Icon(Icons.checkroom_outlined),
-                    activeIcon: Icon(Icons.checkroom))
-              ]));
-    });
+    return Scaffold(
+        drawer: auth.userMenuDrawer(config, context),
+        appBar: AppBar(
+            elevation: 7,
+            title: _title(config),
+            leading: Builder(
+                builder: (BuildContext context) => IconButton(
+                    icon: const Icon(Icons.menu),
+                    onPressed: () => Scaffold.of(context).openDrawer())),
+            centerTitle: true,
+            toolbarHeight: Config.toolBarHeight,
+            actions: _buildActions(config, _index)),
+        floatingActionButton: _index == 0
+            ? null
+            : FloatingActionButton(
+                onPressed: () => _callActionButton(config, _index),
+                child: _buildActionButtonWidget(_index),
+              ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+        backgroundColor: Colors.white,
+        body: _widgets(_index),
+        bottomNavigationBar: BottomNavigationBar(
+            type: BottomNavigationBarType.fixed,
+            currentIndex: _index,
+            onTap: (i) => setState(() => _index = i),
+            items: [
+              BottomNavigationBarItem(
+                  label: DayInfo.title,
+                  icon: const Icon(Icons.calendar_today_outlined),
+                  activeIcon: const Icon(Icons.calendar_today)),
+              BottomNavigationBarItem(
+                  label: diary.buttonTitle,
+                  icon: const Icon(Icons.sticky_note_2_outlined),
+                  activeIcon: const Icon(Icons.sticky_note_2_rounded)),
+              const BottomNavigationBarItem(
+                  label: '短链接',
+                  icon: Icon(Icons.bookmark_border_rounded),
+                  activeIcon: Icon(Icons.bookmark)),
+              const BottomNavigationBarItem(
+                  label: '物品管理',
+                  icon: Icon(Icons.checkroom_outlined),
+                  activeIcon: Icon(Icons.checkroom))
+            ]));
   }
 }

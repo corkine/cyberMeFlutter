@@ -1,14 +1,14 @@
 ﻿import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'pocket/config.dart';
 import 'pocket/main.dart';
 import 'pocket/menu.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final config = await Config().init();
-  runApp(ChangeNotifierProvider(
-      create: (c) => config,
+  config = await Config().init();
+  debugPrint("now config is ${config.password}");
+  runApp(ProviderScope(
       child: MaterialApp(
           title: 'CyberMe',
           debugShowCheckedModeBanner: true,

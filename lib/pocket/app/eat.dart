@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 import '../config.dart';
 import '../models/eatItem.dart';
@@ -12,12 +11,10 @@ class EatView extends StatefulWidget {
 }
 
 class _EatViewState extends State<EatView> {
-  late Config config;
 
   @override
   void initState() {
     super.initState();
-    config = Provider.of<Config>(context, listen: false);
     fetchItems();
   }
 

@@ -27,7 +27,9 @@ String encodeSha1Base64(String plain) {
   return base64Encode(digest.bytes);
 }
 
-class Config extends ChangeNotifier {
+late Config config;
+
+class Config {
   static const version = 'VERSION 1.2.0, Build#2023-03-13';
 
   /*
@@ -255,63 +257,54 @@ class Config extends ChangeNotifier {
   bool setGoodsShortByName(bool res) {
     prefs.setBool('goodsShortByName', res);
     goodsShortByName = res;
-    notifyListeners();
     return true;
   }
 
   setGoodsRecentFirst(bool res) {
     prefs.setBool('goodsRecentFirst', res);
     goodsRecentFirst = res;
-    notifyListeners();
     return true;
   }
 
   setNotShowClothes(bool res) {
     prefs.setBool('notShowClothes', res);
     notShowClothes = res;
-    notifyListeners();
     return true;
   }
 
   setNotShowRemoved(bool res) {
     prefs.setBool('notShowRemoved', res);
     notShowRemoved = res;
-    notifyListeners();
     return true;
   }
 
   setNotShowArchive(bool res) {
     prefs.setBool('notShowArchive', res);
     notShowArchive = res;
-    notifyListeners();
     return true;
   }
 
   setShowUpdateButNotCreateTime(bool set) {
     prefs.setBool('showUpdateButNotCreateTime', set);
     showUpdateButNotCreateTime = set;
-    notifyListeners();
     return true;
   }
 
   setAutoCopyToClipboard(bool set) {
     prefs.setBool('autoCopyToClipboard', set);
     autoCopyToClipboard = set;
-    notifyListeners();
     return true;
   }
 
   setShortUrlShowLimit(int limit) {
     prefs.setInt('_shortURLShowLimit', limit);
     _shortURLShowLimit = limit;
-    notifyListeners();
     return true;
   }
 
   setFilterDuplicate(bool set) {
     prefs.setBool('_filterDuplicate', set);
     _filterDuplicate = set;
-    notifyListeners();
     return true;
   }
 
@@ -321,7 +314,6 @@ class Config extends ChangeNotifier {
         map.entries.map((e) => e.key + '::' + e.value.toString()).toList());
     //prefs.setStringList('goodsOrderMap', []);
     useReorderableListView = set;
-    notifyListeners();
     return true;
   }
 
@@ -330,11 +322,9 @@ class Config extends ChangeNotifier {
       print("set $key to $set");
     }
     prefs.setBool(key, set);
-    notifyListeners();
   }
 
   justNotify() {
-    notifyListeners();
   }
 
   @override

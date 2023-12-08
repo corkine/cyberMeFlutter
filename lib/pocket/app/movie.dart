@@ -5,7 +5,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:clipboard/clipboard.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
-import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 import '../config.dart';
@@ -19,7 +18,6 @@ class MovieView extends StatefulWidget {
 }
 
 class _MovieViewState extends State<MovieView> {
-  late Config config;
 
   bool showTv = true;
   bool showHot = true;
@@ -33,7 +31,6 @@ class _MovieViewState extends State<MovieView> {
   @override
   void initState() {
     super.initState();
-    config = Provider.of<Config>(context, listen: false);
     fetchAndUpdateData(config);
   }
 

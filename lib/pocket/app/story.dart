@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
-import 'package:provider/provider.dart';
 import '../config.dart';
 
 Map<String, String> cover = {
@@ -30,7 +29,6 @@ class StoryView extends StatefulWidget {
 }
 
 class _StoryViewState extends State<StoryView> {
-  late Config config;
 
   List<(String, List<String>)> model = [];
 
@@ -38,7 +36,6 @@ class _StoryViewState extends State<StoryView> {
   void initState() {
     super.initState();
     Future.delayed(Duration.zero, () {
-      config = Provider.of<Config>(context, listen: false);
       handleLoadBooks();
     });
   }
@@ -213,7 +210,6 @@ class StoryReadView extends StatefulWidget {
 }
 
 class _StoryReadViewState extends State<StoryReadView> {
-  late Config config;
 
   List<String> content = [];
 
@@ -221,7 +217,6 @@ class _StoryReadViewState extends State<StoryReadView> {
   void initState() {
     super.initState();
     Future.delayed(Duration.zero, () {
-      config = Provider.of<Config>(context, listen: false);
       handleLoadStory();
     });
   }

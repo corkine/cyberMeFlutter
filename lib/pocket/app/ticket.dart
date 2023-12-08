@@ -7,7 +7,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
 
 class TicketShowPage extends StatefulWidget {
   const TicketShowPage({super.key});
@@ -19,12 +18,10 @@ class TicketShowPage extends StatefulWidget {
 class _TicketShowPageState extends State<TicketShowPage> {
   List<t.Data> recent = [];
   List<t.Data> history = [];
-  late Config config;
 
   @override
   void initState() {
     super.initState();
-    config = Provider.of<Config>(context, listen: false);
     handleReloadTickets();
   }
 
@@ -123,14 +120,7 @@ class TicketParsePage extends StatefulWidget {
 
 class _TicketParsePageState extends State<TicketParsePage> {
   final input = TextEditingController();
-  late Config config;
   List<t.Data> data = [];
-
-  @override
-  void initState() {
-    super.initState();
-    config = Provider.of<Config>(context, listen: false);
-  }
 
   @override
   Widget build(BuildContext context) {

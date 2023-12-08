@@ -4,7 +4,6 @@ import 'package:clipboard/clipboard.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 import '../config.dart';
@@ -20,16 +19,12 @@ class TrackView extends StatefulWidget {
 Future call() async {}
 
 class _TrackViewState extends State<TrackView> {
-  Config? config;
 
   @override
   void didChangeDependencies() {
-    if (config == null) {
-      config = Provider.of<Config>(context);
-      fetchSvc(config!).then((value) => setState(() {
-            data = value;
-          }));
-    }
+    fetchSvc(config).then((value) => setState(() {
+      data = value;
+    }));
     super.didChangeDependencies();
   }
 
@@ -135,7 +130,6 @@ class _TrackDetailViewState extends State<TrackDetailView> {
   int todayCount = -1;
   int weekCount = -1;
   int monthCount = -1;
-  Config? config;
 
   @override
   void initState() {
@@ -155,13 +149,10 @@ class _TrackDetailViewState extends State<TrackDetailView> {
 
   @override
   void didChangeDependencies() {
-    if (config == null) {
-      config = Provider.of<Config>(context);
-      fetchDetail(config!).then((value) => setState(() {
-            logs = value?.logs ?? [];
-            isTrack = value?.monitor ?? false;
-          }));
-    }
+    fetchDetail(config).then((value) => setState(() {
+      logs = value?.logs ?? [];
+      isTrack = value?.monitor ?? false;
+    }));
     super.didChangeDependencies();
   }
 
@@ -187,7 +178,7 @@ class _TrackDetailViewState extends State<TrackDetailView> {
                     : Icons.visibility_off_outlined)),
             IconButton(
                 onPressed: () async {
-                  await handleAddShortLink(config!);
+                  await handleAddShortLink(config);
                   setState(() {});
                 },
                 icon:
