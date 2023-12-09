@@ -5,6 +5,7 @@ import 'package:cyberme_flutter/learn/snh.dart';
 import 'package:cyberme_flutter/pocket/app/body_mass.dart';
 import 'package:cyberme_flutter/pocket/app/eat.dart';
 import 'package:cyberme_flutter/pocket/app/story.dart';
+import 'app/blue.dart';
 import 'app/cloth.dart';
 import 'app/medic.dart';
 import 'app/note.dart';
@@ -135,6 +136,12 @@ final apps = {
     "view": (c) => const NoteView(),
     "addToMenu": true,
     "icon": Icons.note
+  },
+  "blue": {
+    "name": "BLUE",
+    "view": (c) => const BlueView(),
+    "addToMenu": true,
+    "icon": Icons.margin
   }
 };
 
