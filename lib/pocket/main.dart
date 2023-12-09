@@ -7,6 +7,7 @@ import 'package:cyberme_flutter/pocket/app/eat.dart';
 import 'package:cyberme_flutter/pocket/app/story.dart';
 import 'app/cloth.dart';
 import 'app/medic.dart';
+import 'app/note.dart';
 import 'app/statistics.dart';
 import 'dashboard.dart' as dash;
 import 'package:flutter/foundation.dart';
@@ -62,6 +63,12 @@ final apps = {
     "view": (c) => const ExpressView(),
     "addToMenu": true,
     "icon": Icons.card_giftcard
+  },
+  "service": {
+    "name": "服务状态",
+    "view": (c) => const ServiceView(),
+    "addToMenu": true,
+    "icon": Icons.apps
   },
   "track": {
     "name": "服务追踪",
@@ -123,11 +130,11 @@ final apps = {
     "addToMenu": true,
     "icon": Icons.stacked_line_chart_sharp
   },
-  "service": {
-    "name": "服务状态",
-    "view": (c) => const ServiceView(),
+  "note": {
+    "name": "便签",
+    "view": (c) => const NoteView(),
     "addToMenu": true,
-    "icon": Icons.apps
+    "icon": Icons.note
   }
 };
 

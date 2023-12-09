@@ -16,8 +16,6 @@ class TrackView extends StatefulWidget {
   State<TrackView> createState() => _TrackViewState();
 }
 
-Future call() async {}
-
 class _TrackViewState extends State<TrackView> {
 
   @override
@@ -32,7 +30,7 @@ class _TrackViewState extends State<TrackView> {
 
   bool justShowTrack = true;
 
-  bool sortByUrl = false;
+  bool sortByUrl = true;
 
   @override
   Widget build(BuildContext context) {

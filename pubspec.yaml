@@ -50,6 +50,6 @@ flutter:
     - images/dash/
     - images/health/
   module:
-    androidX: true
-    androidPackage: com.mazhangjing.cyberme-flutter
+#    androidX: true
+#    androidPackage: com.mazhangjing.cyberme-flutter
     iosBundleIdentifier: com.mazhangjing.cyberme-flutter

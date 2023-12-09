@@ -6,30 +6,11 @@ import 'package:http/http.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../pocket/config.dart';
+import 'basic.dart';
 
 part 'statistics.g.dart';
 
 part 'statistics.freezed.dart';
-
-const _endpoint = "https://cyber.mazhangjing.com";
-
-Future<(T?, String)> requestFrom<T>(
-    String path, T Function(Map<String, dynamic>) func) async {
-  try {
-    final url = "$_endpoint$path";
-    //debugPrint("request from $url");
-    final r = await get(Uri.parse(url), headers: config.cyberBase64Header);
-    final d = jsonDecode(r.body);
-    final code = (d["status"] as int?) ?? -1;
-    if (code <= 0) return (null, d["message"]?.toString() ?? "未知错误");
-    final originData = d["data"];
-    //debugPrint("request from $url, data: $originData");
-    return (func(originData), "");
-  } catch (e, st) {
-    debugPrintStack(stackTrace: st);
-    return (null, e.toString());
-  }
-}
 
 @freezed
 class Statistics with _$Statistics {
@@ -82,7 +63,7 @@ Future<(List<ServiceStatus>, String)> getServiceStatus(
 
 Future<String> setServiceStatus(String svcPath, bool support) async {
   try {
-    const url = "$_endpoint/cyber/service/change";
+    const url = "$endpoint/cyber/service/change";
     debugPrint("request from $url A$svcPath B$support");
     final r = await post(Uri.parse(url),
         headers: config.cyberBase64JsonContentHeader,
