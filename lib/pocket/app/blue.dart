@@ -1,8 +1,9 @@
-import 'package:cyberme_flutter/api/notes.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
+
+import '../../api/blue.dart';
 
 class BlueView extends ConsumerStatefulWidget {
   const BlueView({super.key});
@@ -33,11 +34,18 @@ class _BlueViewState extends ConsumerState<BlueView> {
     final data = ref.watch(blueDataProvider(now)).value;
     return Scaffold(
         appBar: AppBar(
-          title: const Text('BLUE BLUE...'),
-          actions: [
-            IconButton(onPressed: handleAddBlue, icon: const Icon(Icons.add))
-          ],
-        ),
+            title: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const Text('BLUE BLUE...', style: TextStyle(fontSize: 16)),
+                  Text(DateFormat("yyyy年MM月").format(now),
+                      style: const TextStyle(fontSize: 12))
+                ]),
+            actions: [
+              IconButton(
+                  onPressed: () => handleAddBlue(data),
+                  icon: const Icon(Icons.add))
+            ]),
         body: Center(
             child: Column(children: [
           TableCalendar(
@@ -46,7 +54,7 @@ class _BlueViewState extends ConsumerState<BlueView> {
               lastDay: daySun,
               focusedDay: now,
               calendarFormat: CalendarFormat.week,
-              headerVisible: true,
+              headerVisible: false,
               daysOfWeekHeight: 22,
               startingDayOfWeek: StartingDayOfWeek.monday,
               selectedDayPredicate: (d) => d == now,
@@ -61,7 +69,7 @@ class _BlueViewState extends ConsumerState<BlueView> {
                       : null;
                 },
               )),
-          const Divider(color: Colors.grey, thickness: 0.2),
+          const SizedBox(height: 5),
           data == null
               ? Padding(
                   padding: const EdgeInsets.only(top: 20),
@@ -71,33 +79,71 @@ class _BlueViewState extends ConsumerState<BlueView> {
         ])));
   }
 
-  Widget buildCard(DateTime data) {
+  Widget buildCard(BlueData data) {
+    final date = data.date!;
+    final hour = data.watchSeconds ~/ 3600;
+    final minute = (data.watchSeconds % 3600) ~/ 60;
     return Stack(children: [
       Image.asset("images/blue.png", fit: BoxFit.cover),
       Positioned(
           left: 20,
           top: 10,
-          child: Text(DateFormat("HH:mm").format(data),
+          child: Text(DateFormat("HH:mm").format(date),
               style: const TextStyle(fontSize: 30))),
       Positioned(
-          right: 2,
-          bottom: 2,
+          bottom: 5,
+          left: 5,
+          right: 5,
+          child: Container(
+              decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.7),
+                  borderRadius: BorderRadius.circular(5)),
+              child: ListTile(
+                  title: const Text("抖音播放数据"),
+                  subtitle: Text("播放时长：$hour小时$minute分钟")))),
+      Positioned(
+          right: 5,
+          bottom: 8,
           child: TextButton(
-            onPressed: () {
-              removeBlueData(now);
-              makeInvalid();
-            },
-            child: const Text("删除"),
-          ))
+              onPressed: () {
+                removeBlueData(now);
+                makeInvalid();
+              },
+              child: const Text("删除")))
     ]);
   }
 
-  void handleAddBlue() async {
-    final data =
-        await showTimePicker(context: context, initialTime: TimeOfDay.now());
+  void handleAddBlue(BlueData? blueData) async {
+    final data = await showTimePicker(
+        context: context,
+        initialTime: blueData == null
+            ? TimeOfDay.now()
+            : TimeOfDay.fromDateTime(blueData.date!));
+    var minutes = TextEditingController(
+        text: blueData == null ? "" : "${blueData.watchSeconds ~/ 60}");
+    await showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+                title: const Text("请输入播放时长"),
+                content: TextField(
+                  controller: minutes,
+                  autofocus: true,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                      hintText: "请输入播放时长(分钟)", border: UnderlineInputBorder()),
+                ),
+                actions: [
+                  TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text("取消")),
+                  TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text("确定"))
+                ]));
     if (data != null) {
       await setBlueData(
-          now.add(Duration(hours: data.hour, minutes: data.minute)));
+          now.add(Duration(hours: data.hour, minutes: data.minute)),
+          int.parse(minutes.text));
       makeInvalid();
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text("已添加 ${now.day} 号数据")));

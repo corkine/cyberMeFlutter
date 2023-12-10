@@ -1,10 +1,8 @@
 import 'dart:convert';
 
 import 'package:http/http.dart';
-import 'package:intl/intl.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../pocket/config.dart';
 import 'basic.dart';
@@ -46,42 +44,4 @@ class QuickNotes extends _$QuickNotes {
     final d = jsonDecode(r.body);
     return d["message"]?.toString() ?? "未知错误";
   }
-}
-
-SharedPreferences? sp;
-
-@riverpod
-Future<Set<String>> blueDataRange(
-    BlueDataRangeRef ref, DateTime start, DateTime end) async {
-  sp ??= await SharedPreferences.getInstance();
-  var res = <String>{};
-  for (var i = start; i.isBefore(end); i = i.add(const Duration(days: 1))) {
-    String ymd = DateFormat.yMd().format(i);
-    var r = sp!.getInt("blueData:$ymd");
-    if (r == null) {
-      continue;
-    } else {
-      res.add(ymd);
-    }
-  }
-  return res;
-}
-
-@riverpod
-Future<DateTime?> blueData(BlueDataRef ref, DateTime day) async {
-  sp ??= await SharedPreferences.getInstance();
-  var res = sp!.getInt("blueData:${DateFormat.yMd().format(day)}");
-  if (res == null) return null;
-  return DateTime.fromMicrosecondsSinceEpoch(res, isUtc: true);
-}
-
-setBlueData(DateTime dayData) async {
-  sp ??= await SharedPreferences.getInstance();
-  sp!.setInt("blueData:${DateFormat.yMd().format(dayData)}",
-      dayData.microsecondsSinceEpoch);
-}
-
-removeBlueData(DateTime date) async {
-  sp ??= await SharedPreferences.getInstance();
-  sp!.remove("blueData:${DateFormat.yMd().format(date)}");
 }
