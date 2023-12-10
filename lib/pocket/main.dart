@@ -5,6 +5,7 @@ import 'package:cyberme_flutter/learn/snh.dart';
 import 'package:cyberme_flutter/pocket/app/body_mass.dart';
 import 'package:cyberme_flutter/pocket/app/eat.dart';
 import 'package:cyberme_flutter/pocket/app/story.dart';
+import 'app/blog.dart';
 import 'app/blue.dart';
 import 'app/cloth.dart';
 import 'app/medic.dart';
@@ -77,11 +78,23 @@ final apps = {
     "addToMenu": true,
     "icon": Icons.remove_red_eye
   },
+  "statistics": {
+    "name": "统计信息",
+    "view": (c) => const StatisticsView(),
+    "addToMenu": true,
+    "icon": Icons.stacked_line_chart_sharp
+  },
   "todo": {
     "name": "待办事项",
     "view": (c) => const TodoView(),
     "addToMenu": true,
     "icon": Icons.check_box
+  },
+  "blue": {
+    "name": "BLUE",
+    "view": (c) => const BlueView(),
+    "addToMenu": true,
+    "icon": Icons.margin
   },
   "bodyMass": {
     "name": "体重记录",
@@ -125,23 +138,17 @@ final apps = {
     "addToMenu": true,
     "icon": Icons.medical_services_sharp
   },
-  "statistics": {
-    "name": "统计信息",
-    "view": (c) => const StatisticsView(),
-    "addToMenu": true,
-    "icon": Icons.stacked_line_chart_sharp
-  },
   "note": {
     "name": "便签",
     "view": (c) => const NoteView(),
     "addToMenu": true,
     "icon": Icons.note
   },
-  "blue": {
-    "name": "BLUE",
-    "view": (c) => const BlueView(),
+  "blog": {
+    "name": "博客",
+    "view": (c) => const BlogView(),
     "addToMenu": true,
-    "icon": Icons.margin
+    "icon": Icons.article
   }
 };
 

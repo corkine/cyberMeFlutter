@@ -119,6 +119,7 @@ class _BlueViewState extends ConsumerState<BlueView> {
         initialTime: blueData == null
             ? TimeOfDay.now()
             : TimeOfDay.fromDateTime(blueData.date!));
+    if (data == null) return;
     var minutes = TextEditingController(
         text: blueData == null ? "" : "${blueData.watchSeconds ~/ 60}");
     await showDialog(
