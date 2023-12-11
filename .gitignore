@@ -48,3 +48,8 @@ app.*.map.json
 *.freezed.dart
 framework
 framework/*
+.android
+.android/*
+.ios
+.ios/*
+.metadata
