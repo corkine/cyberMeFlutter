@@ -11,6 +11,7 @@ import 'app/cloth.dart';
 import 'app/medic.dart';
 import 'app/note.dart';
 import 'app/statistics.dart';
+import 'app/tv.dart';
 import 'dashboard.dart' as dash;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -107,6 +108,12 @@ final apps = {
     "view": (c) => const MovieView(),
     "addToMenu": true,
     "icon": Icons.movie
+  },
+  "tv": {
+    "name": "电视节目",
+    "view": (c) => const TvView(),
+    "addToMenu": true,
+    "icon": Icons.tv
   },
   "dapenti": {
     "name": "喷嚏图卦",
