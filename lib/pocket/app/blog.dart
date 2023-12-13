@@ -71,7 +71,10 @@ class _BlogViewState extends ConsumerState<BlogView> {
                 controller: search,
                 style: TextStyle(
                     color: Theme.of(context).colorScheme.onInverseSurface),
-                onEditingComplete: () => setState(() {}),
+                onEditingComplete: () {
+                  setState(() {});
+                  FocusScope.of(context).unfocus();
+                },
                 suffix: IconButton(
                     icon: const Icon(CupertinoIcons.xmark,
                         color: Colors.grey, size: 18),

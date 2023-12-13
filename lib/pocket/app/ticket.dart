@@ -1,21 +1,22 @@
 import 'dart:convert';
 
 import 'package:clipboard/clipboard.dart';
+import 'package:cyberme_flutter/main.dart';
 import 'package:cyberme_flutter/pocket/config.dart';
 import 'package:cyberme_flutter/pocket/models/ticket.dart' as t;
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart';
 import 'package:intl/intl.dart';
 
-class TicketShowPage extends StatefulWidget {
+class TicketShowPage extends ConsumerStatefulWidget {
   const TicketShowPage({super.key});
 
   @override
-  State<TicketShowPage> createState() => _TicketShowPageState();
+  ConsumerState<TicketShowPage> createState() => _TicketShowPageState();
 }
 
-class _TicketShowPageState extends State<TicketShowPage> {
+class _TicketShowPageState extends ConsumerState<TicketShowPage> {
   List<t.Data> recent = [];
   List<t.Data> history = [];
 
@@ -52,62 +53,52 @@ class _TicketShowPageState extends State<TicketShowPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(title: const Text("12306 最近车票"), actions: [
-          IconButton(
-              onPressed: () {
-                setState(() {
-                  showJustTake = !showJustTake;
-                });
-              },
-              icon:
-                  Icon(showJustTake ? Icons.filter_alt : Icons.filter_alt_off))
-        ]),
-        body: Column(
-          children: [
-            Expanded(
-                child: Padding(
-                    padding: const EdgeInsets.only(left: 8, right: 8),
-                    child: RefreshIndicator(
-                        onRefresh: handleReloadTickets,
-                        child: ListView(children: [
-                          const Padding(
-                              padding: EdgeInsets.only(left: 8, top: 8),
-                              child: Text("待出行车票")),
-                          ...recent
-                              .map((e) =>
-                                  buildCard(e, handleDeleteTicket, context))
-                              .toList(growable: false),
-                          const Padding(
-                              padding: EdgeInsets.only(left: 8, top: 8),
-                              child: Text("历史车票")),
-                          ...history
-                              .where((element) => showJustTake
-                                  ? (element.canceled ?? false) == false
-                                  : true)
-                              .map((e) =>
-                                  buildCard(e, handleDeleteTicket, context))
-                              .toList(growable: false)
-                        ])))),
-            ButtonBar(alignment: MainAxisAlignment.center, children: [
-              TextButton(
-                  onPressed: () async {
-                    await showModalBottomSheet(
-                        showDragHandle: false,
-                        isScrollControlled: true,
-                        context: context,
-                        builder: (c) => SizedBox(
-                              height:
-                                  MediaQuery.maybeSizeOf(context)!.height / 1.5,
-                              child: const TicketParsePage(),
-                            ));
-                    await handleReloadTickets();
-                  },
-                  child: const Text("解析票据"))
+    final recentCards =
+        recent.map((e) => buildCard(e, handleDeleteTicket, context));
+    final historyCards = history
+        .where((element) =>
+            showJustTake ? (element.canceled ?? false) == false : true)
+        .map((e) => buildCard(e, handleDeleteTicket, context));
+    return Theme(
+        data: appThemeData,
+        child: Scaffold(
+            appBar: AppBar(title: const Text("12306 最近车票"), actions: [
+              IconButton(
+                  onPressed: () => setState(() => showJustTake = !showJustTake),
+                  icon: Icon(
+                      showJustTake ? Icons.filter_alt : Icons.filter_alt_off))
             ]),
-            const SizedBox(height: 20)
-          ],
-        ));
+            body: Column(children: [
+              Expanded(
+                  child: RefreshIndicator(
+                      onRefresh: handleReloadTickets,
+                      child: ListView(children: [
+                        const Padding(
+                            padding: EdgeInsets.only(left: 15, top: 8),
+                            child: Text("待出行车票")),
+                        ...recentCards,
+                        const Padding(
+                            padding: EdgeInsets.only(left: 15, top: 8),
+                            child: Text("历史车票")),
+                        ...historyCards
+                      ]))),
+              ButtonBar(alignment: MainAxisAlignment.center, children: [
+                TextButton(onPressed: handleParse, child: const Text("解析票据"))
+              ]),
+              const SizedBox(height: 20)
+            ])));
+  }
+
+  handleParse() async {
+    await showModalBottomSheet(
+        showDragHandle: false,
+        isScrollControlled: true,
+        context: context,
+        builder: (c) => SizedBox(
+              height: MediaQuery.maybeSizeOf(context)!.height / 1.5,
+              child: const TicketParsePage(),
+            ));
+    await handleReloadTickets();
   }
 }
 
@@ -124,45 +115,49 @@ class _TicketParsePageState extends State<TicketParsePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        //appBar: AppBar(title: const Text("12306 票据解析")),
-        body: Column(mainAxisSize: MainAxisSize.max, children: [
-      const SizedBox(height: 10),
-      Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: TextField(
-              controller: input,
-              maxLines: 3,
-              decoration: const InputDecoration(border: OutlineInputBorder()))),
-      ButtonBar(alignment: MainAxisAlignment.spaceAround, children: [
-        TextButton(
-            onPressed: () async {
-              final str = await FlutterClipboard.paste();
-              input.text = str;
-              data = [];
-              setState(() {});
-            },
-            child: const Text("从剪贴板读取")),
-        TextButton(onPressed: handleParseTicket, child: const Text("解析票据")),
-        TextButton(
-            onPressed: () {
-              input.text = "";
-              data = [];
-              setState(() {});
-            },
-            child: const Text("清空")),
-        TextButton(
-            onPressed: () => FocusScope.of(context).unfocus(),
-            child: const Text("隐藏键盘"))
-      ]),
-      data.isEmpty
-          ? const Text("")
-          : Expanded(
-              child: SingleChildScrollView(
-                  child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: buildParseResult(context))))
-    ]));
+    return Theme(
+      data: appThemeData,
+      child: Scaffold(
+          //appBar: AppBar(title: const Text("12306 票据解析")),
+          body: Column(mainAxisSize: MainAxisSize.max, children: [
+        const SizedBox(height: 10),
+        Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+                controller: input,
+                maxLines: 3,
+                decoration:
+                    const InputDecoration(border: OutlineInputBorder()))),
+        ButtonBar(alignment: MainAxisAlignment.spaceAround, children: [
+          TextButton(
+              onPressed: () async {
+                final str = await FlutterClipboard.paste();
+                input.text = str;
+                data = [];
+                setState(() {});
+              },
+              child: const Text("从剪贴板读取")),
+          TextButton(onPressed: handleParseTicket, child: const Text("解析票据")),
+          TextButton(
+              onPressed: () {
+                input.text = "";
+                data = [];
+                setState(() {});
+              },
+              child: const Text("清空")),
+          TextButton(
+              onPressed: () => FocusScope.of(context).unfocus(),
+              child: const Text("隐藏键盘"))
+        ]),
+        data.isEmpty
+            ? const Text("")
+            : Expanded(
+                child: SingleChildScrollView(
+                    child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: buildParseResult(context))))
+      ])),
+    );
   }
 
   Column buildParseResult(BuildContext context) {
@@ -171,10 +166,7 @@ class _TicketParsePageState extends State<TicketParsePage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Row(),
-          Padding(
-              padding: const EdgeInsets.only(left: 8, top: 5),
-              child:
-                  Text("解析结果", style: Theme.of(context).textTheme.bodyLarge)),
+          Text("解析结果", style: Theme.of(context).textTheme.bodyLarge),
           ...data.map((e) => buildCard(e, (_, a, b) async {}, context)),
           const SizedBox(height: 10),
           SizedBox(
@@ -266,93 +258,85 @@ final timeFormatter = DateFormat("HH:mm");
 
 Widget buildCard(t.Data ticket,
     Future Function(t.Data, bool, bool) deleteTicket, BuildContext context) {
-  return Card(
-    elevation: 0.1,
-    child: InkWell(
-      borderRadius: BorderRadius.circular(12),
+  return ListTile(
       onTap: () {
-        showCupertinoModalPopup(
+        showDialog(
             context: context,
-            builder: (context) => CupertinoActionSheet(
-                    actions: [
-                      CupertinoActionSheetAction(
-                          onPressed: () async {
-                            Navigator.of(context).pop();
-                            if (ticket.canceled == null ||
-                                ticket.canceled! == false) {
-                              await deleteTicket(ticket, true, false);
-                            } else {
-                              await deleteTicket(ticket, false, true);
-                            }
-                          },
-                          child: Text(ticket.canceled == null ||
-                                  ticket.canceled! == false
-                              ? "改签"
-                              : "取消改签")),
-                      CupertinoActionSheetAction(
-                          onPressed: () async {
-                            final res = await showDialog(
-                                context: context,
-                                barrierDismissible: false,
-                                builder: (context) => AlertDialog(
-                                        title: const Text("删除票据"),
-                                        content:
-                                            const Text("确定删除此票据吗，此操作不可恢复。"),
-                                        actions: [
-                                          TextButton(
-                                              onPressed: () =>
-                                                  Navigator.of(context)
-                                                      .pop(false),
-                                              child: const Text("取消")),
-                                          TextButton(
-                                              onPressed: () =>
-                                                  Navigator.of(context)
-                                                      .pop(true),
-                                              child: const Text("确定"))
-                                        ])) as bool;
-                            if (res) {
+            builder: (context) => Theme(
+                  data: appThemeData,
+                  child: SimpleDialog(
+                      title: Text(ticket.trainNo.toString()),
+                      children: [
+                        SimpleDialogOption(
+                            onPressed: () async {
                               Navigator.of(context).pop();
-                              await deleteTicket(ticket, false, false);
-                            } else {
-                              Navigator.of(context).pop();
-                            }
-                          },
-                          child: const Text("删除"),
-                          isDestructiveAction: true)
-                    ],
-                    cancelButton: CupertinoActionSheetAction(
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: const Text("取消"))));
+                              if (ticket.canceled == null ||
+                                  ticket.canceled! == false) {
+                                await deleteTicket(ticket, true, false);
+                              } else {
+                                await deleteTicket(ticket, false, true);
+                              }
+                            },
+                            child: Text(ticket.canceled == null ||
+                                    ticket.canceled! == false
+                                ? "改签"
+                                : "取消改签")),
+                        SimpleDialogOption(
+                            onPressed: () async {
+                              final res = await showDialog(
+                                  context: context,
+                                  barrierDismissible: false,
+                                  builder: (context) => AlertDialog(
+                                          title: const Text("删除票据"),
+                                          content:
+                                              const Text("确定删除此票据吗，此操作不可恢复。"),
+                                          actions: [
+                                            TextButton(
+                                                onPressed: () =>
+                                                    Navigator.of(context)
+                                                        .pop(false),
+                                                child: const Text("取消")),
+                                            TextButton(
+                                                onPressed: () =>
+                                                    Navigator.of(context)
+                                                        .pop(true),
+                                                child: const Text("确定"))
+                                          ])) as bool;
+                              if (res) {
+                                Navigator.of(context).pop();
+                                await deleteTicket(ticket, false, false);
+                              } else {
+                                Navigator.of(context).pop();
+                              }
+                            },
+                            child: const Text("删除"))
+                      ]),
+                ));
       },
-      child: ListTile(
-          title: Row(children: [
-            Text(ticket.startPretty ?? "未知目的地"),
-            const Padding(
-                padding: EdgeInsets.only(left: 3, right: 3), child: Text("→")),
-            Text(ticket.endPretty ?? "未知终点"),
-            const SizedBox(width: 5),
-            Text(
-                ticket.canceled == null || ticket.canceled! == false
-                    ? ""
-                    : "(已改签)",
-                style: const TextStyle(fontSize: 10))
-          ]),
-          subtitle: Row(children: [
-            Text("${dateFormatter.format(ticket.dateTime!)} "),
-            Text(timeFormatter.format(ticket.dateTime!),
-                style: const TextStyle(decoration: TextDecoration.underline)),
-            const Text("开"),
-            const Spacer(),
-            const SizedBox(width: 5),
-            SizedBox(
-                width: 60,
-                child: Text("${ticket.trainNo}",
-                    style: const TextStyle(fontWeight: FontWeight.bold))),
-            const SizedBox(width: 5),
-            SizedBox(child: Text(ticket.siteNo ?? ""), width: 70)
-          ])),
-    ),
-  );
+      title: Row(children: [
+        Text(ticket.startPretty ?? "未知目的地"),
+        const Padding(
+            padding: EdgeInsets.only(left: 3, right: 3), child: Text("→")),
+        Text(ticket.endPretty ?? "未知终点"),
+        const SizedBox(width: 5),
+        Text(
+            ticket.canceled == null || ticket.canceled! == false ? "" : "(已改签)",
+            style: const TextStyle(fontSize: 10))
+      ]),
+      subtitle: Row(children: [
+        Text("${dateFormatter.format(ticket.dateTime!)} "),
+        Text(timeFormatter.format(ticket.dateTime!),
+            style: const TextStyle(decoration: TextDecoration.underline)),
+        const Text("开"),
+        const Spacer(),
+        const SizedBox(width: 5),
+        SizedBox(
+            width: 60,
+            child: Text("${ticket.trainNo}",
+                style: const TextStyle(fontWeight: FontWeight.bold))),
+        const SizedBox(width: 5),
+        SizedBox(child: Text(ticket.siteNo ?? ""), width: 70)
+      ]));
 }
 
 Future<dynamic> ticketRecent(Config config) async {

@@ -34,13 +34,12 @@ class _BlueViewState extends ConsumerState<BlueView> {
     final data = ref.watch(blueDataProvider(now)).value;
     return Scaffold(
         appBar: AppBar(
-            title: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const Text('BLUE BLUE...', style: TextStyle(fontSize: 16)),
-                  Text(DateFormat("yyyy年MM月").format(now),
-                      style: const TextStyle(fontSize: 12))
-                ]),
+            title:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              const Text('BLUE BLUE...', style: TextStyle(fontSize: 16)),
+              Text(DateFormat("yyyy年MM月").format(now),
+                  style: const TextStyle(fontSize: 12))
+            ]),
             actions: [
               IconButton(
                   onPressed: () => handleAddBlue(data),

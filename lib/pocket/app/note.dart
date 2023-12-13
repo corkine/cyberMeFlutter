@@ -1,4 +1,5 @@
 import 'package:cyberme_flutter/api/notes.dart';
+import 'package:cyberme_flutter/main.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -26,17 +27,20 @@ class _NoteViewState extends ConsumerState<NoteView> {
           }
           final res = await showDialog(
               context: context,
-              builder: (context) => AlertDialog(
-                      title: const Text("确认新建？"),
-                      content: Text(content.text ?? ""),
-                      actions: [
-                        TextButton(
-                            onPressed: () => Navigator.of(context).pop(),
-                            child: const Text("取消")),
-                        TextButton(
-                            onPressed: () => Navigator.of(context).pop(true),
-                            child: const Text("确认"))
-                      ]));
+              builder: (context) => Theme(
+                    data: appThemeData,
+                    child: AlertDialog(
+                        title: const Text("确认新建？"),
+                        content: Text(content.text ?? ""),
+                        actions: [
+                          TextButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                              child: const Text("取消")),
+                          TextButton(
+                              onPressed: () => Navigator.of(context).pop(true),
+                              child: const Text("确认"))
+                        ]),
+                  ));
           if (res != true) return;
           final message = await ref
               .read(quickNotesProvider.notifier)
@@ -111,6 +115,9 @@ class _NoteViewState extends ConsumerState<NoteView> {
                 ])
               ]));
     }
-    return Scaffold(appBar: AppBar(title: const Text("最近笔记")), body: content);
+    return Theme(
+        data: appThemeData,
+        child:
+            Scaffold(appBar: AppBar(title: const Text("最近笔记")), body: content));
   }
 }

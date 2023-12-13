@@ -51,7 +51,8 @@ class SeriesDB extends _$SeriesDB {
     final resp = await post(Uri.parse(endpoint + "/cyber/movie/$id/delete"),
         headers: config.cyberBase64JsonContentHeader);
     final msg = jsonDecode(resp.body)["message"] ?? "无信息";
-    state = AsyncData([...?state.value?.where((element) => element.id != id)]);
+    //不自动更新，而由确认对话框手动更新
+    //state = AsyncData([...?state.value?.where((element) => element.id != id)]);
     return msg;
   }
 
@@ -78,7 +79,6 @@ class SeriesDB extends _$SeriesDB {
   Future<String?> findName(String url) async {
     final resp = await get(Uri.parse(url));
     final body = resp.body;
-    //从 <span class="ch-title">夜幕降临</span> 中提取文字，失败返回 null
     RegExp exp = RegExp(r'<span class="ch-title">(.+?)</span>');
     final match = exp.firstMatch(body);
     if (match == null) return null;
@@ -88,7 +88,7 @@ class SeriesDB extends _$SeriesDB {
 
   Future<String> updateAllWatched(String name, List<String> series) async {
     final ss = [...series];
-    ss.sort((a, b) => a.compareTo(b));
+    ss.sort((b, a) => a.compareTo(b));
     final data = ss.map((e) async {
       final resp = await post(
           Uri.parse(endpoint + "/cyber/movie/url-update?name=$name&watched=$e"),
