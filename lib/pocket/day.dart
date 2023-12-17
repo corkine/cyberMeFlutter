@@ -2,12 +2,10 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
 import '/pocket/config.dart';
 import '/pocket/time.dart';
 import '/pocket/models/day.dart';
 import '/pocket/models/diary.dart' as d;
-import 'package:clipboard/clipboard.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class DayInfo {
@@ -19,62 +17,66 @@ class DayInfo {
   static var encryptInfo = '';
 
   static List<Widget> menuActions(BuildContext context, Config config) => [
-        PopupMenuButton(
-            icon: const Icon(Icons.more_vert_rounded),
-            onSelected: (e) {},
-            itemBuilder: (c) {
-              return [
-                PopupMenuItem(
-                    child: const Text("获取最后一条笔记"),
-                    onTap: () async {
-                      var message = await Dashboard.fetchLastNote(config);
-                      if (message[1] != null) {
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text("内容已拷贝到剪贴板，字数 ${message[0]?.length}"),
-                        ));
-                        FlutterClipboard.copy(message[1] ?? "未知数据");
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text(message[0] ?? "未知错误"),
-                        ));
-                      }
-                    }),
-                PopupMenuItem(
-                    child: const Text("从剪贴板上传笔记"),
-                    onTap: () async {
-                      var content = await FlutterClipboard.paste();
-                      if (context.toString().isEmpty) {
-                        ScaffoldMessenger.of(context)
-                            .showSnackBar(const SnackBar(
-                          content: Text("剪贴板没有数据！"),
-                        ));
-                      }
-                      var message =
-                          await Dashboard.uploadOneNote(config, content);
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text(message),
-                      ));
-                    }),
-                PopupMenuItem(
-                    child: const Text("12306 最近车票"),
-                    onTap: () =>
-                        Navigator.of(context).pushNamed("/app/ticket")),
-                PopupMenuItem(
-                    child: const Text("Flutter Apps"),
-                    onTap: () {
-                      // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      //   duration: const Duration(seconds: 100),
-                      //   content: Text("$encryptInfo\n$debugInfo"),
-                      // ));
-                      Navigator.of(context).pushReplacementNamed("/menu");
-                    }),
-                PopupMenuItem(
-                    child: const Text("退出 Flutter Engine"),
-                    onTap: () {
-                      SystemNavigator.pop(animated: true);
-                    })
-              ];
-            })
+        IconButton(
+            onPressed: () =>
+                Navigator.of(context).pushReplacementNamed("/menu"),
+            icon: const Icon(Icons.apps))
+        // PopupMenuButton(
+        //     icon: const Icon(Icons.more_vert_rounded),
+        //     onSelected: (e) {},
+        //     itemBuilder: (c) {
+        //       return [
+        //         PopupMenuItem(
+        //             child: const Text("获取最后一条笔记"),
+        //             onTap: () async {
+        //               var message = await Dashboard.fetchLastNote(config);
+        //               if (message[1] != null) {
+        //                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        //                   content: Text("内容已拷贝到剪贴板，字数 ${message[0]?.length}"),
+        //                 ));
+        //                 FlutterClipboard.copy(message[1] ?? "未知数据");
+        //               } else {
+        //                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        //                   content: Text(message[0] ?? "未知错误"),
+        //                 ));
+        //               }
+        //             }),
+        //         PopupMenuItem(
+        //             child: const Text("从剪贴板上传笔记"),
+        //             onTap: () async {
+        //               var content = await FlutterClipboard.paste();
+        //               if (context.toString().isEmpty) {
+        //                 ScaffoldMessenger.of(context)
+        //                     .showSnackBar(const SnackBar(
+        //                   content: Text("剪贴板没有数据！"),
+        //                 ));
+        //               }
+        //               var message =
+        //                   await Dashboard.uploadOneNote(config, content);
+        //               ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        //                 content: Text(message),
+        //               ));
+        //             }),
+        //         PopupMenuItem(
+        //             child: const Text("12306 最近车票"),
+        //             onTap: () =>
+        //                 Navigator.of(context).pushNamed("/app/ticket")),
+        //         PopupMenuItem(
+        //             child: const Text("Flutter Apps"),
+        //             onTap: () {
+        //               // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        //               //   duration: const Duration(seconds: 100),
+        //               //   content: Text("$encryptInfo\n$debugInfo"),
+        //               // ));
+        //               Navigator.of(context).pushReplacementNamed("/menu");
+        //             }),
+        //         PopupMenuItem(
+        //             child: const Text("退出 Flutter Engine"),
+        //             onTap: () {
+        //               SystemNavigator.pop(animated: true);
+        //             })
+        //       ];
+        //     })
       ];
   static Widget mainWidget = const DayHome();
   static const TextStyle normal = TextStyle(fontSize: 14);
@@ -153,9 +155,8 @@ class DayInfo {
 
   static callAndShow(
           Future Function(Config) f, BuildContext context, Config config) =>
-      f(config)
-          .then((message) => ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text(message))));
+      f(config).then((message) => ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(message))));
 }
 
 class DayHome extends StatefulWidget {
@@ -171,8 +172,8 @@ class _DayHomeState extends State<DayHome> {
   @override
   void didChangeDependencies() {
     Dashboard.loadFromApi(config,
-        failedCallback: (e) => ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(e))))
+            failedCallback: (e) => ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text(e))))
         .then((value) => setState(() => dashboard = value));
     super.didChangeDependencies();
   }

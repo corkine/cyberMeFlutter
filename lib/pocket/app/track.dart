@@ -1,7 +1,10 @@
 import 'dart:convert';
 
 import 'package:clipboard/clipboard.dart';
+import 'package:cyberme_flutter/api/track.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher_string.dart';
@@ -9,78 +12,205 @@ import 'package:url_launcher/url_launcher_string.dart';
 import '../config.dart';
 import '../models/track.dart';
 
-class TrackView extends StatefulWidget {
+class TrackView extends ConsumerStatefulWidget {
   const TrackView({super.key});
 
   @override
-  State<TrackView> createState() => _TrackViewState();
+  ConsumerState<TrackView> createState() => _TrackViewState();
 }
 
-class _TrackViewState extends State<TrackView> {
+class _TrackViewState extends ConsumerState<TrackView> {
+  List<(String, String)> data = [];
+  List<(String, String)> _data = [];
+
+  bool sortByName = true;
+  List<TrackSearchItem> searchItems = [];
+  final search = TextEditingController();
 
   @override
-  void didChangeDependencies() {
+  void initState() {
+    super.initState();
+    ref.read(trackSettingProvider.future).then((value) => setState(() {
+          debugPrint("track setting: $value");
+          sortByName = value.sortByName;
+          searchItems = [...value.searchItems];
+        }));
     fetchSvc(config).then((value) => setState(() {
-      data = value;
-    }));
-    super.didChangeDependencies();
+          data = value;
+          makeData();
+        }));
   }
 
-  List<(String, String)> data = [];
+  @override
+  void dispose() {
+    search.dispose();
+    super.dispose();
+  }
 
-  bool justShowTrack = true;
+  handleToggleSort() {
+    sortByName = !sortByName;
+    makeData();
+    setTrack(sortByName, searchItems);
+  }
 
-  bool sortByUrl = true;
+  void handleAddSearchItem() async {
+    var title = "";
+    var searchC2 = TextEditingController(text: search.text);
+    await showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+                title: const Text("添加快捷方式"),
+                content: Column(mainAxisSize: MainAxisSize.min, children: [
+                  TextField(
+                      controller: searchC2,
+                      decoration: const InputDecoration(labelText: "搜索内容")),
+                  const SizedBox(height: 10),
+                  TextField(
+                    autofocus: true,
+                    decoration: const InputDecoration(labelText: "快捷方式标题"),
+                    onChanged: (value) => title = value,
+                  )
+                ]),
+                actions: [
+                  TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text("取消")),
+                  TextButton(
+                      onPressed: () {
+                        if (title.isNotEmpty && searchC2.text.isNotEmpty) {
+                          searchItems.add(TrackSearchItem(
+                              title: title,
+                              search: search.text,
+                              id: DateTime.now()
+                                  .millisecondsSinceEpoch
+                                  .toString()));
+                          setTrack(sortByName, searchItems);
+                          setState(() {});
+                          Navigator.of(context).pop();
+                        } else {
+                          showDialog(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                      title: const Text("警告"),
+                                      content: const Text("搜索内容和标题均不能为空"),
+                                      actions: [
+                                        TextButton(
+                                            onPressed: () =>
+                                                Navigator.of(context).pop(),
+                                            child: const Text("确定"))
+                                      ]));
+                        }
+                      },
+                      child: const Text("确定"))
+                ]));
+  }
+
+  makeData() {
+    _data = data;
+    if (search.text.isNotEmpty) {
+      _data = _data
+          .where((element) => element.$1.contains(search.text))
+          .toList(growable: false);
+    }
+    if (sortByName) {
+      _data.sort((a, b) => b.$1.compareTo(a.$1));
+    } else {
+      _data.sort((a, b) => int.parse(b.$2).compareTo(int.parse(a.$2)));
+    }
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
-    var d = justShowTrack
-        ? data
-            .where((element) => element.$1.startsWith("/cyber/go/track"))
-            .toList(growable: false)
-        : data;
+    final d = _data;
     return Scaffold(
         appBar: AppBar(
-          centerTitle: true,
-          title: const Text("Track System"),
-          actions: [
-            IconButton(
-                onPressed: () => setState(() {
-                      sortByUrl = !sortByUrl;
-                      if (sortByUrl) {
-                        data.sort((a, b) => b.$1.compareTo(a.$1));
-                      } else {
-                        data.sort((a, b) =>
-                            int.parse(b.$2).compareTo(int.parse(a.$2)));
-                      }
-                    }),
-                icon: Icon(sortByUrl
-                    ? Icons.sort_by_alpha
-                    : Icons.format_list_numbered)),
-            IconButton(
-                onPressed: () => setState(() => justShowTrack = !justShowTrack),
-                icon: Icon(
-                    justShowTrack ? Icons.filter_alt_off : Icons.filter_alt))
-          ],
-        ),
+            centerTitle: true,
+            title: const Text("Track System"),
+            actions: [
+              IconButton(
+                  onPressed: handleToggleSort,
+                  icon: Icon(sortByName
+                      ? Icons.format_list_numbered
+                      : Icons.sort_by_alpha)),
+              IconButton(
+                  onPressed: handleAddSearchItem, icon: const Icon(Icons.add)),
+            ]),
         body: RefreshIndicator(
-          onRefresh: () async {
-            data = await fetchSvc(config!);
-            debugPrint("reload svc done!");
-          },
-          child: ListView.builder(
-              itemBuilder: (ctx, idx) {
-                final c = d[idx];
-                return ListTile(
-                    visualDensity: VisualDensity.compact,
-                    title: Text(c.$1),
-                    subtitle: Text(c.$2),
-                    onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                        builder: (ctx) =>
-                            TrackDetailView(url: c.$1, count: c.$2))));
-              },
-              itemCount: d.length),
-        ));
+            onRefresh: () async {
+              data = await fetchSvc(config);
+              makeData();
+            },
+            child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                      child: ListView.builder(
+                          itemBuilder: (ctx, idx) {
+                            final c = d[idx];
+                            return InkWell(
+                                child: Padding(
+                                  padding: const EdgeInsets.only(
+                                      left: 10, right: 10, top: 8, bottom: 8),
+                                  child: Row(
+                                      children: [
+                                        Expanded(child: Text(c.$1)),
+                                        Text(c.$2)
+                                      ],
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween),
+                                ),
+                                onTap: () => Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                        builder: (ctx) => TrackDetailView(
+                                            url: c.$1, count: c.$2))));
+                          },
+                          itemCount: d.length)),
+                  Container(
+                      height: 45,
+                      padding: const EdgeInsets.only(
+                          left: 10, right: 10, top: 5, bottom: 10),
+                      child: CupertinoSearchTextField(
+                          onChanged: (value) {
+                            makeData();
+                          },
+                          controller: search,
+                          placeholder: "搜索",
+                          padding: const EdgeInsets.only(left: 10, right: 10))),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 10, right: 10),
+                    child: Wrap(
+                        spacing: 5,
+                        runSpacing: 5,
+                        children: searchItems
+                            .map((e) => RawChip(
+                                label: Text(e.title),
+                                tooltip: "${e.search}\n${e.id}",
+                                onDeleted: () {
+                                  searchItems.remove(e);
+                                  setTrack(sortByName, searchItems);
+                                  setState(() {});
+                                },
+                                onSelected: (v) {
+                                  if (v) {
+                                    search.text = e.search;
+                                    makeData();
+                                  } else {
+                                    search.text = "";
+                                    makeData();
+                                  }
+                                },
+                                selected: search.text == e.search,
+                                deleteIconColor: Colors.black26,
+                                labelPadding:
+                                    const EdgeInsets.only(left: 3, right: 3),
+                                deleteIcon: const Icon(Icons.close, size: 18),
+                                visualDensity: VisualDensity.compact))
+                            .toList(growable: false)),
+                  ),
+                  const SizedBox(height: 10)
+                ])));
   }
 
   Future<List<(String, String)>> fetchSvc(Config config) async {
@@ -92,7 +222,7 @@ class _TrackViewState extends State<TrackView> {
           .map((e) => e as List)
           .map((e) => (e.first.toString(), e.last.toString()))
           .toList(growable: false);
-      if (sortByUrl) {
+      if (sortByName) {
         res.sort((a, b) {
           return a.$1.compareTo(b.$1);
         });
@@ -148,9 +278,9 @@ class _TrackDetailViewState extends State<TrackDetailView> {
   @override
   void didChangeDependencies() {
     fetchDetail(config).then((value) => setState(() {
-      logs = value?.logs ?? [];
-      isTrack = value?.monitor ?? false;
-    }));
+          logs = value?.logs ?? [];
+          isTrack = value?.monitor ?? false;
+        }));
     super.didChangeDependencies();
   }
 

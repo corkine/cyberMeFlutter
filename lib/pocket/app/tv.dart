@@ -37,7 +37,7 @@ class _TvViewState extends ConsumerState<TvView> {
     return Theme(
         data: appThemeData,
         child: Scaffold(
-            appBar: AppBar(title: const Text('TV Feeds'), actions: [
+            appBar: AppBar(title: const Text('TV Series'), actions: [
               IconButton(onPressed: handleAdd, icon: const Icon(Icons.add))
             ]),
             body: content));
