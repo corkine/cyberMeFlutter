@@ -1,5 +1,5 @@
 import 'package:cyberme_flutter/api/blog.dart';
-import 'package:cyberme_flutter/pocket/app/statistics.dart';
+import 'package:cyberme_flutter/main.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -76,7 +76,7 @@ class _BlogViewState extends ConsumerState<BlogView> {
       ]));
     }
     return Theme(
-      data: themeData,
+      data: appThemeData,
       child: Scaffold(
           appBar: AppBar(
               title: const Column(

@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -42,21 +41,21 @@ class _MenuViewState extends State<MenuView> {
     ]);
     return Scaffold(
         backgroundColor: Colors.white,
-        body: SafeArea(
-            child: Stack(children: [
+        body: Stack(children: [
           Positioned.fill(
               child: Opacity(
                   opacity: 0.3,
                   child: Image.asset("images/app_bg.jpg", fit: BoxFit.cover))),
-          Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
+          SafeArea(
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
                 Expanded(child: appsGrid),
                 Padding(
                     padding: const EdgeInsets.only(bottom: 10),
                     child: actionBar)
-              ])
-        ])));
+              ]))
+        ]));
   }
 }

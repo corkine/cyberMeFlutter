@@ -75,11 +75,13 @@ class _TicketShowPageState extends ConsumerState<TicketShowPage> {
                       child: ListView(children: [
                         const Padding(
                             padding: EdgeInsets.only(left: 15, top: 8),
-                            child: Text("待出行车票")),
+                            child: Text("待出行车票",
+                                style: TextStyle(fontWeight: FontWeight.bold))),
                         ...recentCards,
                         const Padding(
                             padding: EdgeInsets.only(left: 15, top: 8),
-                            child: Text("历史车票")),
+                            child: Text("历史车票",
+                                style: TextStyle(fontWeight: FontWeight.bold))),
                         ...historyCards
                       ]))),
               ButtonBar(alignment: MainAxisAlignment.center, children: [
@@ -258,61 +260,58 @@ final timeFormatter = DateFormat("HH:mm");
 
 Widget buildCard(t.Data ticket,
     Future Function(t.Data, bool, bool) deleteTicket, BuildContext context) {
+  handleChange() async {
+    Navigator.of(context).pop();
+    if (ticket.canceled == null || ticket.canceled! == false) {
+      await deleteTicket(ticket, true, false);
+    } else {
+      await deleteTicket(ticket, false, true);
+    }
+  }
+
+  handleDelete() async {
+    final res = await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+                title: const Text("删除票据"),
+                content: const Text("确定删除此票据吗，此操作不可恢复。"),
+                actions: [
+                  TextButton(
+                      onPressed: () => Navigator.of(context).pop(false),
+                      child: const Text("取消")),
+                  TextButton(
+                      onPressed: () => Navigator.of(context).pop(true),
+                      child: const Text("确定"))
+                ])) as bool;
+    if (res) {
+      Navigator.of(context).pop();
+      await deleteTicket(ticket, false, false);
+    } else {
+      Navigator.of(context).pop();
+    }
+  }
+
+  handlePopup() {
+    showDialog(
+        context: context,
+        builder: (context) => Theme(
+            data: appThemeData,
+            child:
+                SimpleDialog(title: Text(ticket.trainNo.toString()), children: [
+              SimpleDialogOption(
+                  onPressed: handleChange,
+                  child: Text(
+                      ticket.canceled == null || ticket.canceled! == false
+                          ? "改签"
+                          : "取消改签")),
+              SimpleDialogOption(
+                  onPressed: handleDelete, child: const Text("删除"))
+            ])));
+  }
+
   return ListTile(
-      onTap: () {
-        showDialog(
-            context: context,
-            builder: (context) => Theme(
-                  data: appThemeData,
-                  child: SimpleDialog(
-                      title: Text(ticket.trainNo.toString()),
-                      children: [
-                        SimpleDialogOption(
-                            onPressed: () async {
-                              Navigator.of(context).pop();
-                              if (ticket.canceled == null ||
-                                  ticket.canceled! == false) {
-                                await deleteTicket(ticket, true, false);
-                              } else {
-                                await deleteTicket(ticket, false, true);
-                              }
-                            },
-                            child: Text(ticket.canceled == null ||
-                                    ticket.canceled! == false
-                                ? "改签"
-                                : "取消改签")),
-                        SimpleDialogOption(
-                            onPressed: () async {
-                              final res = await showDialog(
-                                  context: context,
-                                  barrierDismissible: false,
-                                  builder: (context) => AlertDialog(
-                                          title: const Text("删除票据"),
-                                          content:
-                                              const Text("确定删除此票据吗，此操作不可恢复。"),
-                                          actions: [
-                                            TextButton(
-                                                onPressed: () =>
-                                                    Navigator.of(context)
-                                                        .pop(false),
-                                                child: const Text("取消")),
-                                            TextButton(
-                                                onPressed: () =>
-                                                    Navigator.of(context)
-                                                        .pop(true),
-                                                child: const Text("确定"))
-                                          ])) as bool;
-                              if (res) {
-                                Navigator.of(context).pop();
-                                await deleteTicket(ticket, false, false);
-                              } else {
-                                Navigator.of(context).pop();
-                              }
-                            },
-                            child: const Text("删除"))
-                      ]),
-                ));
-      },
+      onTap: handlePopup,
       title: Row(children: [
         Text(ticket.startPretty ?? "未知目的地"),
         const Padding(

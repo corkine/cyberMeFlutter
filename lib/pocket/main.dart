@@ -10,7 +10,6 @@ import 'app/blue.dart';
 import 'app/cloth.dart';
 import 'app/medic.dart';
 import 'app/note.dart';
-import 'app/statistics.dart';
 import 'app/tv.dart';
 import 'dashboard.dart' as dash;
 import 'package:flutter/foundation.dart';
@@ -68,22 +67,10 @@ final apps = {
     "icon": Icons.card_giftcard
   },
   "service": {
-    "name": "服务状态",
-    "view": (c) => const ServiceView(),
-    "addToMenu": true,
-    "icon": Icons.apps
-  },
-  "track": {
     "name": "服务追踪",
     "view": (c) => const TrackView(),
     "addToMenu": true,
-    "icon": Icons.remove_red_eye
-  },
-  "statistics": {
-    "name": "统计信息",
-    "view": (c) => const StatisticsView(),
-    "addToMenu": true,
-    "icon": Icons.stacked_line_chart_sharp
+    "icon": Icons.dashboard
   },
   "todo": {
     "name": "待办事项",
@@ -91,9 +78,9 @@ final apps = {
     "addToMenu": true,
     "icon": Icons.check_box
   },
-  "blue": {
-    "name": "BLUE",
-    "view": (c) => const BlueView(),
+  "score": {
+    "name": "积分系统",
+    "view": (c) => const ScoreView(),
     "addToMenu": true,
     "icon": Icons.margin
   },
@@ -103,17 +90,11 @@ final apps = {
     "addToMenu": true,
     "icon": Icons.fit_screen
   },
-  "movie": {
+  "show": {
     "name": "影视热榜",
     "view": (c) => const MovieView(),
     "addToMenu": true,
     "icon": Icons.movie
-  },
-  "tv": {
-    "name": "电视节目",
-    "view": (c) => const TvView(),
-    "addToMenu": true,
-    "icon": Icons.tv
   },
   "dapenti": {
     "name": "喷嚏图卦",

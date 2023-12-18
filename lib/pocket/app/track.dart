@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:clipboard/clipboard.dart';
 import 'package:cyberme_flutter/api/track.dart';
+import 'package:cyberme_flutter/main.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -9,6 +10,7 @@ import 'package:http/http.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
+import '../../api/statistics.dart';
 import '../config.dart';
 import '../models/track.dart';
 
@@ -23,9 +25,23 @@ class _TrackViewState extends ConsumerState<TrackView> {
   final search = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    ref.read(trackSettingsProvider.future).then((value) {
+      setState(() => search.text = value.lastSearch);
+    });
+  }
+
+  @override
   void dispose() {
     search.dispose();
     super.dispose();
+  }
+
+  @override
+  void deactivate() {
+    ref.read(trackSettingsProvider.notifier).setLastSearch(search.text);
+    super.deactivate();
   }
 
   @override
@@ -34,7 +50,20 @@ class _TrackViewState extends ConsumerState<TrackView> {
     final data = ref.watch(trackDataProvider.call(search.text));
 
     final appBar =
-        AppBar(centerTitle: true, title: const Text("Redis Track"), actions: [
+        AppBar(centerTitle: false, title: const Text("Track! Me"), actions: [
+      IconButton(
+          onPressed: () {
+            showModalBottomSheet(
+                context: context, builder: (context) => const StatisticsView());
+          },
+          icon: const Icon(Icons.leaderboard_outlined)),
+      IconButton(
+          onPressed: () {
+            showModalBottomSheet(
+                context: context,
+                builder: (context) => const ServiceView(useSheet: true));
+          },
+          icon: const Icon(Icons.support)),
       IconButton(
           onPressed: () =>
               ref.read(trackSettingsProvider.notifier).setTrackSortReversed(),
@@ -68,9 +97,9 @@ class _TrackViewState extends ConsumerState<TrackView> {
 
     final searchBar = CupertinoSearchTextField(
         onChanged: (value) => setState(() {}),
-        autofocus: true,
         controller: search,
         placeholder: "搜索",
+        style: const TextStyle(color: Colors.white),
         padding: const EdgeInsets.only(left: 10, right: 10));
 
     searchItem(e) {
@@ -83,36 +112,39 @@ class _TrackViewState extends ConsumerState<TrackView> {
             setState(() {});
           },
           selected: search.text == e.search,
-          deleteIconColor: Colors.black26,
+          deleteIconColor: Colors.white30,
           labelPadding: const EdgeInsets.only(left: 3, right: 3),
           deleteIcon: const Icon(Icons.close, size: 18),
           visualDensity: VisualDensity.compact);
     }
 
-    return Scaffold(
-        appBar: appBar,
-        body: RefreshIndicator(
-            onRefresh: () async => await ref.refresh(fetchTrackProvider),
-            child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(child: dataList),
-                  Container(
-                      height: 45,
-                      padding: const EdgeInsets.only(
-                          left: 10, right: 10, top: 5, bottom: 10),
-                      child: searchBar),
-                  Padding(
-                      padding: const EdgeInsets.only(left: 10, right: 10),
-                      child: Wrap(
-                          spacing: 5,
-                          runSpacing: 5,
-                          children: setting.searchItems
-                              .map((e) => searchItem(e))
-                              .toList(growable: false))),
-                  const SizedBox(height: 10)
-                ])));
+    return Theme(
+      data: appThemeData,
+      child: Scaffold(
+          appBar: appBar,
+          body: RefreshIndicator(
+              onRefresh: () async => await ref.refresh(fetchTrackProvider),
+              child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(child: dataList),
+                    Container(
+                        height: 45,
+                        padding: const EdgeInsets.only(
+                            left: 10, right: 10, top: 5, bottom: 10),
+                        child: searchBar),
+                    Padding(
+                        padding: const EdgeInsets.only(left: 10, right: 10),
+                        child: Wrap(
+                            spacing: 5,
+                            runSpacing: 5,
+                            children: setting.searchItems
+                                .map((e) => searchItem(e))
+                                .toList(growable: false))),
+                    const SizedBox(height: 10)
+                  ]))),
+    );
   }
 
   Future deleteQuickSearch(TrackSetting setting, String id) async {
@@ -232,69 +264,72 @@ class _TrackDetailViewState extends State<TrackDetailView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: Text(widget.url.split("/").last),
-          actions: [
-            IconButton(
-                onPressed: () async {
-                  await setTrack(config!, widget.url, !isTrack);
-                  final d = await fetchDetail(config!);
+    return Theme(
+        data: appThemeData,
+        child: Scaffold(
+            appBar: AppBar(title: Text(widget.url.split("/").last), actions: [
+              IconButton(
+                  onPressed: () async {
+                    await setTrack(config, widget.url, !isTrack);
+                    final d = await fetchDetail(config);
+                    logs = d?.logs ?? [];
+                    isTrack = d?.monitor ?? false;
+                    setState(() {});
+                  },
+                  icon: Icon(isTrack
+                      ? Icons.visibility
+                      : Icons.visibility_off_outlined)),
+              IconButton(
+                  onPressed: () async {
+                    await handleAddShortLink(config);
+                    setState(() {});
+                  },
+                  icon: const RotatedBox(
+                      quarterTurns: 1, child: Icon(Icons.link)))
+            ]),
+            body: RefreshIndicator(
+                onRefresh: () async {
+                  final d = await fetchDetail(config);
                   logs = d?.logs ?? [];
-                  isTrack = d?.monitor ?? false;
-                  setState(() {});
+                  debugPrint("reload svc details done!");
                 },
-                icon: Icon(isTrack
-                    ? Icons.visibility
-                    : Icons.visibility_off_outlined)),
-            IconButton(
-                onPressed: () async {
-                  await handleAddShortLink(config);
-                  setState(() {});
-                },
-                icon:
-                    const RotatedBox(quarterTurns: 1, child: Icon(Icons.link)))
-          ],
-        ),
-        body: RefreshIndicator(
-            onRefresh: () async {
-              final d = await fetchDetail(config);
-              logs = d?.logs ?? [];
-              debugPrint("reload svc details done!");
-            },
-            child: Column(children: [
-              Expanded(
-                child: ListView.builder(
-                    itemBuilder: (ctx, idx) {
-                      final c = logs[idx];
-                      return ListTile(
-                          visualDensity: VisualDensity.compact,
-                          onTap: () async {
-                            await FlutterClipboard.copy(c.ip ?? "");
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text("已拷贝地址到剪贴板")));
+                child: Column(children: [
+                  Expanded(
+                      child: ListView.builder(
+                          itemBuilder: (ctx, idx) {
+                            final c = logs[idx];
+                            return ListTile(
+                                dense: true,
+                                visualDensity: VisualDensity.compact,
+                                onTap: () async {
+                                  await FlutterClipboard.copy(c.ip ?? "");
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                          content: Text("已拷贝地址到剪贴板")));
+                                },
+                                onLongPress: () async {
+                                  await launchUrlString(
+                                      "https://www.ipshudi.com/${c.ip}.htm");
+                                },
+                                title: Text(c.ip ?? "No IP"),
+                                subtitle:
+                                    dateRich(c.timestamp?.split(".").first),
+                                trailing: Text(c.ipInfo ?? ""));
                           },
-                          onLongPress: () async {
-                            await launchUrlString(
-                                "https://www.ipshudi.com/${c.ip}.htm");
-                          },
-                          title: Text(c.ip ?? "No IP"),
-                          subtitle: dateRich(c.timestamp?.split(".").first),
-                          trailing: Text(c.ipInfo ?? ""));
-                    },
-                    itemCount: logs.length),
-              ),
-              SafeArea(
-                child: Padding(
-                    padding: const EdgeInsets.only(
-                        left: 15, right: 15, top: 3, bottom: 5),
-                    child: Row(children: [
-                      Text("今日访问：$todayCount"),
-                      Text("本周访问：$weekCount"),
-                      Text("本月访问：$monthCount")
-                    ], mainAxisAlignment: MainAxisAlignment.spaceBetween)),
-              )
-            ])));
+                          itemCount: logs.length)),
+                  SafeArea(
+                      child: Padding(
+                          padding: const EdgeInsets.only(
+                              left: 15, right: 15, top: 3, bottom: 5),
+                          child: Row(
+                              children: [
+                                Text("今日访问：$todayCount"),
+                                Text("本周访问：$weekCount"),
+                                Text("本月访问：$monthCount")
+                              ],
+                              mainAxisAlignment:
+                                  MainAxisAlignment.spaceBetween)))
+                ]))));
   }
 
   Future<Track?> fetchDetail(Config config) async {
@@ -425,5 +460,194 @@ class _TrackDetailViewState extends State<TrackDetailView> {
       default:
         return Text("${df.format(date1)} 周日", style: style);
     }
+  }
+}
+
+class ServiceView extends ConsumerWidget {
+  final bool useSheet;
+  const ServiceView({super.key, this.useSheet = false});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final s = ref.watch(getServiceStatusProvider).value?.$1;
+    Widget content;
+    if (s == null) {
+      content = const Center(child: CupertinoActivityIndicator());
+    } else {
+      final items = ListView.builder(
+          itemBuilder: (c, i) {
+            final item = s[i];
+            return Card(
+              elevation: 1,
+              child: ListTile(
+                  onTap: () {
+                    if (useSheet) {
+                      showModalBottomSheet(
+                          context: context,
+                          builder: (context) => ServiceDetails(item));
+                    } else {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (c) => ServiceDetails(item)));
+                    }
+                  },
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      side: BorderSide(
+                          color: item.endOfSupport ? Colors.red : Colors.green,
+                          width: 1)),
+                  title: Text(item.serviceName ?? "未知服务"),
+                  subtitle:
+                      Text("当前版本 ${item.version}，建议版本 ${item.suggestVersion}"),
+                  trailing: Text(item.endOfSupport ? "已停止" : "运行中")),
+            );
+          },
+          itemCount: s.length);
+      content = Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: RefreshIndicator(
+              onRefresh: () async =>
+                  await ref.refresh(getServiceStatusProvider),
+              child: items));
+    }
+    return Theme(
+        data: appThemeData,
+        child: Scaffold(
+            appBar: AppBar(title: const Text("App Service")), body: content));
+  }
+}
+
+class ServiceDetails extends ConsumerStatefulWidget {
+  final ServiceStatus status;
+
+  const ServiceDetails(this.status, {super.key});
+
+  @override
+  ConsumerState<ServiceDetails> createState() => _ServiceDetailsState();
+}
+
+class _ServiceDetailsState extends ConsumerState<ServiceDetails> {
+  late var status = widget.status;
+
+  setStatusToggle(BuildContext context, WidgetRef ref) async {
+    showDialog(
+        context: context,
+        builder: (c) => AlertDialog(
+                backgroundColor: appThemeData.colorScheme.background,
+                title: Text("确认操作",
+                    style: appThemeData.textTheme.headlineLarge
+                        ?.copyWith(fontSize: 20, color: Colors.red)),
+                content: Text(
+                    "是否要${status.endOfSupport ? "启动" : "停止"}服务？此操作可能影响正在使用应用的用户，请谨慎操作！",
+                    style: appThemeData.textTheme.bodyLarge),
+                actions: [
+                  TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text("取消")),
+                  TextButton(
+                      onPressed: () async {
+                        Navigator.of(context).pop();
+                        final msg = await setServiceStatus(
+                            status.path!, status.endOfSupport);
+                        final s =
+                            await ref.refresh(getServiceStatusProvider.future);
+                        for (var element in s.$1) {
+                          if (element.path == status.path) {
+                            status = element;
+                            setState(() {});
+                            break;
+                          }
+                        }
+                        showDialog(
+                            context: context,
+                            builder: (c) => AlertDialog(
+                                    backgroundColor:
+                                        appThemeData.colorScheme.background,
+                                    title: Text("操作结果",
+                                        style: appThemeData
+                                            .textTheme.headlineLarge
+                                            ?.copyWith(fontSize: 20)),
+                                    content: Text(msg,
+                                        style:
+                                            appThemeData.textTheme.bodyLarge),
+                                    actions: [
+                                      TextButton(
+                                          onPressed: () =>
+                                              Navigator.of(context).pop(),
+                                          child: const Text("确认"))
+                                    ]));
+                      },
+                      child: const Text("确认"))
+                ]));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Theme(
+        data: appThemeData,
+        child: Scaffold(
+            appBar: AppBar(title: Text(status.serviceName ?? "未知服务"), actions: [
+              IconButton(
+                  onPressed: () => setStatusToggle(context, ref),
+                  icon: status.endOfSupport
+                      ? const Icon(Icons.play_arrow, color: Colors.green)
+                      : const Icon(Icons.stop, color: Colors.red))
+            ]),
+            body: Padding(
+                padding: const EdgeInsets.only(left: 10, right: 10),
+                child: SingleChildScrollView(
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                      const Text("运行日志",
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
+                      ...status.logs.map((e) => Text(e)),
+                      const SizedBox(height: 20),
+                      const Text("运行状态",
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
+                      Text(
+                          "当前版本 ${status.version}\n建议版本 ${status.suggestVersion}"),
+                      Text("运行路径 ${status.path}"),
+                      Text("支持状态 ${status.endOfSupport ? "已停止" : "运行中"}"),
+                      Text("模板消息 ${status.endOfSupportMessage ?? "无"}")
+                    ])))));
+  }
+}
+
+class StatisticsView extends ConsumerWidget {
+  const StatisticsView({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final s = ref.watch(getStatisticsProvider).value?.$1;
+    return Theme(
+        data: appThemeData,
+        child: Scaffold(
+            appBar: AppBar(title: const Text("API Statistics"), actions: [
+              IconButton(
+                  onPressed: () => ref.refresh(getStatisticsProvider),
+                  icon: const Icon(Icons.refresh))
+            ]),
+            body: s == null
+                ? const Center(child: CupertinoActivityIndicator())
+                : Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(children: [
+                      buildOf("Web 主页接口", s.dashboard),
+                      buildOf("客户端接口", s.client),
+                      buildOf("短链接系统", s.go),
+                      buildOf("故事系统", s.story),
+                      buildOf("任务系统", s.task),
+                      buildOf("问卷系统", s.psych)
+                    ]))));
+  }
+
+  Widget buildOf(String item, count) {
+    return Card(
+        elevation: 1,
+        child: ListTile(title: Text(item), trailing: Text(count.toString())));
   }
 }

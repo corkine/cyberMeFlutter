@@ -25,6 +25,7 @@ class TrackSearchItem with _$TrackSearchItem {
 class TrackSetting with _$TrackSetting {
   const factory TrackSetting(
       {@Default(true) bool sortByName,
+      @Default("") String lastSearch,
       @Default([]) List<TrackSearchItem> searchItems}) = _TrackSetting;
   factory TrackSetting.fromJson(Map<String, dynamic> json) =>
       _$TrackSettingFromJson(json);
@@ -71,6 +72,15 @@ class TrackSettings extends _$TrackSettings {
     final data = TrackSetting(
         sortByName: sort,
         searchItems: {...items ?? <TrackSearchItem>[], item}.toList());
+    await prefs.setString('trackSetting', jsonEncode(data.toJson()));
+    state = AsyncData(data);
+  }
+
+  setLastSearch(String lastSearch) async {
+    final prefs = await SharedPreferences.getInstance();
+    final t = state.value;
+    if (t == null) return;
+    final data = t.copyWith(lastSearch: lastSearch);
     await prefs.setString('trackSetting', jsonEncode(data.toJson()));
     state = AsyncData(data);
   }

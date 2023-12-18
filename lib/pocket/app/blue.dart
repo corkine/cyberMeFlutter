@@ -5,14 +5,14 @@ import 'package:table_calendar/table_calendar.dart';
 
 import '../../api/blue.dart';
 
-class BlueView extends ConsumerStatefulWidget {
-  const BlueView({super.key});
+class ScoreView extends ConsumerStatefulWidget {
+  const ScoreView({super.key});
 
   @override
-  ConsumerState<BlueView> createState() => _BlueViewState();
+  ConsumerState<ScoreView> createState() => _BlueViewState();
 }
 
-class _BlueViewState extends ConsumerState<BlueView> {
+class _BlueViewState extends ConsumerState<ScoreView> {
   late DateTime dayMon;
   late DateTime now;
   late DateTime daySun;
