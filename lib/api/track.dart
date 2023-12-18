@@ -95,8 +95,7 @@ Future<List<(String, String)>> fetchTrack(FetchTrackRef ref) async {
 }
 
 @riverpod
-Future<List<(String, String)>> trackData(
-    TrackDataRef ref, String searchText) async {
+List<(String, String)> trackData(TrackDataRef ref, String searchText) {
   final setting = ref.watch(trackSettingsProvider).value;
   final data = ref.watch(fetchTrackProvider).value;
   if (setting == null || data == null) return [];

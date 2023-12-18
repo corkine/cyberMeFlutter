@@ -31,7 +31,7 @@ class _TrackViewState extends ConsumerState<TrackView> {
   @override
   Widget build(BuildContext context) {
     final setting = ref.watch(trackSettingsProvider).value;
-    final data = ref.watch(trackDataProvider.call(search.text)).value ?? [];
+    final data = ref.watch(trackDataProvider.call(search.text));
 
     final appBar =
         AppBar(centerTitle: true, title: const Text("Redis Track"), actions: [
