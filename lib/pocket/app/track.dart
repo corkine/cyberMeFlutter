@@ -67,9 +67,7 @@ class _TrackViewState extends ConsumerState<TrackView> {
         itemCount: data.length);
 
     final searchBar = CupertinoSearchTextField(
-        onChanged: (value) {
-          ref.invalidate(trackDataProvider);
-        },
+        onChanged: (value) => setState(() {}),
         autofocus: true,
         controller: search,
         placeholder: "搜索",
@@ -82,7 +80,6 @@ class _TrackViewState extends ConsumerState<TrackView> {
           onDeleted: () => deleteQuickSearch(setting, e.id),
           onSelected: (v) {
             search.text = v ? e.search : "";
-            ref.invalidate(trackDataProvider);
             setState(() {});
           },
           selected: search.text == e.search,

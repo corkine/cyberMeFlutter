@@ -34,54 +34,45 @@ class _BlogViewState extends ConsumerState<BlogView> {
         return e.title.toUpperCase().contains(searchText) ||
             e.summary.toUpperCase().contains(searchText);
       }).toList();
+      final blogList = ListView.builder(
+          itemCount: blogs.length,
+          itemBuilder: (c, i) => ListTile(
+              title: Text(blogs![i].title),
+              subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(blogs[i].summary,
+                        style:
+                            const TextStyle(fontSize: 12, color: Colors.grey),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis),
+                    const SizedBox(height: 4),
+                    Text(
+                        (blogs[i].author?.name ?? "") +
+                            " @ " +
+                            blogs[i].date_modified.substring(0, 10),
+                        style: const TextStyle(fontSize: 12))
+                  ]),
+              onTap: () => launchUrlString(blogs![i].url)));
       content = SafeArea(
           child: Column(children: [
         Expanded(
             child: RefreshIndicator(
-          onRefresh: () async {
-            final _ = await ref.refresh(fetchBlogsProvider.future);
-          },
-          child: ListView.builder(
-              itemCount: blogs.length,
-              itemBuilder: (c, i) => ListTile(
-                  title: Text(blogs![i].title),
-                  subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(blogs[i].summary,
-                            style: const TextStyle(
-                                fontSize: 12, color: Colors.grey),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis),
-                        const SizedBox(height: 4),
-                        Text(
-                            (blogs![i].author?.name ?? "") +
-                                " @ " +
-                                blogs[i].date_modified.substring(0, 10),
-                            style: const TextStyle(fontSize: 12))
-                      ]),
-                  onTap: () {
-                    launchUrlString(blogs![i].url);
-                  })),
-        )),
+                onRefresh: () async =>
+                    await ref.refresh(fetchBlogsProvider.future),
+                child: blogList)),
         Padding(
             padding: const EdgeInsets.all(8.0),
-            child: CupertinoTextField(
-                placeholder: "Search",
+            child: CupertinoSearchTextField(
+                style: const TextStyle(color: Colors.white),
                 controller: search,
-                style: TextStyle(
-                    color: Theme.of(context).colorScheme.onInverseSurface),
-                onEditingComplete: () {
+                onChanged: (value) {
                   setState(() {});
-                  FocusScope.of(context).unfocus();
                 },
-                suffix: IconButton(
-                    icon: const Icon(CupertinoIcons.xmark,
-                        color: Colors.grey, size: 18),
-                    onPressed: () {
-                      search.clear();
-                      setState(() {});
-                    })))
+                onSuffixTap: () {
+                  search.clear();
+                  setState(() {});
+                }))
       ]));
     }
     return Theme(
@@ -93,11 +84,11 @@ class _BlogViewState extends ConsumerState<BlogView> {
                   children: [
                     Text('Blogs Feed'),
                     Text('www.mazhangjing.com/blog',
-                        style: TextStyle(fontSize: 10, fontFamily: "mono")),
+                        style: TextStyle(fontSize: 10, fontFamily: "mono"))
                   ]),
               actions: [
                 IconButton(
-                    icon: const Icon(Icons.link),
+                    icon: const Icon(Icons.open_in_new),
                     onPressed: () =>
                         launchUrlString("https://www.mazhangjing.com/blogs"))
               ]),

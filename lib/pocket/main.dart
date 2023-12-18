@@ -38,7 +38,7 @@ final apps = {
     "icon": Icons.calendar_month
   },
   "bigDashboard": {
-    "name": "我的一天 · 大屏",
+    "name": "大屏",
     "view": (c) => const dash.DashHome(),
     "addToMenu": true,
     "replace": false
