@@ -20,26 +20,7 @@ class TrackView extends ConsumerStatefulWidget {
 }
 
 class _TrackViewState extends ConsumerState<TrackView> {
-  List<(String, String)> data = [];
-  List<(String, String)> _data = [];
-
-  bool sortByName = true;
-  List<TrackSearchItem> searchItems = [];
   final search = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-    ref.read(trackSettingProvider.future).then((value) => setState(() {
-          debugPrint("track setting: $value");
-          sortByName = value.sortByName;
-          searchItems = [...value.searchItems];
-        }));
-    fetchSvc(config).then((value) => setState(() {
-          data = value;
-          makeData();
-        }));
-  }
 
   @override
   void dispose() {
@@ -47,15 +28,141 @@ class _TrackViewState extends ConsumerState<TrackView> {
     super.dispose();
   }
 
-  handleToggleSort() {
-    sortByName = !sortByName;
-    makeData();
-    setTrack(sortByName, searchItems);
+  @override
+  Widget build(BuildContext context) {
+    final setting = ref.watch(trackSettingsProvider).value;
+    final data = ref.watch(trackDataProvider.call(search.text));
+
+    final appBar =
+        AppBar(centerTitle: true, title: const Text("Redis Track"), actions: [
+      IconButton(
+          onPressed: () =>
+              ref.read(trackSettingsProvider.notifier).setTrackSortReversed(),
+          icon: Icon(setting?.sortByName ?? true
+              ? Icons.format_list_numbered
+              : Icons.sort_by_alpha)),
+      IconButton(onPressed: handleAddSearchItem, icon: const Icon(Icons.add))
+    ]);
+
+    if (setting == null) {
+      return Scaffold(
+          appBar: appBar,
+          body: const Center(child: CupertinoActivityIndicator()));
+    }
+
+    final dataList = ListView.builder(
+        itemBuilder: (ctx, idx) {
+          final c = data[idx];
+          return InkWell(
+              child: Padding(
+                padding: const EdgeInsets.only(
+                    left: 10, right: 10, top: 8, bottom: 8),
+                child: Row(
+                    children: [Expanded(child: Text(c.$1)), Text(c.$2)],
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween),
+              ),
+              onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                  builder: (ctx) => TrackDetailView(url: c.$1, count: c.$2))));
+        },
+        itemCount: data.length);
+
+    final searchBar = CupertinoSearchTextField(
+        onChanged: (value) {
+          ref.invalidate(trackDataProvider);
+        },
+        autofocus: true,
+        controller: search,
+        placeholder: "搜索",
+        padding: const EdgeInsets.only(left: 10, right: 10));
+
+    searchItem(e) {
+      return RawChip(
+          label: Text(e.title),
+          tooltip: "${e.search}\n${e.id}",
+          onDeleted: () => deleteQuickSearch(setting, e.id),
+          onSelected: (v) {
+            search.text = v ? e.search : "";
+            ref.invalidate(trackDataProvider);
+            setState(() {});
+          },
+          selected: search.text == e.search,
+          deleteIconColor: Colors.black26,
+          labelPadding: const EdgeInsets.only(left: 3, right: 3),
+          deleteIcon: const Icon(Icons.close, size: 18),
+          visualDensity: VisualDensity.compact);
+    }
+
+    return Scaffold(
+        appBar: appBar,
+        body: RefreshIndicator(
+            onRefresh: () async => await ref.refresh(fetchTrackProvider),
+            child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(child: dataList),
+                  Container(
+                      height: 45,
+                      padding: const EdgeInsets.only(
+                          left: 10, right: 10, top: 5, bottom: 10),
+                      child: searchBar),
+                  Padding(
+                      padding: const EdgeInsets.only(left: 10, right: 10),
+                      child: Wrap(
+                          spacing: 5,
+                          runSpacing: 5,
+                          children: setting.searchItems
+                              .map((e) => searchItem(e))
+                              .toList(growable: false))),
+                  const SizedBox(height: 10)
+                ])));
+  }
+
+  Future deleteQuickSearch(TrackSetting setting, String id) async {
+    final value = await showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+                title: const Text("确定删除?"),
+                content: const Text("此操作不可恢复。"),
+                actions: [
+                  TextButton(
+                      onPressed: () => Navigator.of(context).pop(false),
+                      child: const Text("取消")),
+                  TextButton(
+                      onPressed: () => Navigator.of(context).pop(true),
+                      child: const Text("确定"))
+                ]));
+    if (value) {
+      ref.read(trackSettingsProvider.notifier).setTrack(setting.searchItems
+          .where((element) => element.id != id)
+          .toList(growable: false));
+    }
   }
 
   void handleAddSearchItem() async {
     var title = "";
     var searchC2 = TextEditingController(text: search.text);
+    handleAdd() {
+      if (title.isNotEmpty && searchC2.text.isNotEmpty) {
+        ref.read(trackSettingsProvider.notifier).addTrack(TrackSearchItem(
+            title: title,
+            search: search.text,
+            id: DateTime.now().millisecondsSinceEpoch.toString()));
+        Navigator.of(context).pop();
+      } else {
+        showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+                    title: const Text("警告"),
+                    content: const Text("搜索内容和标题均不能为空"),
+                    actions: [
+                      TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text("确定"))
+                    ]));
+      }
+    }
+
     await showDialog(
         context: context,
         builder: (context) => AlertDialog(
@@ -66,177 +173,16 @@ class _TrackViewState extends ConsumerState<TrackView> {
                       decoration: const InputDecoration(labelText: "搜索内容")),
                   const SizedBox(height: 10),
                   TextField(
-                    autofocus: true,
-                    decoration: const InputDecoration(labelText: "快捷方式标题"),
-                    onChanged: (value) => title = value,
-                  )
+                      autofocus: true,
+                      decoration: const InputDecoration(labelText: "快捷方式标题"),
+                      onChanged: (value) => title = value)
                 ]),
                 actions: [
                   TextButton(
                       onPressed: () => Navigator.of(context).pop(),
                       child: const Text("取消")),
-                  TextButton(
-                      onPressed: () {
-                        if (title.isNotEmpty && searchC2.text.isNotEmpty) {
-                          searchItems.add(TrackSearchItem(
-                              title: title,
-                              search: search.text,
-                              id: DateTime.now()
-                                  .millisecondsSinceEpoch
-                                  .toString()));
-                          setTrack(sortByName, searchItems);
-                          setState(() {});
-                          Navigator.of(context).pop();
-                        } else {
-                          showDialog(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                      title: const Text("警告"),
-                                      content: const Text("搜索内容和标题均不能为空"),
-                                      actions: [
-                                        TextButton(
-                                            onPressed: () =>
-                                                Navigator.of(context).pop(),
-                                            child: const Text("确定"))
-                                      ]));
-                        }
-                      },
-                      child: const Text("确定"))
+                  TextButton(onPressed: handleAdd, child: const Text("确定"))
                 ]));
-  }
-
-  makeData() {
-    _data = data;
-    if (search.text.isNotEmpty) {
-      _data = _data
-          .where((element) => element.$1.contains(search.text))
-          .toList(growable: false);
-    }
-    if (sortByName) {
-      _data.sort((a, b) => b.$1.compareTo(a.$1));
-    } else {
-      _data.sort((a, b) => int.parse(b.$2).compareTo(int.parse(a.$2)));
-    }
-    setState(() {});
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final d = _data;
-    return Scaffold(
-        appBar: AppBar(
-            centerTitle: true,
-            title: const Text("Track System"),
-            actions: [
-              IconButton(
-                  onPressed: handleToggleSort,
-                  icon: Icon(sortByName
-                      ? Icons.format_list_numbered
-                      : Icons.sort_by_alpha)),
-              IconButton(
-                  onPressed: handleAddSearchItem, icon: const Icon(Icons.add)),
-            ]),
-        body: RefreshIndicator(
-            onRefresh: () async {
-              data = await fetchSvc(config);
-              makeData();
-            },
-            child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                      child: ListView.builder(
-                          itemBuilder: (ctx, idx) {
-                            final c = d[idx];
-                            return InkWell(
-                                child: Padding(
-                                  padding: const EdgeInsets.only(
-                                      left: 10, right: 10, top: 8, bottom: 8),
-                                  child: Row(
-                                      children: [
-                                        Expanded(child: Text(c.$1)),
-                                        Text(c.$2)
-                                      ],
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween),
-                                ),
-                                onTap: () => Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                        builder: (ctx) => TrackDetailView(
-                                            url: c.$1, count: c.$2))));
-                          },
-                          itemCount: d.length)),
-                  Container(
-                      height: 45,
-                      padding: const EdgeInsets.only(
-                          left: 10, right: 10, top: 5, bottom: 10),
-                      child: CupertinoSearchTextField(
-                          onChanged: (value) {
-                            makeData();
-                          },
-                          controller: search,
-                          placeholder: "搜索",
-                          padding: const EdgeInsets.only(left: 10, right: 10))),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 10, right: 10),
-                    child: Wrap(
-                        spacing: 5,
-                        runSpacing: 5,
-                        children: searchItems
-                            .map((e) => RawChip(
-                                label: Text(e.title),
-                                tooltip: "${e.search}\n${e.id}",
-                                onDeleted: () {
-                                  searchItems.remove(e);
-                                  setTrack(sortByName, searchItems);
-                                  setState(() {});
-                                },
-                                onSelected: (v) {
-                                  if (v) {
-                                    search.text = e.search;
-                                    makeData();
-                                  } else {
-                                    search.text = "";
-                                    makeData();
-                                  }
-                                },
-                                selected: search.text == e.search,
-                                deleteIconColor: Colors.black26,
-                                labelPadding:
-                                    const EdgeInsets.only(left: 3, right: 3),
-                                deleteIcon: const Icon(Icons.close, size: 18),
-                                visualDensity: VisualDensity.compact))
-                            .toList(growable: false)),
-                  ),
-                  const SizedBox(height: 10)
-                ])));
-  }
-
-  Future<List<(String, String)>> fetchSvc(Config config) async {
-    final Response r = await get(Uri.parse(Config.visitsUrl),
-        headers: config.cyberBase64Header);
-    final d = jsonDecode(r.body);
-    if ((d["status"] as int?) == 1) {
-      final res = (d["data"] as List)
-          .map((e) => e as List)
-          .map((e) => (e.first.toString(), e.last.toString()))
-          .toList(growable: false);
-      if (sortByName) {
-        res.sort((a, b) {
-          return a.$1.compareTo(b.$1);
-        });
-      } else {
-        res.sort((a, b) {
-          return int.parse(b.$2).compareTo(int.parse(a.$2));
-        });
-      }
-      return res;
-    } else {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(d["message"])));
-      return [];
-    }
   }
 }
 
@@ -315,7 +261,7 @@ class _TrackDetailViewState extends State<TrackDetailView> {
         ),
         body: RefreshIndicator(
             onRefresh: () async {
-              final d = await fetchDetail(config!);
+              final d = await fetchDetail(config);
               logs = d?.logs ?? [];
               debugPrint("reload svc details done!");
             },
