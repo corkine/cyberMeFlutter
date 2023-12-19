@@ -56,6 +56,18 @@ class SeriesDB extends _$SeriesDB {
     return msg;
   }
 
+  Future<String> deleteByUrl(String url) async {
+    final id = (state.value ?? [])
+        .where((element) => element.url == url)
+        .map((e) => e.id)
+        .firstOrNull;
+    if (id == null) return "没有找到对应剧集";
+    final resp = await post(Uri.parse(endpoint + "/cyber/movie/$id/delete"),
+        headers: config.cyberBase64JsonContentHeader);
+    final msg = jsonDecode(resp.body)["message"] ?? "无信息";
+    return msg;
+  }
+
   Future<String> updateWatched(String name, String watched) async {
     final resp = await post(
         Uri.parse(

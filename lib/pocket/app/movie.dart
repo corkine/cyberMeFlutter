@@ -1,11 +1,15 @@
 import 'dart:convert';
 import 'dart:math';
+import 'dart:ui';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:clipboard/clipboard.dart';
+import 'package:cyberme_flutter/api/movie.dart';
+import 'package:cyberme_flutter/api/track.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'dart:ui' as ui;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart';
 import 'package:intl/intl.dart';
@@ -16,14 +20,14 @@ import '../../main.dart';
 import '../config.dart';
 import '../models/movie.dart';
 
-class MovieView extends StatefulWidget {
+class MovieView extends ConsumerStatefulWidget {
   const MovieView({super.key});
 
   @override
-  State<MovieView> createState() => _MovieViewState();
+  ConsumerState<MovieView> createState() => _MovieViewState();
 }
 
-class _MovieViewState extends State<MovieView> {
+class _MovieViewState extends ConsumerState<MovieView> {
   bool showTv = true;
   bool showHot = true;
 
@@ -36,75 +40,15 @@ class _MovieViewState extends State<MovieView> {
   @override
   void initState() {
     super.initState();
-    fetchAndUpdateData(config);
+    fetchAndUpdateData();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        backgroundColor: Colors.black,
-        appBar: buildAppBar(),
-        body: Stack(children: [
-          RefreshIndicator(
-              onRefresh: () async => await fetchAndUpdateData(config),
-              child: GridView.builder(
-                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                      maxCrossAxisExtent: 150, childAspectRatio: 0.7),
-                  itemCount: movieFiltered.length,
-                  itemBuilder: (c, i) {
-                    final e = movieFiltered[i];
-                    return InkWell(
-                        onTap: () => launchUrlString(e.url!),
-                        onLongPress: () => handleAddShortLink(config, e.url!),
-                        child: MovieCard(e: e, key: ObjectKey(e)));
-                  })),
-          Positioned(
-              child: SafeArea(
-                  child: Container(
-                      margin: const EdgeInsets.only(
-                          left: 10, right: 10, bottom: 10),
-                      decoration: BoxDecoration(
-                          color: Colors.black54,
-                          borderRadius: BorderRadius.circular(10)),
-                      alignment: Alignment.center,
-                      child: InkWell(
-                          borderRadius: BorderRadius.circular(10),
-                          onTap: () => showModalBottomSheet(
-                              context: context,
-                              backgroundColor: Colors.transparent,
-                              builder: (c) {
-                                return BottomSheet(
-                                    backgroundColor: Colors.transparent,
-                                    onClosing: () {},
-                                    enableDrag: false,
-                                    builder: (c) => WillPopScope(
-                                          onWillPop: () async {
-                                            setState(() {});
-                                            setMovieAndFiltered(
-                                                justFilter: true);
-                                            return true;
-                                          },
-                                          child: MovieFilterView(
-                                              filter: filter, movies: movie),
-                                        ));
-                              }),
-                          child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(buildFilterText(),
-                                        style: const TextStyle(
-                                            color: Colors.white))
-                                  ]))))),
-              left: 0,
-              right: 0,
-              bottom: 0)
-        ]));
-  }
-
-  AppBar buildAppBar() {
-    return AppBar(
+    final setting = ref.watch(movieSettingsProvider).value;
+    final tracking =
+        ref.watch(seriesDBProvider).value?.map((e) => e.url).toSet() ?? {};
+    var appBar = AppBar(
         foregroundColor: Colors.white,
         backgroundColor: Colors.black26,
         title: buildTitle(),
@@ -112,23 +56,137 @@ class _MovieViewState extends State<MovieView> {
         actions: [
           IconButton(
               onPressed: () => showModalBottomSheet(
-                  context: context, builder: (context) => const TvView()),
+                  context: context,
+                  builder: (context) => const SeriesSubscribeView()),
               icon: const Icon(Icons.track_changes_outlined)),
           IconButton(
               onPressed: () {
                 setState(() => showTv = !showTv);
-                fetchAndUpdateData(config);
+                fetchAndUpdateData();
               },
               icon: Icon(showTv ? Icons.tv : Icons.movie)),
           IconButton(
               onPressed: () {
                 setState(() => showHot = !showHot);
-                fetchAndUpdateData(config);
+                fetchAndUpdateData();
               },
               icon: Icon(showHot
                   ? Icons.local_fire_department_outlined
                   : Icons.new_releases))
         ]);
+    var searchBar = Container(
+        margin: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
+        decoration: BoxDecoration(
+            color: Colors.black54, borderRadius: BorderRadius.circular(10)),
+        alignment: Alignment.center,
+        child: InkWell(
+            borderRadius: BorderRadius.circular(10),
+            onTap: () => showModalBottomSheet(
+                context: context,
+                backgroundColor: Colors.transparent,
+                builder: (c) {
+                  return BottomSheet(
+                      backgroundColor: Colors.transparent,
+                      onClosing: () {},
+                      enableDrag: false,
+                      builder: (c) => WillPopScope(
+                          onWillPop: () async {
+                            setState(() {});
+                            setMovieAndFiltered(justFilter: true);
+                            return true;
+                          },
+                          child:
+                              MovieFilterView(filter: filter, movies: movie)));
+                }),
+            child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(buildFilterText(),
+                          style: const TextStyle(color: Colors.white))
+                    ]))));
+
+    return Scaffold(
+        backgroundColor: Colors.black,
+        appBar: appBar,
+        body: Stack(children: [
+          RefreshIndicator(
+              onRefresh: fetchAndUpdateData,
+              child: GridView.builder(
+                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                      maxCrossAxisExtent: 150, childAspectRatio: 0.7),
+                  itemCount: movieFiltered.length,
+                  itemBuilder: (c, i) {
+                    final e = movieFiltered[i];
+                    final isWatched = showTv
+                        ? setting?.watchedTv.contains(e.url) ?? false
+                        : setting?.watchedMovie.contains(e.url) ?? false;
+                    final isTracking = tracking.contains(e.url);
+                    return InkWell(
+                        onTap: () =>
+                            showItemMenu(e, showTv, isWatched, isTracking),
+                        child: MovieCard(
+                            e: e,
+                            key: ObjectKey(e),
+                            watched: isWatched,
+                            isTracking: isTracking));
+                  })),
+          Positioned(
+              child: SafeArea(child: searchBar), left: 0, right: 0, bottom: 0)
+        ]));
+  }
+
+  void showItemMenu(Movie e, bool isTv, bool isWatched, bool isTracking) {
+    List<Widget> opts;
+    if (showTv) {
+      opts = [
+        SimpleDialogOption(
+            onPressed: showTv
+                ? () {
+                    Navigator.of(context).pop();
+                    showModalBottomSheet(
+                        context: context,
+                        builder: (context) => isTracking
+                            ? SeriesSubscribeView(delMovie: e)
+                            : SeriesSubscribeView(addMovie: e));
+                  }
+                : null,
+            child: Text(isTracking ? "删除追踪" : "添加追踪")),
+        SimpleDialogOption(
+            onPressed: () {
+              Navigator.of(context).pop();
+              ref
+                  .read(movieSettingsProvider.notifier)
+                  .makeWatched(showTv, e.url!, reverse: isWatched);
+            },
+            child: Text(isWatched ? "标记为未观看" : "标记为已观看"))
+      ];
+    } else {
+      opts = [
+        SimpleDialogOption(
+            onPressed: () {
+              Navigator.of(context).pop();
+              ref
+                  .read(movieSettingsProvider.notifier)
+                  .makeWatched(showTv, e.url!, reverse: isWatched);
+            },
+            child: Text(isWatched ? "标记为未观看" : "标记为已观看"))
+      ];
+    }
+    showDialog(
+        context: context,
+        builder: (context) => Theme(
+            data: appThemeData,
+            child: SimpleDialog(title: Text(e.title!), children: [
+              ...opts,
+              SimpleDialogOption(
+                  onPressed: () => launchUrlString(e.url!),
+                  child: const Text("在站点查看详情...")),
+              SimpleDialogOption(
+                  onPressed: () => handleAddShortLink(e.url!),
+                  child: const Text("生成短链接..."))
+            ])));
   }
 
   Widget buildTitle() {
@@ -170,7 +228,7 @@ class _MovieViewState extends State<MovieView> {
     }
   }
 
-  Future fetchAndUpdateData(Config config) async {
+  Future fetchAndUpdateData() async {
     setState(() {
       loading = true;
     });
@@ -196,7 +254,7 @@ class _MovieViewState extends State<MovieView> {
     });
   }
 
-  Future handleAddShortLink(Config config, String url) async {
+  Future handleAddShortLink(String url) async {
     final keyword = "mo" + (Random().nextInt(90000) + 10000).toString();
     final r = await get(Config.goUrl(keyword, url),
         headers: config.cyberBase64Header);
@@ -215,10 +273,13 @@ class _MovieViewState extends State<MovieView> {
 }
 
 class MovieCard extends StatelessWidget {
-  const MovieCard({
-    super.key,
-    required this.e,
-  });
+  final bool watched;
+  final bool isTracking;
+  const MovieCard(
+      {super.key,
+      required this.e,
+      required this.watched,
+      required this.isTracking});
 
   final Movie e;
 
@@ -231,6 +292,16 @@ class MovieCard extends StatelessWidget {
             image: DecorationImage(
                 image: CachedNetworkImageProvider(e.img!), fit: BoxFit.cover)),
       )),
+      Positioned(
+          top: 0,
+          left: 0,
+          child: CustomPaint(
+              painter: ReadPainter(
+                  draw: isTracking
+                      ? "在追"
+                      : watched
+                          ? "已看"
+                          : null))),
       Positioned(
           bottom: 0,
           left: 0,
@@ -264,6 +335,39 @@ class MovieCard extends StatelessWidget {
                 child: ))*/
           )
     ]);
+  }
+}
+
+class ReadPainter extends CustomPainter {
+  final String? draw;
+
+  ReadPainter({super.repaint, required this.draw});
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (draw == null) return;
+    const w = 40.0;
+    var paint = Paint()..color = Colors.black.withOpacity(0.4);
+    var path = Path();
+    path.moveTo(0, 0);
+    path.lineTo(w, 0);
+    path.lineTo(0, w);
+    path.close();
+    canvas.drawPath(path, paint);
+    canvas.rotate(-0.8);
+    canvas.drawParagraph(
+        (ParagraphBuilder(
+                ParagraphStyle(fontSize: 9, textAlign: TextAlign.center))
+              ..pushStyle(ui.TextStyle(color: Colors.white))
+              ..addText(draw!)
+              ..pop())
+            .build()
+          ..layout(const ui.ParagraphConstraints(width: 30)),
+        const Offset(-16, 12));
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return (oldDelegate as ReadPainter).draw != draw;
   }
 }
 
@@ -317,6 +421,33 @@ class _MovieFilterViewState extends State<MovieFilterView> {
 
   @override
   Widget build(BuildContext context) {
+    var filterChips = Wrap(
+        children: types
+            .map((e) => FilterChip(
+                visualDensity: VisualDensity.compact,
+                padding: const EdgeInsets.only(left: 0, right: 0),
+                labelPadding: const EdgeInsets.only(left: 10, right: 10),
+                color: const MaterialStatePropertyAll(Colors.black),
+                showCheckmark: false,
+                checkmarkColor: Colors.white,
+                side: BorderSide(
+                    color: widget.filter.filteredTypes.contains(e)
+                        ? Colors.white
+                        : Colors.transparent),
+                label: Text(e, style: const TextStyle(color: Colors.white)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15)),
+                selected: widget.filter.filteredTypes.contains(e),
+                onSelected: (_) => setState(() {
+                      if (widget.filter.filteredTypes.contains(e)) {
+                        widget.filter.filteredTypes.remove(e);
+                      } else {
+                        widget.filter.filteredTypes.add(e);
+                      }
+                    })))
+            .toList(growable: false),
+        spacing: 5,
+        runSpacing: 5);
     return Scaffold(
         backgroundColor: Colors.black,
         body: SingleChildScrollView(
@@ -339,44 +470,7 @@ class _MovieFilterViewState extends State<MovieFilterView> {
                                             widget.filter.filteredTypes = {}),
                                         child: const Text("清空过滤器"))
                                   ])),
-                          Wrap(
-                              children: types
-                                  .map((e) => FilterChip(
-                                      visualDensity: VisualDensity.compact,
-                                      padding: const EdgeInsets.only(
-                                          left: 0, right: 0),
-                                      labelPadding: const EdgeInsets.only(
-                                          left: 10, right: 10),
-                                      color: const MaterialStatePropertyAll(
-                                          Colors.black),
-                                      showCheckmark: false,
-                                      checkmarkColor: Colors.white,
-                                      side: BorderSide(
-                                          color: widget.filter.filteredTypes
-                                                  .contains(e)
-                                              ? Colors.white
-                                              : Colors.transparent),
-                                      label: Text(e,
-                                          style: const TextStyle(
-                                              color: Colors.white)),
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(15)),
-                                      selected: widget.filter.filteredTypes
-                                          .contains(e),
-                                      onSelected: (_) => setState(() {
-                                            if (widget.filter.filteredTypes
-                                                .contains(e)) {
-                                              widget.filter.filteredTypes
-                                                  .remove(e);
-                                            } else {
-                                              widget.filter.filteredTypes
-                                                  .add(e);
-                                            }
-                                          })))
-                                  .toList(growable: false),
-                              spacing: 5,
-                              runSpacing: 5),
+                          filterChips,
                           const Padding(
                               padding: EdgeInsets.only(bottom: 0, top: 20),
                               child: Text("按星级过滤")),
@@ -399,14 +493,47 @@ class _MovieFilterViewState extends State<MovieFilterView> {
   }
 }
 
-class TvView extends ConsumerStatefulWidget {
-  const TvView({super.key});
+class SeriesSubscribeView extends ConsumerStatefulWidget {
+  final Movie? addMovie;
+  final Movie? delMovie;
+  const SeriesSubscribeView({super.key, this.addMovie, this.delMovie});
 
   @override
-  ConsumerState<TvView> createState() => _TvViewState();
+  ConsumerState<SeriesSubscribeView> createState() =>
+      _SeriesSubscribeViewState();
 }
 
-class _TvViewState extends ConsumerState<TvView> {
+class _SeriesSubscribeViewState extends ConsumerState<SeriesSubscribeView> {
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(milliseconds: 500), () async {
+      if (widget.addMovie != null) {
+        await handleAdd(widget.addMovie!.title, widget.addMovie!.url);
+      }
+      if (widget.delMovie != null) {
+        ref
+            .read(seriesDBProvider.notifier)
+            .deleteByUrl(widget.delMovie!.url!)
+            .then((msg) => showDialog(
+                context: context,
+                builder: (ctx) => Theme(
+                    data: appThemeData,
+                    child: AlertDialog(
+                        title: const Text("结果"),
+                        content: Text(msg),
+                        actions: [
+                          TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                                ref.invalidate(seriesDBProvider);
+                              },
+                              child: const Text("确定"))
+                        ]))));
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final data = ref.watch(seriesDBProvider).value;
@@ -421,129 +548,131 @@ class _TvViewState extends ConsumerState<TvView> {
               itemCount: data.length,
               itemBuilder: (context, index) {
                 final item = data[index];
-                return TvItem(item, now);
+                return SeriesSubscribeItem(item, now, key: ValueKey(item.id));
               }));
     }
     return Theme(
         data: appThemeData,
         child: Scaffold(
             appBar: AppBar(title: const Text('Series Subscribe'), actions: [
-              IconButton(onPressed: handleAdd, icon: const Icon(Icons.add))
+              IconButton(
+                  onPressed: () => handleAdd(null, null),
+                  icon: const Icon(Icons.add))
             ]),
             body: content));
   }
 
-  handleAdd() async {
-    final nameC = TextEditingController();
-    final urlC = TextEditingController();
+  handleAdd(String? name, String? url) async {
+    final nameC = TextEditingController(text: name);
+    final urlC = TextEditingController(text: url);
     var nameErr = "";
     var urlErr = "";
-    final widget = Theme(
-      data: appThemeData,
-      child: StatefulBuilder(
-          builder: (context, setState) => AlertDialog(
-                  title: const Text("添加追踪"),
-                  content: Column(mainAxisSize: MainAxisSize.min, children: [
-                    TextField(
-                        controller: nameC,
-                        decoration: InputDecoration(
-                            errorText: nameErr.isEmpty ? null : nameErr,
-                            labelText: "名称",
-                            hintText: "请输入名称",
-                            border: const UnderlineInputBorder())),
-                    TextField(
-                        controller: urlC,
-                        decoration: InputDecoration(
-                            errorText: urlErr.isEmpty ? null : urlErr,
-                            suffix:
-                                Row(mainAxisSize: MainAxisSize.min, children: [
-                              IconButton(
-                                  onPressed: () async {
-                                    final data =
-                                        await Clipboard.getData("text/plain");
-                                    urlC.text = data!.text ?? "";
-                                  },
-                                  icon: const Icon(Icons.paste, size: 16)),
-                              IconButton(
-                                  onPressed: () async {
-                                    final name = urlC.text.isEmpty
-                                        ? null
-                                        : await ref
-                                            .read(seriesDBProvider.notifier)
-                                            .findName(urlC.text);
-                                    if (name == null) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(const SnackBar(
-                                              content: Text("无法从 URL 解析名称")));
-                                    } else {
-                                      nameC.text = name;
-                                      setState(() {});
-                                    }
-                                  },
-                                  icon:
-                                      const Icon(Icons.find_in_page, size: 16))
-                            ]),
-                            labelText: "URL",
-                            hintText: "请输入URL",
-                            border: const UnderlineInputBorder()))
-                  ]),
+    final urlTextField = TextField(
+        controller: urlC,
+        decoration: InputDecoration(
+            errorText: urlErr.isEmpty ? null : urlErr,
+            suffix: Row(mainAxisSize: MainAxisSize.min, children: [
+              IconButton(
+                  onPressed: () async {
+                    final data = await Clipboard.getData("text/plain");
+                    urlC.text = data!.text ?? "";
+                  },
+                  icon: const Icon(Icons.paste, size: 16)),
+              IconButton(
+                  onPressed: () async {
+                    final name = urlC.text.isEmpty
+                        ? null
+                        : await ref
+                            .read(seriesDBProvider.notifier)
+                            .findName(urlC.text);
+                    if (name == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("无法从 URL 解析名称")));
+                    } else {
+                      nameC.text = name;
+                      setState(() {});
+                    }
+                  },
+                  icon: const Icon(Icons.find_in_page, size: 16))
+            ]),
+            labelText: "URL",
+            hintText: "请输入URL",
+            border: const UnderlineInputBorder()));
+    handleCheckAndAdd() async {
+      nameErr = "";
+      urlErr = "";
+      if (nameC.text.isEmpty) {
+        nameErr = "名称不允许为空";
+      }
+      if (urlC.text.isEmpty) {
+        urlErr = "URL 不允许为空";
+      } else if (RegExp(r"^https?://").hasMatch(urlC.text) == false) {
+        urlErr = "URL 不合法";
+      }
+      if (nameErr.isNotEmpty || urlErr.isNotEmpty) {
+        setState(() {});
+        return;
+      }
+      final res =
+          await ref.read(seriesDBProvider.notifier).add(nameC.text, urlC.text);
+      await showDialog(
+          context: context,
+          builder: (ctx) => Theme(
+              data: appThemeData,
+              child: AlertDialog(
+                  title: const Text("结果"),
+                  content: Text(res),
                   actions: [
                     TextButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: const Text("取消")),
-                    TextButton(
-                        onPressed: () async {
-                          nameErr = "";
-                          urlErr = "";
-                          if (nameC.text.isEmpty) {
-                            nameErr = "名称不允许为空";
-                          }
-                          if (urlC.text.isEmpty) {
-                            urlErr = "URL 不允许为空";
-                          } else if (RegExp(r"^https?://")
-                                  .hasMatch(urlC.text) ==
-                              false) {
-                            urlErr = "URL 不合法";
-                          }
-                          if (nameErr.isNotEmpty || urlErr.isNotEmpty) {
-                            setState(() {});
-                            return;
-                          }
-                          final res = await ref
-                              .read(seriesDBProvider.notifier)
-                              .add(nameC.text, urlC.text);
-                          showCupertinoDialog(
-                              context: context,
-                              builder: (ctx) => CupertinoAlertDialog(
-                                      title: const Text("结果"),
-                                      content: Text(res),
-                                      actions: [
-                                        CupertinoDialogAction(
-                                            onPressed: () {
-                                              ref.invalidate(seriesDBProvider);
-                                              Navigator.of(context).pop();
-                                              Navigator.of(context).pop();
-                                            },
-                                            child: const Text("确定"))
-                                      ]));
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          Navigator.of(context).pop();
+                          ref.invalidate(seriesDBProvider);
                         },
                         child: const Text("确定"))
-                  ])),
-    );
-    showDialog(context: context, builder: (ctx) => widget);
+                  ])));
+    }
+
+    await showDialog(
+        context: context,
+        builder: (context) => Theme(
+            data: appThemeData,
+            child: StatefulBuilder(
+                builder: (context, setState) => AlertDialog(
+                        title: const Text("添加追踪"),
+                        content:
+                            Column(mainAxisSize: MainAxisSize.min, children: [
+                          TextField(
+                              controller: nameC,
+                              decoration: InputDecoration(
+                                  errorText: nameErr.isEmpty ? null : nameErr,
+                                  labelText: "名称",
+                                  hintText: "请输入名称",
+                                  border: const UnderlineInputBorder())),
+                          urlTextField
+                        ]),
+                        actions: [
+                          TextButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                              child: const Text("取消")),
+                          TextButton(
+                              onPressed: handleCheckAndAdd,
+                              child: const Text("确定"))
+                        ]))));
   }
 }
 
-class TvItem extends ConsumerStatefulWidget {
+class SeriesSubscribeItem extends ConsumerStatefulWidget {
   final Series item;
   final DateTime now;
-  const TvItem(this.item, this.now, {super.key});
+  const SeriesSubscribeItem(this.item, this.now, {super.key});
 
   @override
-  ConsumerState<TvItem> createState() => _TvItemState();
+  ConsumerState<SeriesSubscribeItem> createState() =>
+      _SeriesSubscribeItemStatus();
 }
 
-class _TvItemState extends ConsumerState<TvItem> {
+class _SeriesSubscribeItemStatus extends ConsumerState<SeriesSubscribeItem> {
   late Series item;
   late List<String> series;
   late bool recentUpdate;

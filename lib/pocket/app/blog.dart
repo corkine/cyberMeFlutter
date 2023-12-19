@@ -76,23 +76,22 @@ class _BlogViewState extends ConsumerState<BlogView> {
       ]));
     }
     return Theme(
-      data: appThemeData,
-      child: Scaffold(
-          appBar: AppBar(
-              title: const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Blogs Feed'),
-                    Text('www.mazhangjing.com/blog',
-                        style: TextStyle(fontSize: 10, fontFamily: "mono"))
-                  ]),
-              actions: [
-                IconButton(
-                    icon: const Icon(Icons.open_in_new),
-                    onPressed: () =>
-                        launchUrlString("https://www.mazhangjing.com/blogs"))
-              ]),
-          body: content),
-    );
+        data: appThemeData,
+        child: Scaffold(
+            appBar: AppBar(
+                title: const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Blogs Feed'),
+                      Text('www.mazhangjing.com/blog',
+                          style: TextStyle(fontSize: 10, fontFamily: "mono"))
+                    ]),
+                actions: [
+                  IconButton(
+                      icon: const Icon(Icons.open_in_new),
+                      onPressed: () =>
+                          launchUrlString("https://www.mazhangjing.com/blogs"))
+                ]),
+            body: content));
   }
 }
