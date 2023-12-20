@@ -5,7 +5,8 @@ import 'package:http/http.dart';
 
 import '../pocket/config.dart';
 
-const endpoint = "https://cyber.mazhangjing.com";
+const endpoint =
+    kDebugMode ? "http://127.0.0.1:3002" : "https://cyber.mazhangjing.com";
 
 Future<(T?, String)> requestFrom<T>(
     String path, T Function(Map<String, dynamic>) func) async {
@@ -22,6 +23,25 @@ Future<(T?, String)> requestFrom<T>(
   } catch (e, st) {
     debugPrintStack(stackTrace: st);
     return (null, e.toString());
+  }
+}
+
+Future<(bool, String)> postFrom<T>(
+    String path, Map<String, dynamic> data) async {
+  try {
+    final url = "$endpoint$path";
+    final r = await post(Uri.parse(url),
+        headers: config.cyberBase64JsonContentHeader, body: jsonEncode(data));
+    final d = jsonDecode(r.body);
+    final code = (d["status"] as int?) ?? -1;
+    //debugPrint("request from $url, data: $d");
+    final msg = d["message"]?.toString() ?? "未知错误";
+    if (code <= 0) return (false, msg);
+    //final originData = d["data"];
+    return (true, msg);
+  } catch (e, st) {
+    debugPrintStack(stackTrace: st);
+    return (false, e.toString());
   }
 }
 

@@ -5,7 +5,6 @@ import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:clipboard/clipboard.dart';
 import 'package:cyberme_flutter/api/movie.dart';
-import 'package:cyberme_flutter/api/track.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -41,6 +40,12 @@ class _MovieViewState extends ConsumerState<MovieView> {
   void initState() {
     super.initState();
     fetchAndUpdateData();
+  }
+
+  @override
+  void deactivate() {
+    ref.read(movieSettingsProvider.notifier).syncUpload();
+    super.deactivate();
   }
 
   @override
@@ -301,7 +306,10 @@ class MovieCard extends StatelessWidget {
                       ? "在追"
                       : watched
                           ? "已看"
-                          : null))),
+                          : null,
+                  color: isTracking
+                      ? Colors.red
+                      : const Color.fromARGB(255, 31, 39, 122)))),
       Positioned(
           bottom: 0,
           left: 0,
@@ -340,17 +348,19 @@ class MovieCard extends StatelessWidget {
 
 class ReadPainter extends CustomPainter {
   final String? draw;
+  final Color? color;
 
-  ReadPainter({super.repaint, required this.draw});
+  ReadPainter({super.repaint, required this.draw, this.color});
   @override
   void paint(Canvas canvas, Size size) {
     if (draw == null) return;
-    const w = 40.0;
-    var paint = Paint()..color = Colors.black.withOpacity(0.4);
+    const w = 36.0;
+    var paint = Paint()..color = color ?? Colors.black.withOpacity(0.4);
     var path = Path();
-    path.moveTo(0, 0);
+    path.moveTo(15, 0);
     path.lineTo(w, 0);
     path.lineTo(0, w);
+    path.lineTo(0, 15);
     path.close();
     canvas.drawPath(path, paint);
     canvas.rotate(-0.8);

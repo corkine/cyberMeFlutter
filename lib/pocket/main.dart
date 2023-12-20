@@ -10,7 +10,6 @@ import 'app/blue.dart';
 import 'app/cloth.dart';
 import 'app/medic.dart';
 import 'app/note.dart';
-import 'app/tv.dart';
 import 'dashboard.dart' as dash;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
