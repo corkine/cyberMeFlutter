@@ -40,7 +40,9 @@ class _TrackViewState extends ConsumerState<TrackView> {
 
   @override
   void deactivate() {
-    ref.read(trackSettingsProvider.notifier).setLastSearch(search.text);
+    ref
+        .read(trackSettingsProvider.notifier)
+        .setLastSearch(search.text, withUpload: true);
     super.deactivate();
   }
 

@@ -7,6 +7,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../pocket/config.dart';
+import 'basic.dart';
 
 part 'track.g.dart';
 part 'track.freezed.dart';
@@ -33,10 +34,14 @@ class TrackSetting with _$TrackSetting {
 
 @riverpod
 class TrackSettings extends _$TrackSettings {
+  late SharedPreferences s;
+  late bool dirty;
   @override
   Future<TrackSetting> build() async {
-    final prefs = await SharedPreferences.getInstance();
-    final jsonData = prefs.getString('trackSetting');
+    s = await SharedPreferences.getInstance();
+    dirty = false;
+    await syncDownload();
+    final jsonData = s.getString('trackSetting');
     try {
       if (jsonData != null) {
         final data = TrackSetting.fromJson(jsonDecode(jsonData));
@@ -48,41 +53,72 @@ class TrackSettings extends _$TrackSettings {
     return const TrackSetting();
   }
 
+  syncDownload() async {
+    debugPrint("sync with server now");
+    final (setting, msg) =
+        await requestFrom("/cyber/service/setting", TrackSetting.fromJson);
+    if (setting == null) {
+      debugPrint("sync track setting failed: $msg");
+      return;
+    }
+    await s.setString("trackSetting", jsonEncode(setting.toJson()));
+  }
+
+  syncUpload() async {
+    if (!dirty) return;
+    debugPrint("upload track sync now");
+    final d = state.value;
+    if (d == null) return;
+    try {
+      final (ok, msg) = await postFrom("/cyber/service/setting", d.toJson());
+      if (!ok) {
+        debugPrint("sync track setting failed: $msg");
+        return;
+      }
+    } catch (e, tx) {
+      debugPrintStack(stackTrace: tx, label: e.toString());
+      return;
+    }
+  }
+
   setTrack(List<TrackSearchItem>? items) async {
-    final prefs = await SharedPreferences.getInstance();
     final sort = state.value?.sortByName ?? true;
     final data = TrackSetting(sortByName: sort, searchItems: items ?? []);
-    await prefs.setString('trackSetting', jsonEncode(data.toJson()));
+    await s.setString('trackSetting', jsonEncode(data.toJson()));
+    dirty = true;
     state = AsyncData(data);
   }
 
   setTrackSortReversed() async {
-    final prefs = await SharedPreferences.getInstance();
     final sort = state.value?.sortByName ?? true;
     final items = state.value?.searchItems;
     final data = TrackSetting(sortByName: !sort, searchItems: items ?? []);
-    await prefs.setString('trackSetting', jsonEncode(data.toJson()));
+    await s.setString('trackSetting', jsonEncode(data.toJson()));
+    dirty = true;
     state = AsyncData(data);
   }
 
   addTrack(TrackSearchItem item) async {
-    final prefs = await SharedPreferences.getInstance();
     final sort = state.value?.sortByName ?? true;
     final items = state.value?.searchItems;
     final data = TrackSetting(
         sortByName: sort,
         searchItems: {...items ?? <TrackSearchItem>[], item}.toList());
-    await prefs.setString('trackSetting', jsonEncode(data.toJson()));
+    await s.setString('trackSetting', jsonEncode(data.toJson()));
+    dirty = true;
     state = AsyncData(data);
   }
 
-  setLastSearch(String lastSearch) async {
-    final prefs = await SharedPreferences.getInstance();
+  setLastSearch(String lastSearch, {bool withUpload = false}) async {
     final t = state.value;
     if (t == null) return;
     final data = t.copyWith(lastSearch: lastSearch);
-    await prefs.setString('trackSetting', jsonEncode(data.toJson()));
+    await s.setString('trackSetting', jsonEncode(data.toJson()));
+    dirty = true;
     state = AsyncData(data);
+    if (withUpload) {
+      await syncUpload();
+    }
   }
 }
 
