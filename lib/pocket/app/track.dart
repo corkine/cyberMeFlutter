@@ -76,9 +76,11 @@ class _TrackViewState extends ConsumerState<TrackView> {
     ]);
 
     if (setting == null) {
-      return Scaffold(
-          appBar: appBar,
-          body: const Center(child: CupertinoActivityIndicator()));
+      return Theme(
+          data: appThemeData,
+          child: Scaffold(
+              appBar: appBar,
+              body: const Center(child: CupertinoActivityIndicator())));
     }
 
     final dataList = ListView.builder(
