@@ -29,9 +29,8 @@ class _BlueViewState extends ConsumerState<ScoreView> {
 
   @override
   Widget build(BuildContext context) {
-    final rangeData =
-        ref.watch(blueDataRangeProvider(dayMon, daySun)).value ?? {};
-    final data = ref.watch(blueDataProvider(now)).value;
+    final rangeData = ref.watch(bluesProvider).value ?? {};
+    final todayData = rangeData[DateFormat.yMd().format(now)];
     return Scaffold(
         appBar: AppBar(
             title:
@@ -41,9 +40,7 @@ class _BlueViewState extends ConsumerState<ScoreView> {
                   style: const TextStyle(fontSize: 12))
             ]),
             actions: [
-              IconButton(
-                  onPressed: () => handleAddBlue(data),
-                  icon: const Icon(Icons.add))
+              IconButton(onPressed: handleAddBlue, icon: const Icon(Icons.add))
             ]),
         body: Center(
             child: Column(children: [
@@ -60,28 +57,24 @@ class _BlueViewState extends ConsumerState<ScoreView> {
               onDaySelected: (s, f) => setState(() => now = s),
               headerStyle: const HeaderStyle(
                   titleCentered: true, formatButtonVisible: false),
-              calendarBuilders: CalendarBuilders(
-                markerBuilder: (context, date, events) {
-                  return rangeData.contains(DateFormat.yMd().format(date))
-                      ? Icon(Icons.stacked_line_chart_sharp,
-                          size: 50, color: Colors.redAccent.withOpacity(0.2))
-                      : null;
-                },
-              )),
+              calendarBuilders:
+                  CalendarBuilders(markerBuilder: (context, date, events) {
+                return rangeData[DateFormat.yMd().format(date)] == null
+                    ? Icon(Icons.stacked_line_chart_sharp,
+                        size: 50, color: Colors.redAccent.withOpacity(0.2))
+                    : null;
+              })),
           const SizedBox(height: 5),
-          data == null
+          todayData == null
               ? Padding(
                   padding: const EdgeInsets.only(top: 20),
                   child: Text("${now.day} 号暂无记录"),
                 )
-              : buildCard(data)
+              : buildCard(todayData)
         ])));
   }
 
-  Widget buildCard(BlueData data) {
-    final date = data.date!;
-    final hour = data.watchSeconds ~/ 3600;
-    final minute = (data.watchSeconds % 3600) ~/ 60;
+  Widget buildCard(List<BlueRecent> data) {
     return Stack(children: [
       Image.asset("images/blue.png", fit: BoxFit.cover),
       Positioned(
@@ -112,7 +105,7 @@ class _BlueViewState extends ConsumerState<ScoreView> {
     ]);
   }
 
-  void handleAddBlue(BlueData? blueData) async {
+  void handleAddBlue() async {
     final data = await showTimePicker(
         context: context,
         initialTime: blueData == null
@@ -148,10 +141,5 @@ class _BlueViewState extends ConsumerState<ScoreView> {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text("已添加 ${now.day} 号数据")));
     }
-  }
-
-  void makeInvalid() {
-    ref.invalidate(blueDataProvider(now));
-    ref.invalidate(blueDataRangeProvider(dayMon, daySun));
   }
 }

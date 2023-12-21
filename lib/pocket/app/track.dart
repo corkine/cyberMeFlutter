@@ -52,7 +52,7 @@ class _TrackViewState extends ConsumerState<TrackView> {
     final data = ref.watch(trackDataProvider.call(search.text));
 
     final appBar =
-        AppBar(centerTitle: false, title: const Text("Track! Me"), actions: [
+        AppBar(centerTitle: false, title: const Text("Track!Me"), actions: [
       IconButton(
           onPressed: () {
             showModalBottomSheet(
