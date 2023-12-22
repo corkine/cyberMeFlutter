@@ -88,6 +88,18 @@ class _BlogViewState extends ConsumerState<BlogView> {
                     ]),
                 actions: [
                   IconButton(
+                      icon: Icon(search.text == "案例"
+                          ? Icons.bookmark
+                          : Icons.bookmark_border),
+                      onPressed: () {
+                        if (search.text == "案例") {
+                          search.text = "";
+                        } else {
+                          search.text = "案例";
+                        }
+                        setState(() {});
+                      }),
+                  IconButton(
                       icon: const Icon(Icons.open_in_new),
                       onPressed: () =>
                           launchUrlString("https://www.mazhangjing.com/blogs"))

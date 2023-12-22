@@ -75,71 +75,72 @@ class _BlueViewState extends ConsumerState<ScoreView> {
   }
 
   Widget buildCard(List<BlueRecent> data) {
-    return Stack(children: [
-      Image.asset("images/blue.png", fit: BoxFit.cover),
-      Positioned(
-          left: 20,
-          top: 10,
-          child: Text(DateFormat("HH:mm").format(date),
-              style: const TextStyle(fontSize: 30))),
-      Positioned(
-          bottom: 5,
-          left: 5,
-          right: 5,
-          child: Container(
-              decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.7),
-                  borderRadius: BorderRadius.circular(5)),
-              child: ListTile(
-                  title: const Text("抖音播放数据"),
-                  subtitle: Text("播放时长：$hour小时$minute分钟")))),
-      Positioned(
-          right: 5,
-          bottom: 8,
-          child: TextButton(
-              onPressed: () {
-                removeBlueData(now);
-                makeInvalid();
-              },
-              child: const Text("删除")))
-    ]);
+    // return Stack(children: [
+    //   Image.asset("images/blue.png", fit: BoxFit.cover),
+    //   Positioned(
+    //       left: 20,
+    //       top: 10,
+    //       child: Text(DateFormat("HH:mm").format(date),
+    //           style: const TextStyle(fontSize: 30))),
+    //   Positioned(
+    //       bottom: 5,
+    //       left: 5,
+    //       right: 5,
+    //       child: Container(
+    //           decoration: BoxDecoration(
+    //               color: Colors.white.withOpacity(0.7),
+    //               borderRadius: BorderRadius.circular(5)),
+    //           child: ListTile(
+    //               title: const Text("抖音播放数据"),
+    //               subtitle: Text("播放时长：$hour小时$minute分钟")))),
+    //   Positioned(
+    //       right: 5,
+    //       bottom: 8,
+    //       child: TextButton(
+    //           onPressed: () {
+    //             removeBlueData(now);
+    //             makeInvalid();
+    //           },
+    //           child: const Text("删除")))
+    // ]);
+    return const Placeholder();
   }
 
   void handleAddBlue() async {
-    final data = await showTimePicker(
-        context: context,
-        initialTime: blueData == null
-            ? TimeOfDay.now()
-            : TimeOfDay.fromDateTime(blueData.date!));
-    if (data == null) return;
-    var minutes = TextEditingController(
-        text: blueData == null ? "" : "${blueData.watchSeconds ~/ 60}");
-    await showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-                title: const Text("请输入播放时长"),
-                content: TextField(
-                  controller: minutes,
-                  autofocus: true,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                      hintText: "请输入播放时长(分钟)", border: UnderlineInputBorder()),
-                ),
-                actions: [
-                  TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text("取消")),
-                  TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text("确定"))
-                ]));
-    if (data != null) {
-      await setBlueData(
-          now.add(Duration(hours: data.hour, minutes: data.minute)),
-          int.parse(minutes.text));
-      makeInvalid();
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("已添加 ${now.day} 号数据")));
-    }
+    // final data = await showTimePicker(
+    //     context: context,
+    //     initialTime: blueData == null
+    //         ? TimeOfDay.now()
+    //         : TimeOfDay.fromDateTime(blueData.date!));
+    // if (data == null) return;
+    // var minutes = TextEditingController(
+    //     text: blueData == null ? "" : "${blueData.watchSeconds ~/ 60}");
+    // await showDialog(
+    //     context: context,
+    //     builder: (ctx) => AlertDialog(
+    //             title: const Text("请输入播放时长"),
+    //             content: TextField(
+    //               controller: minutes,
+    //               autofocus: true,
+    //               keyboardType: TextInputType.number,
+    //               decoration: const InputDecoration(
+    //                   hintText: "请输入播放时长(分钟)", border: UnderlineInputBorder()),
+    //             ),
+    //             actions: [
+    //               TextButton(
+    //                   onPressed: () => Navigator.pop(context),
+    //                   child: const Text("取消")),
+    //               TextButton(
+    //                   onPressed: () => Navigator.pop(context),
+    //                   child: const Text("确定"))
+    //             ]));
+    // if (data != null) {
+    //   await setBlueData(
+    //       now.add(Duration(hours: data.hour, minutes: data.minute)),
+    //       int.parse(minutes.text));
+    //   makeInvalid();
+    //   ScaffoldMessenger.of(context)
+    //       .showSnackBar(SnackBar(content: Text("已添加 ${now.day} 号数据")));
+    // }
   }
 }

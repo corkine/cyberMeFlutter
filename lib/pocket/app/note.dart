@@ -21,8 +21,11 @@ class _NoteViewState extends ConsumerState<NoteView> {
         onPressed: () async {
           final content = await Clipboard.getData("text/plain");
           if (content == null) {
-            ScaffoldMessenger.of(context)
-                .showSnackBar(const SnackBar(content: Text("剪贴板无内容")));
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: const Text("剪贴板无内容"),
+                action: SnackBarAction(
+                    label: "OK",
+                    onPressed: () => Navigator.of(context).pop())));
             return;
           }
           final res = await showDialog(
