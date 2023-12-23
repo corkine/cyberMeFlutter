@@ -17,6 +17,7 @@ class TrackSearchItem with _$TrackSearchItem {
   const factory TrackSearchItem(
       {required String title,
       required String search,
+      @Default(true) bool track,
       required String id}) = _TrackSearchItem;
   factory TrackSearchItem.fromJson(Map<String, dynamic> json) =>
       _$TrackSearchItemFromJson(json);
@@ -27,6 +28,7 @@ class TrackSetting with _$TrackSetting {
   const factory TrackSetting(
       {@Default(true) bool sortByName,
       @Default("") String lastSearch,
+      @Default({}) Map<String, int> lastData,
       @Default([]) List<TrackSearchItem> searchItems}) = _TrackSetting;
   factory TrackSetting.fromJson(Map<String, dynamic> json) =>
       _$TrackSettingFromJson(json);
@@ -109,9 +111,23 @@ class TrackSettings extends _$TrackSettings {
     state = AsyncData(data);
   }
 
-  setLastSearch(String lastSearch, {bool withUpload = false}) async {
+  /// 将当前搜索项保存到配置，并且将配置上传到云端。此外，对于所有 enableTrack 的 SearchItem，
+  /// 将当前数据进行保留。
+  setLastSearch(String lastSearch,
+      {List<(String, int)>? originData, bool withUpload = false}) async {
     final t = state.value;
     if (t == null) return;
+    if (originData != null && originData.isNotEmpty) {
+      debugPrint("updateing search item data");
+      t.lastData.clear();
+      for (var e in t.searchItems) {
+        if (e.track) {
+          originData
+              .where((element) => element.$1.contains(e.search))
+              .forEach((element) => t.lastData[element.$1] = element.$2);
+        }
+      }
+    }
     final data = t.copyWith(lastSearch: lastSearch);
     await s.setString('trackSetting', jsonEncode(data.toJson()));
     dirty = true;
@@ -123,7 +139,7 @@ class TrackSettings extends _$TrackSettings {
 }
 
 @riverpod
-Future<List<(String, String)>> fetchTrack(FetchTrackRef ref) async {
+Future<List<(String, int)>> fetchTrack(FetchTrackRef ref) async {
   final setting = ref.watch(trackSettingsProvider).value;
   if (setting == null) return [];
   final Response r =
@@ -132,7 +148,7 @@ Future<List<(String, String)>> fetchTrack(FetchTrackRef ref) async {
   if ((d["status"] as int?) == 1) {
     final res = (d["data"] as List)
         .map((e) => e as List)
-        .map((e) => (e.first.toString(), e.last.toString()))
+        .map((e) => (e.first.toString(), int.tryParse(e.last) ?? -1))
         .toList(growable: false);
     return res;
   } else {
@@ -149,7 +165,7 @@ Future<String> deleteTrack(DeleteTrackRef ref, List<String> keys) async {
 }
 
 @riverpod
-List<(String, String)> trackData(TrackDataRef ref, String searchText) {
+List<(String, int)> trackData(TrackDataRef ref, String searchText) {
   final setting = ref.watch(trackSettingsProvider).value;
   final data = ref.watch(fetchTrackProvider).value;
   if (setting == null || data == null) return [];
@@ -160,7 +176,7 @@ List<(String, String)> trackData(TrackDataRef ref, String searchText) {
     });
   } else {
     res.sort((a, b) {
-      return int.parse(b.$2).compareTo(int.parse(a.$2));
+      return b.$2.compareTo(a.$2);
     });
   }
   if (searchText.isNotEmpty) {
