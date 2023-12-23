@@ -117,18 +117,18 @@ class TrackSettings extends _$TrackSettings {
       {List<(String, int)>? originData, bool withUpload = false}) async {
     final t = state.value;
     if (t == null) return;
+    final newLastData = <String, int>{};
     if (originData != null && originData.isNotEmpty) {
       debugPrint("updateing search item data");
-      t.lastData.clear();
       for (var e in t.searchItems) {
         if (e.track) {
           originData
               .where((element) => element.$1.contains(e.search))
-              .forEach((element) => t.lastData[element.$1] = element.$2);
+              .forEach((element) => newLastData[element.$1] = element.$2);
         }
       }
     }
-    final data = t.copyWith(lastSearch: lastSearch);
+    final data = t.copyWith(lastSearch: lastSearch, lastData: newLastData);
     await s.setString('trackSetting', jsonEncode(data.toJson()));
     dirty = true;
     state = AsyncData(data);

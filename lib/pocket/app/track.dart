@@ -53,18 +53,14 @@ class _TrackViewState extends ConsumerState<TrackView> {
     final appBar =
         AppBar(centerTitle: false, title: const Text("Track!Me"), actions: [
       IconButton(
-          onPressed: () {
-            showModalBottomSheet(
-                context: context, builder: (context) => const StatisticsView());
-          },
-          icon: const Icon(Icons.leaderboard_outlined)),
+          onPressed: () => showModalBottomSheet(
+              context: context,
+              builder: (context) => const ServiceView(useSheet: true)),
+          icon: const Icon(Icons.dashboard)),
       IconButton(
-          onPressed: () {
-            showModalBottomSheet(
-                context: context,
-                builder: (context) => const ServiceView(useSheet: true));
-          },
-          icon: const Icon(Icons.support)),
+          onPressed: () => showModalBottomSheet(
+              context: context, builder: (context) => const StatisticsView()),
+          icon: const Icon(Icons.leaderboard)),
       IconButton(
           onPressed: () =>
               ref.read(trackSettingsProvider.notifier).setTrackSortReversed(),
