@@ -135,32 +135,31 @@ class _TrackViewState extends ConsumerState<TrackView> {
     }
 
     return Theme(
-      data: appThemeData,
-      child: Scaffold(
-          appBar: appBar,
-          body: RefreshIndicator(
-              onRefresh: () async => await ref.refresh(fetchTrackProvider),
-              child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(child: dataList),
-                    Container(
-                        height: 45,
-                        padding: const EdgeInsets.only(
-                            left: 10, right: 10, top: 5, bottom: 10),
-                        child: searchBar),
-                    Padding(
-                        padding: const EdgeInsets.only(left: 10, right: 10),
-                        child: Wrap(
-                            spacing: 5,
-                            runSpacing: 5,
-                            children: setting.searchItems
-                                .map((e) => searchItem(e))
-                                .toList(growable: false))),
-                    const SizedBox(height: 10)
-                  ]))),
-    );
+        data: appThemeData,
+        child: Scaffold(
+            appBar: appBar,
+            body: RefreshIndicator(
+                onRefresh: () async => await ref.refresh(fetchTrackProvider),
+                child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(child: dataList),
+                      Container(
+                          height: 45,
+                          padding: const EdgeInsets.only(
+                              left: 10, right: 10, top: 5, bottom: 10),
+                          child: searchBar),
+                      Padding(
+                          padding: const EdgeInsets.only(left: 10, right: 10),
+                          child: Wrap(
+                              spacing: 5,
+                              runSpacing: 3,
+                              children: setting.searchItems
+                                  .map((e) => searchItem(e))
+                                  .toList(growable: false))),
+                      const SizedBox(height: 10)
+                    ]))));
   }
 
   void handleAddSearchItem() async {

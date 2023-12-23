@@ -66,11 +66,8 @@ class _NoteViewState extends ConsumerState<NoteView> {
                     const SizedBox(height: 10),
                     ButtonBar(alignment: MainAxisAlignment.center, children: [
                       TextButton(
-                          onPressed: () async {
-                            await ref.refresh(quickNotesProvider.future);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text("已刷新")));
-                          },
+                          onPressed: () async =>
+                              await ref.refresh(quickNotesProvider.future),
                           child: const Text("刷新")),
                       addFromClipboardButton
                     ])
@@ -100,11 +97,8 @@ class _NoteViewState extends ConsumerState<NoteView> {
                 const SizedBox(height: 10),
                 ButtonBar(alignment: MainAxisAlignment.center, children: [
                   TextButton(
-                      onPressed: () async {
-                        await ref.refresh(quickNotesProvider.future);
-                        ScaffoldMessenger.of(context)
-                            .showSnackBar(const SnackBar(content: Text("已刷新")));
-                      },
+                      onPressed: () async =>
+                          await ref.refresh(quickNotesProvider.future),
                       child: const Text("刷新")),
                   TextButton(
                       onPressed: () {
