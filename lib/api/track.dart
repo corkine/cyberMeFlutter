@@ -141,6 +141,14 @@ Future<List<(String, String)>> fetchTrack(FetchTrackRef ref) async {
 }
 
 @riverpod
+Future<String> deleteTrack(DeleteTrackRef ref, List<String> keys) async {
+  final res = await Future.wait(keys.map((e) async =>
+      await postFrom("/cyber/service/visits/delete-key", {"visit-key": e})));
+  ref.invalidate(fetchTrackProvider);
+  return res.map((e) => e.$2).join("\n");
+}
+
+@riverpod
 List<(String, String)> trackData(TrackDataRef ref, String searchText) {
   final setting = ref.watch(trackSettingsProvider).value;
   final data = ref.watch(fetchTrackProvider).value;

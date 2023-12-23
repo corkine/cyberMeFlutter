@@ -94,6 +94,32 @@ class _TrackViewState extends ConsumerState<TrackView> {
                     children: [Expanded(child: Text(c.$1)), Text(c.$2)],
                     mainAxisAlignment: MainAxisAlignment.spaceBetween),
               ),
+              onLongPress: () {
+                showDialog(
+                    context: context,
+                    builder: (context) =>
+                        SimpleDialog(title: Text(c.$1), children: [
+                          SimpleDialogOption(
+                              onPressed: () async {
+                                Navigator.of(context).pop();
+                                final res = await ref.read(
+                                    deleteTrackProvider.call([c.$1]).future);
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(SnackBar(content: Text(res)));
+                              },
+                              child: const Text("删除当前项")),
+                          SimpleDialogOption(
+                              onPressed: () async {
+                                Navigator.of(context).pop();
+                                final res = await ref.read(deleteTrackProvider
+                                    .call(data.map((e) => e.$1).toList())
+                                    .future);
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(SnackBar(content: Text(res)));
+                              },
+                              child: const Text("删除当前搜索结果所有项"))
+                        ]));
+              },
               onTap: () => Navigator.of(context).push(MaterialPageRoute(
                   builder: (ctx) => TrackDetailView(url: c.$1, count: c.$2))));
         },
@@ -154,7 +180,7 @@ class _TrackViewState extends ConsumerState<TrackView> {
                           padding: const EdgeInsets.only(left: 10, right: 10),
                           child: Wrap(
                               spacing: 5,
-                              runSpacing: 3,
+                              runSpacing: 5,
                               children: setting.searchItems
                                   .map((e) => searchItem(e))
                                   .toList(growable: false))),
