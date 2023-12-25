@@ -3,13 +3,11 @@ import 'dart:io';
 import 'package:cyberme_flutter/learn/game.dart';
 import 'package:cyberme_flutter/learn/snh.dart';
 import 'package:cyberme_flutter/pocket/app/body_mass.dart';
-import 'package:cyberme_flutter/pocket/app/eat.dart';
 import 'package:cyberme_flutter/pocket/app/story.dart';
 import 'app/blog.dart';
 import 'app/blue.dart';
 import 'app/cloth.dart';
 import 'app/medic.dart';
-import 'app/note.dart';
 import 'dashboard.dart' as dash;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -107,12 +105,6 @@ final apps = {
     "addToMenu": true,
     "icon": Icons.bookmark_add
   },
-  "eat": {
-    "name": "饮食管理",
-    "view": (c) => const EatView(),
-    "addToMenu": true,
-    "icon": Icons.fastfood
-  },
   "cloth": {
     "name": "衣物管理",
     "view": (c) => const ClothView(),
@@ -124,12 +116,6 @@ final apps = {
     "view": (c) => const MedicView(),
     "addToMenu": true,
     "icon": Icons.medical_services_sharp
-  },
-  "note": {
-    "name": "便签",
-    "view": (c) => const NoteView(),
-    "addToMenu": true,
-    "icon": Icons.note
   },
   "blog": {
     "name": "博客",

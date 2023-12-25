@@ -21,8 +21,11 @@ class _NoteViewState extends ConsumerState<NoteView> {
         onPressed: () async {
           final content = await Clipboard.getData("text/plain");
           if (content == null) {
-            ScaffoldMessenger.of(context)
-                .showSnackBar(const SnackBar(content: Text("剪贴板无内容")));
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: const Text("剪贴板无内容"),
+                action: SnackBarAction(
+                    label: "OK",
+                    onPressed: () => Navigator.of(context).pop())));
             return;
           }
           final res = await showDialog(
@@ -63,11 +66,8 @@ class _NoteViewState extends ConsumerState<NoteView> {
                     const SizedBox(height: 10),
                     ButtonBar(alignment: MainAxisAlignment.center, children: [
                       TextButton(
-                          onPressed: () async {
-                            await ref.refresh(quickNotesProvider.future);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text("已刷新")));
-                          },
+                          onPressed: () async =>
+                              await ref.refresh(quickNotesProvider.future),
                           child: const Text("刷新")),
                       addFromClipboardButton
                     ])
@@ -97,11 +97,8 @@ class _NoteViewState extends ConsumerState<NoteView> {
                 const SizedBox(height: 10),
                 ButtonBar(alignment: MainAxisAlignment.center, children: [
                   TextButton(
-                      onPressed: () async {
-                        await ref.refresh(quickNotesProvider.future);
-                        ScaffoldMessenger.of(context)
-                            .showSnackBar(const SnackBar(content: Text("已刷新")));
-                      },
+                      onPressed: () async =>
+                          await ref.refresh(quickNotesProvider.future),
                       child: const Text("刷新")),
                   TextButton(
                       onPressed: () {

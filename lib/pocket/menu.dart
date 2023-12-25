@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cyberme_flutter/pocket/app/note.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -35,6 +36,10 @@ class _MenuViewState extends State<MenuView> {
             .toList(growable: false));
     var actionBar = Row(mainAxisAlignment: MainAxisAlignment.center, children: [
       TextButton(
+          onPressed: () => showModalBottomSheet(
+              context: context, builder: (context) => const NoteView()),
+          child: const Text("笔记")),
+      TextButton(
           onPressed: () => SystemNavigator.pop(animated: true),
           child: const Text("退出 Flutter")),
       TextButton(onPressed: () => exit(0), child: const Text("退出 App"))
@@ -51,6 +56,7 @@ class _MenuViewState extends State<MenuView> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
+                const SizedBox(height: 10),
                 Expanded(child: appsGrid),
                 Padding(
                     padding: const EdgeInsets.only(bottom: 10),
