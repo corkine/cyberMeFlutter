@@ -27,21 +27,6 @@ class MovieView extends ConsumerStatefulWidget {
 }
 
 class _MovieViewState extends ConsumerState<MovieView> {
-  bool showTv = true;
-  bool showHot = true;
-
-  List<Movie> movie = [];
-  List<Movie> movieFiltered = [];
-  var filter = MovieFilter();
-
-  bool loading = false;
-
-  @override
-  void initState() {
-    super.initState();
-    fetchAndUpdateData();
-  }
-
   @override
   void deactivate() {
     ref.read(movieSettingsProvider.notifier).syncUpload();
@@ -51,12 +36,25 @@ class _MovieViewState extends ConsumerState<MovieView> {
   @override
   Widget build(BuildContext context) {
     final setting = ref.watch(movieSettingsProvider).value;
+    final movies = ref.watch(movieFilteredProvider);
     final tracking =
         ref.watch(seriesDBProvider).value?.map((e) => e.url).toSet() ?? {};
+    final filter = ref.watch(movieFiltersProvider);
+    final showHot = setting?.showHot ?? true;
+    final showTv = setting?.showTv ?? true;
+    final loading = movies.isEmpty;
+    var title = Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text("${showHot ? "HOT" : "NEW"} ${showTv ? "Series" : "Movie"}",
+          style: const TextStyle(fontSize: 19)),
+      const SizedBox(height: 2),
+      loading
+          ? const Text("Loading...", style: TextStyle(fontSize: 10))
+          : Text("共 ${movies.length} 条结果", style: const TextStyle(fontSize: 10))
+    ]);
     var appBar = AppBar(
         foregroundColor: Colors.white,
         backgroundColor: Colors.black26,
-        title: buildTitle(),
+        title: title,
         centerTitle: false,
         actions: [
           IconButton(
@@ -65,16 +63,10 @@ class _MovieViewState extends ConsumerState<MovieView> {
                   builder: (context) => const SeriesSubscribeView()),
               icon: const Icon(Icons.track_changes_outlined)),
           IconButton(
-              onPressed: () {
-                setState(() => showTv = !showTv);
-                fetchAndUpdateData();
-              },
+              onPressed: ref.read(movieSettingsProvider.notifier).toggleShowTv,
               icon: Icon(showTv ? Icons.tv : Icons.movie)),
           IconButton(
-              onPressed: () {
-                setState(() => showHot = !showHot);
-                fetchAndUpdateData();
-              },
+              onPressed: ref.read(movieSettingsProvider.notifier).toggleShowHot,
               icon: Icon(showHot
                   ? Icons.local_fire_department_outlined
                   : Icons.new_releases))
@@ -94,36 +86,28 @@ class _MovieViewState extends ConsumerState<MovieView> {
                       backgroundColor: Colors.transparent,
                       onClosing: () {},
                       enableDrag: false,
-                      builder: (c) => WillPopScope(
-                          onWillPop: () async {
-                            setState(() {});
-                            setMovieAndFiltered(justFilter: true);
-                            return true;
-                          },
-                          child:
-                              MovieFilterView(filter: filter, movies: movie)));
+                      builder: (c) => const MovieFilterView());
                 }),
             child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(buildFilterText(),
+                      Text(toDesc(filter, setting),
                           style: const TextStyle(color: Colors.white))
                     ]))));
-
     return Scaffold(
         backgroundColor: Colors.black,
         appBar: appBar,
         body: Stack(children: [
           RefreshIndicator(
-              onRefresh: fetchAndUpdateData,
+              onRefresh: () async => await ref.refresh(getMoviesProvider),
               child: GridView.builder(
                   gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
                       maxCrossAxisExtent: 150, childAspectRatio: 0.7),
-                  itemCount: movieFiltered.length,
+                  itemCount: movies.length,
                   itemBuilder: (c, i) {
-                    final e = movieFiltered[i];
+                    final e = movies[i];
                     final isWatched = showTv
                         ? setting?.watchedTv.contains(e.url) ?? false
                         : setting?.watchedMovie.contains(e.url) ?? false;
@@ -142,12 +126,36 @@ class _MovieViewState extends ConsumerState<MovieView> {
         ]));
   }
 
+  String toDesc(MovieFilter filter, MovieSetting? setting) {
+    final selectStar = filter.selectStar;
+    final selectTags = filter.selectTags;
+    final showWatched = setting?.showWatched ?? true;
+    final showTracked = setting?.showTracked ?? true;
+    String more = "";
+    if (showWatched && showTracked) {
+      more = "，显示已看和追踪";
+    } else if (showWatched) {
+      more = "，显示已看";
+    } else if (showTracked) {
+      more = "，显示追踪";
+    }
+    if (selectStar == 0 && selectTags.isEmpty) {
+      return "过滤器关 $more";
+    } else if (selectStar != 0 && selectTags.isNotEmpty) {
+      return "过滤器：大于 ${selectStar.toInt()} 星，选中类别 ${selectTags.length} 个 $more";
+    } else if (selectStar != 0) {
+      return "过滤器：大于 ${selectStar.toInt()} 星 $more";
+    } else {
+      return "过滤器：选中类别 ${selectTags.length} 个 $more";
+    }
+  }
+
   void showItemMenu(Movie e, bool isTv, bool isWatched, bool isTracking) {
     List<Widget> opts;
-    if (showTv) {
+    if (isTv) {
       opts = [
         SimpleDialogOption(
-            onPressed: showTv
+            onPressed: isTv
                 ? () {
                     Navigator.of(context).pop();
                     showModalBottomSheet(
@@ -163,7 +171,7 @@ class _MovieViewState extends ConsumerState<MovieView> {
               Navigator.of(context).pop();
               ref
                   .read(movieSettingsProvider.notifier)
-                  .makeWatched(showTv, e.url!, reverse: isWatched);
+                  .makeWatched(isTv, e.url!, reverse: isWatched);
             },
             child: Text(isWatched ? "标记为未观看" : "标记为已观看"))
       ];
@@ -174,7 +182,7 @@ class _MovieViewState extends ConsumerState<MovieView> {
               Navigator.of(context).pop();
               ref
                   .read(movieSettingsProvider.notifier)
-                  .makeWatched(showTv, e.url!, reverse: isWatched);
+                  .makeWatched(isTv, e.url!, reverse: isWatched);
             },
             child: Text(isWatched ? "标记为未观看" : "标记为已观看"))
       ];
@@ -192,71 +200,6 @@ class _MovieViewState extends ConsumerState<MovieView> {
                   onPressed: () => handleAddShortLink(e.url!),
                   child: const Text("生成短链接..."))
             ])));
-  }
-
-  Widget buildTitle() {
-    final fl = Text(
-        "${showHot ? "🔥" : "NEW"} MINI4K ${showTv ? "Series" : "Movie"}",
-        style: const TextStyle(fontSize: 19));
-    final sl = loading
-        ? const Text("Loading...", style: TextStyle(fontSize: 10))
-        : Text("共 ${movieFiltered.length} 条结果",
-            style: const TextStyle(fontSize: 10));
-    return Column(children: [fl, const SizedBox(height: 2), sl]);
-  }
-
-  String buildFilterText() {
-    if (filter.star == 0 && filter.filteredTypes.isEmpty) {
-      return "过滤器：关";
-    } else if (filter.star != 0 && filter.filteredTypes.isNotEmpty) {
-      return "过滤器：大于 ${filter.star.toInt()} 星，选中类别 ${filter.filteredTypes.length} 个";
-    } else if (filter.star != 0) {
-      return "过滤器：大于 ${filter.star.toInt()} 星";
-    } else {
-      return "过滤器：选中类别 ${filter.filteredTypes.length} 个";
-    }
-  }
-
-  setMovieAndFiltered({List<Movie>? netData, bool justFilter = false}) {
-    if (!justFilter) {
-      movie = netData ?? [];
-    }
-    movieFiltered = [];
-    double star = filter.star;
-    Set<String> type = filter.filteredTypes;
-    for (final m in movie) {
-      if ((double.tryParse(m.star ?? "") ?? 100.0) >= star) {
-        if (type.isEmpty || showTv || (!showTv && type.contains(m.update))) {
-          movieFiltered.add(m);
-        }
-      }
-    }
-  }
-
-  Future fetchAndUpdateData() async {
-    setState(() {
-      loading = true;
-    });
-    final r = await get(
-        Uri.parse(
-            Config.movieUrl(showTv ? "tv" : "movie", showHot ? "hot" : "new")),
-        headers: config.cyberBase64Header);
-    final d = jsonDecode(r.body);
-    final m = d["message"] ?? "没有消息";
-    if (((d["status"] as int?) ?? -1) <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m)));
-      return [];
-    }
-    final data = d["data"] as List?;
-    final md = data
-            ?.map((e) => e as Map?)
-            .map((e) => Movie.fromJson(e))
-            .toList(growable: false) ??
-        [];
-    setMovieAndFiltered(netData: md, justFilter: false);
-    setState(() {
-      loading = false;
-    });
   }
 
   Future handleAddShortLink(String url) async {
@@ -381,58 +324,24 @@ class ReadPainter extends CustomPainter {
   }
 }
 
-class MovieFilter {
-  double star = 0;
-  Set<String> filteredTypes = {};
-
-  MovieFilter();
+class MovieFilterView extends ConsumerStatefulWidget {
+  const MovieFilterView({super.key});
 
   @override
-  String toString() {
-    return 'MovieFilter{star: $star, filteredTypes: $filteredTypes}';
-  }
+  ConsumerState<MovieFilterView> createState() => _MovieFilterViewState();
 }
 
-class MovieFilterView extends StatefulWidget {
-  final MovieFilter filter;
-  final List<Movie> movies;
-
-  const MovieFilterView({
-    super.key,
-    required this.filter,
-    required this.movies,
-  });
-
-  @override
-  State<MovieFilterView> createState() => _MovieFilterViewState();
-}
-
-class _MovieFilterViewState extends State<MovieFilterView> {
-  late Set<String> types = {};
-  double avgStar = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    avgStar = 0;
-    for (final m in widget.movies) {
-      if (m.update != null && !m.update!.startsWith("第")) {
-        types.add(m.update!);
-      }
-      if (m.star != null) {
-        final s = double.tryParse(m.star!);
-        if (s != null) {
-          avgStar += s;
-        }
-      }
-    }
-    avgStar = avgStar / widget.movies.length;
-  }
-
+class _MovieFilterViewState extends ConsumerState<MovieFilterView> {
   @override
   Widget build(BuildContext context) {
+    var setting = ref.watch(movieSettingsProvider).value;
+    var filter = ref.watch(movieFiltersProvider);
+    final avgStar = filter.avgStar;
+    final selectStar = filter.selectStar;
+    final allTags = filter.allTags;
+    final selectTags = filter.selectTags;
     var filterChips = Wrap(
-        children: types
+        children: allTags
             .map((e) => FilterChip(
                 visualDensity: VisualDensity.compact,
                 padding: const EdgeInsets.only(left: 0, right: 0),
@@ -441,20 +350,15 @@ class _MovieFilterViewState extends State<MovieFilterView> {
                 showCheckmark: false,
                 checkmarkColor: Colors.white,
                 side: BorderSide(
-                    color: widget.filter.filteredTypes.contains(e)
+                    color: selectTags.contains(e)
                         ? Colors.white
                         : Colors.transparent),
                 label: Text(e, style: const TextStyle(color: Colors.white)),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(15)),
-                selected: widget.filter.filteredTypes.contains(e),
-                onSelected: (_) => setState(() {
-                      if (widget.filter.filteredTypes.contains(e)) {
-                        widget.filter.filteredTypes.remove(e);
-                      } else {
-                        widget.filter.filteredTypes.add(e);
-                      }
-                    })))
+                selected: selectTags.contains(e),
+                onSelected: (_) =>
+                    ref.read(movieFiltersProvider.notifier).toggleTag(e)))
             .toList(growable: false),
         spacing: 5,
         runSpacing: 5);
@@ -468,37 +372,60 @@ class _MovieFilterViewState extends State<MovieFilterView> {
                     child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Padding(
-                              padding: const EdgeInsets.only(bottom: 5),
-                              child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    const Text("按类别过滤"),
-                                    TextButton(
-                                        onPressed: () => setState(() =>
-                                            widget.filter.filteredTypes = {}),
-                                        child: const Text("清空过滤器"))
-                                  ])),
-                          filterChips,
-                          const Padding(
-                              padding: EdgeInsets.only(bottom: 0, top: 20),
-                              child: Text("按星级过滤")),
+                          ...filterChips.children.isEmpty
+                              ? []
+                              : [
+                                  Padding(
+                                      padding: const EdgeInsets.only(bottom: 5),
+                                      child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            const Text("按类别过滤"),
+                                            TextButton(
+                                                onPressed: ref
+                                                    .read(movieFiltersProvider
+                                                        .notifier)
+                                                    .cleanSelectTags,
+                                                child: const Text("清空过滤器"))
+                                          ])),
+                                  filterChips,
+                                  const SizedBox(height: 20)
+                                ],
+                          const Text("按星级过滤"),
                           Slider(
                               thumbColor: Colors.white,
                               secondaryTrackValue: avgStar,
-                              value: widget.filter.star.toDouble(),
+                              value: selectStar,
                               min: 0,
                               max: 9,
                               divisions: 9,
-                              label: widget.filter.star == 0
+                              label: selectStar == 0
                                   ? " 任意星级 "
-                                  : " 大于 ${widget.filter.star} 星 ",
-                              onChanged: (v) {
-                                setState(() {
-                                  widget.filter.star = v;
-                                });
-                              })
+                                  : " 大于 $selectStar 星 ",
+                              onChanged: (v) => ref
+                                  .read(movieFiltersProvider.notifier)
+                                  .setStar(v)),
+                          const SizedBox(height: 20),
+                          Row(children: [
+                            const Text("显示已观看"),
+                            const Spacer(),
+                            Switch.adaptive(
+                                value: setting?.showWatched ?? true,
+                                onChanged: (v) => ref
+                                    .read(movieSettingsProvider.notifier)
+                                    .setShowWatched(v))
+                          ]),
+                          Row(children: [
+                            const Text("显示正追踪"),
+                            const Spacer(),
+                            Switch.adaptive(
+                                value: setting?.showTracked ?? true,
+                                onChanged: (v) => ref
+                                    .read(movieSettingsProvider.notifier)
+                                    .setShowTracked(v))
+                          ]),
+                          const SizedBox(height: 20)
                         ])))));
   }
 }
