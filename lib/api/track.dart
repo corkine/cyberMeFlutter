@@ -56,7 +56,7 @@ class TrackSettings extends _$TrackSettings {
   }
 
   syncDownload() async {
-    debugPrint("sync with server now");
+    debugPrint("sync with server $endpoint now");
     final (setting, msg) =
         await requestFrom("/cyber/service/setting", TrackSetting.fromJson);
     if (setting == null) {
