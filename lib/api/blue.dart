@@ -50,6 +50,7 @@ class Blues extends _$Blues {
       debugPrint("get blue data failed: $msg");
       return {};
     }
+    debugPrint(data.toString());
     var res = <String, List<BlueRecent>>{};
     for (var i in data) {
       if (res[i.date] == null) {
