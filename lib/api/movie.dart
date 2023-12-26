@@ -14,27 +14,6 @@ import 'basic.dart';
 part 'movie.g.dart';
 part 'movie.freezed.dart';
 
-@riverpod
-Future<(List<Movie>, String)> getMovies(GetMoviesRef ref) async {
-  final setting = await ref.watch(movieSettingsProvider.future);
-  final r = await get(
-      Uri.parse(Config.movieUrl(
-          setting.showTv ? "tv" : "movie", setting.showHot ? "hot" : "new")),
-      headers: config.cyberBase64Header);
-  final d = jsonDecode(r.body);
-  final m = d["message"] ?? "没有消息";
-  if (((d["status"] as int?) ?? -1) <= 0) {
-    return (<Movie>[], m.toString());
-  }
-  final data = d["data"] as List?;
-  final md = data
-          ?.map((e) => e as Map?)
-          .map((e) => Movie.fromJson(e))
-          .toList(growable: false) ??
-      [];
-  return (md, "");
-}
-
 @freezed
 class MovieSetting with _$MovieSetting {
   const factory MovieSetting({
@@ -83,7 +62,6 @@ class MovieSettings extends _$MovieSettings {
     final d = state.value;
     if (d == null) return;
     final u = d.copyWith(lastFilter: filter ?? d.lastFilter);
-    print("upload with $filter");
     try {
       final (ok, msg) = await postFrom("/cyber/movie/setting", u.toJson());
       if (!ok) {
@@ -150,6 +128,28 @@ class MovieSettings extends _$MovieSettings {
   }
 }
 
+@riverpod
+Future<(List<Movie>, String)> getMovies(GetMoviesRef ref) async {
+  final (showTv, showHot) = await ref.watch(
+      movieSettingsProvider.selectAsync((data) => (data.showTv, data.showHot)));
+  final r = await get(
+      Uri.parse(
+          Config.movieUrl(showTv ? "tv" : "movie", showHot ? "hot" : "new")),
+      headers: config.cyberBase64Header);
+  final d = jsonDecode(r.body);
+  final m = d["message"] ?? "没有消息";
+  if (((d["status"] as int?) ?? -1) <= 0) {
+    return (<Movie>[], m.toString());
+  }
+  final data = d["data"] as List?;
+  final md = data
+          ?.map((e) => e as Map?)
+          .map((e) => Movie.fromJson(e))
+          .toList(growable: false) ??
+      [];
+  return (md, "");
+}
+
 @freezed
 class MovieFilter with _$MovieFilter {
   const factory MovieFilter(
@@ -159,7 +159,8 @@ class MovieFilter with _$MovieFilter {
       @Default(true) bool showTracked,
       @Default(true) bool showIgnored,
       @Default({}) Set<String> allTags,
-      @Default({}) Set<String> selectTags}) = _MovieFilter;
+      @Default({}) Set<String> selectTags,
+      @Default(0) int update}) = _MovieFilter;
   factory MovieFilter.fromJson(Map<String, dynamic> json) =>
       _$MovieFilterFromJson(json);
 }
@@ -169,52 +170,64 @@ class MovieFilters extends _$MovieFilters {
   @override
   MovieFilter build() {
     final movies = ref.watch(getMoviesProvider).value?.$1;
-    final setting = ref.watch(movieSettingsProvider).value;
+    final lastFilter = ref.watch(
+        movieSettingsProvider.select((value) => value.value?.lastFilter));
     if (movies == null) return const MovieFilter();
     var avgStar = 0.0;
     var tags = <String>{};
-    final isMovie = setting?.showTv == false;
     for (final m in movies) {
       avgStar += double.tryParse(m.star ?? "") ?? 0.0;
-      if (isMovie && m.update != null) {
+      if (!(m.update?.startsWith("第") ?? false) && m.update != null) {
         tags.add(m.update!);
       }
     }
     avgStar /= movies.length;
-    var selectStar = 0.0;
-    var selectTags = <String>{};
 
-    selectStar = setting?.lastFilter.selectStar ?? 0.0;
-    selectTags = tags.intersection(setting?.lastFilter.selectTags ?? {});
-
-    return MovieFilter(
-        avgStar: avgStar,
-        allTags: tags,
-        selectStar: selectStar,
-        selectTags: selectTags,
-        showWatched: setting?.lastFilter.showWatched ?? true,
-        showTracked: setting?.lastFilter.showTracked ?? true,
-        showIgnored: setting?.lastFilter.showIgnored ?? true);
+    if ((lastFilter?.update ?? 0) > (stateOrNull?.update ?? 0)) {
+      return MovieFilter(
+          avgStar: avgStar,
+          allTags: tags,
+          selectStar: lastFilter?.selectStar ?? 0.0,
+          selectTags: tags.intersection(lastFilter?.selectTags ?? {}),
+          showWatched: lastFilter?.showWatched ?? true,
+          showTracked: lastFilter?.showTracked ?? true,
+          showIgnored: lastFilter?.showIgnored ?? true);
+    } else {
+      return MovieFilter(
+          avgStar: avgStar,
+          allTags: tags,
+          selectStar: stateOrNull?.selectStar ?? 0.0,
+          selectTags: tags.intersection(stateOrNull?.selectTags ?? {}),
+          showWatched: stateOrNull?.showWatched ?? true,
+          showTracked: stateOrNull?.showTracked ?? true,
+          showIgnored: stateOrNull?.showIgnored ?? true,
+          update: DateTime.now().millisecondsSinceEpoch);
+    }
   }
 
   setShowWatched(bool show) async {
-    state = state.copyWith(showWatched: show);
+    state = state.copyWith(
+        showWatched: show, update: DateTime.now().millisecondsSinceEpoch);
   }
 
   setShowIgnored(bool show) async {
-    state = state.copyWith(showIgnored: show);
+    state = state.copyWith(
+        showIgnored: show, update: DateTime.now().millisecondsSinceEpoch);
   }
 
   setShowTracked(bool show) async {
-    state = state.copyWith(showTracked: show);
+    state = state.copyWith(
+        showTracked: show, update: DateTime.now().millisecondsSinceEpoch);
   }
 
   setStar(double star) {
-    state = state.copyWith(selectStar: star);
+    state = state.copyWith(
+        selectStar: star, update: DateTime.now().millisecondsSinceEpoch);
   }
 
   cleanSelectTags() {
-    state = state.copyWith(selectTags: {});
+    state = state.copyWith(
+        selectTags: {}, update: DateTime.now().millisecondsSinceEpoch);
   }
 
   toggleTag(String tag) {
@@ -224,7 +237,8 @@ class MovieFilters extends _$MovieFilters {
     } else {
       tags = {tag, ...tags};
     }
-    state = state.copyWith(selectTags: tags);
+    state = state.copyWith(
+        selectTags: tags, update: DateTime.now().millisecondsSinceEpoch);
   }
 }
 
