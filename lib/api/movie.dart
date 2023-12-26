@@ -191,7 +191,8 @@ class MovieFilters extends _$MovieFilters {
           selectTags: tags.intersection(lastFilter?.selectTags ?? {}),
           showWatched: lastFilter?.showWatched ?? true,
           showTracked: lastFilter?.showTracked ?? true,
-          showIgnored: lastFilter?.showIgnored ?? true);
+          showIgnored: lastFilter?.showIgnored ?? true,
+          update: DateTime.now().millisecondsSinceEpoch);
     } else {
       return MovieFilter(
           avgStar: avgStar,
