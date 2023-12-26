@@ -29,7 +29,9 @@ class MovieView extends ConsumerStatefulWidget {
 class _MovieViewState extends ConsumerState<MovieView> {
   @override
   void deactivate() {
-    ref.read(movieSettingsProvider.notifier).syncUpload();
+    ref
+        .read(movieSettingsProvider.notifier)
+        .syncUpload(filter: ref.read(movieFiltersProvider));
     super.deactivate();
   }
 
@@ -112,14 +114,17 @@ class _MovieViewState extends ConsumerState<MovieView> {
                         ? setting?.watchedTv.contains(e.url) ?? false
                         : setting?.watchedMovie.contains(e.url) ?? false;
                     final isTracking = tracking.contains(e.url);
+                    final isIgnored =
+                        setting?.ignoreItems.contains(e.url) ?? false;
                     return InkWell(
-                        onTap: () =>
-                            showItemMenu(e, showTv, isWatched, isTracking),
+                        onTap: () => showItemMenu(
+                            e, showTv, isWatched, isIgnored, isTracking),
                         child: MovieCard(
                             e: e,
                             key: ObjectKey(e),
                             watched: isWatched,
-                            isTracking: isTracking));
+                            isTracking: isTracking,
+                            ignored: isIgnored));
                   })),
           Positioned(
               child: SafeArea(child: searchBar), left: 0, right: 0, bottom: 0)
@@ -129,28 +134,35 @@ class _MovieViewState extends ConsumerState<MovieView> {
   String toDesc(MovieFilter filter, MovieSetting? setting) {
     final selectStar = filter.selectStar;
     final selectTags = filter.selectTags;
-    final showWatched = setting?.showWatched ?? true;
-    final showTracked = setting?.showTracked ?? true;
+    final showWatched = filter.showWatched;
+    final showTracked = filter.showTracked;
     String more = "";
     if (showWatched && showTracked) {
-      more = "，显示已看和追踪";
+      more = ", 显示已看和追踪";
     } else if (showWatched) {
-      more = "，显示已看";
+      more = ", 显示已看";
     } else if (showTracked) {
-      more = "，显示追踪";
+      more = ", 显示追踪";
+    } else if (!showWatched && !showTracked) {
+      more = ", 不显示已看和追踪";
+    } else if (!showWatched) {
+      more = ", 不显示已看";
+    } else if (!showTracked) {
+      more = ", 不显示追踪";
     }
     if (selectStar == 0 && selectTags.isEmpty) {
-      return "过滤器关 $more";
+      return "过滤器关$more";
     } else if (selectStar != 0 && selectTags.isNotEmpty) {
-      return "过滤器：大于 ${selectStar.toInt()} 星，选中类别 ${selectTags.length} 个 $more";
+      return "大于 ${selectStar.toInt()} 星, 选中类别 ${selectTags.length} 个$more";
     } else if (selectStar != 0) {
-      return "过滤器：大于 ${selectStar.toInt()} 星 $more";
+      return "大于 ${selectStar.toInt()} 星$more";
     } else {
-      return "过滤器：选中类别 ${selectTags.length} 个 $more";
+      return "选中类别 ${selectTags.length} 个$more";
     }
   }
 
-  void showItemMenu(Movie e, bool isTv, bool isWatched, bool isTracking) {
+  void showItemMenu(
+      Movie e, bool isTv, bool isWatched, bool isIgnored, bool isTracking) {
     List<Widget> opts;
     if (isTv) {
       opts = [
@@ -194,6 +206,15 @@ class _MovieViewState extends ConsumerState<MovieView> {
             child: SimpleDialog(title: Text(e.title!), children: [
               ...opts,
               SimpleDialogOption(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    ref
+                        .read(movieSettingsProvider.notifier)
+                        .makeIgnored(e.url!, reverse: isIgnored);
+                  },
+                  child: Text(
+                      "${isIgnored ? "不忽略" : "忽略"}此${isTv ? "电视剧" : "电影"}")),
+              SimpleDialogOption(
                   onPressed: () => launchUrlString(e.url!),
                   child: const Text("在站点查看详情...")),
               SimpleDialogOption(
@@ -223,10 +244,12 @@ class _MovieViewState extends ConsumerState<MovieView> {
 class MovieCard extends StatelessWidget {
   final bool watched;
   final bool isTracking;
+  final bool ignored;
   const MovieCard(
       {super.key,
       required this.e,
       required this.watched,
+      required this.ignored,
       required this.isTracking});
 
   final Movie e;
@@ -249,10 +272,14 @@ class MovieCard extends StatelessWidget {
                       ? "在追"
                       : watched
                           ? "已看"
-                          : null,
+                          : ignored
+                              ? "忽略"
+                              : null,
                   color: isTracking
                       ? Colors.red
-                      : const Color.fromARGB(255, 31, 39, 122)))),
+                      : ignored
+                          ? const Color.fromARGB(255, 0, 0, 0)
+                          : const Color.fromARGB(255, 13, 32, 243)))),
       Positioned(
           bottom: 0,
           left: 0,
@@ -279,12 +306,7 @@ class MovieCard extends StatelessWidget {
                         ])),
                     Text(e.star! == "N/A" ? "" : e.star!,
                         style: const TextStyle(color: Colors.white))
-                  ]))
-          /*ClipRRect(
-            child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                child: ))*/
-          )
+                  ])))
     ]);
   }
 }
@@ -334,7 +356,6 @@ class MovieFilterView extends ConsumerStatefulWidget {
 class _MovieFilterViewState extends ConsumerState<MovieFilterView> {
   @override
   Widget build(BuildContext context) {
-    var setting = ref.watch(movieSettingsProvider).value;
     var filter = ref.watch(movieFiltersProvider);
     final avgStar = filter.avgStar;
     final selectStar = filter.selectStar;
@@ -411,19 +432,28 @@ class _MovieFilterViewState extends ConsumerState<MovieFilterView> {
                             const Text("显示已观看"),
                             const Spacer(),
                             Switch.adaptive(
-                                value: setting?.showWatched ?? true,
+                                value: filter.showWatched,
                                 onChanged: (v) => ref
-                                    .read(movieSettingsProvider.notifier)
+                                    .read(movieFiltersProvider.notifier)
                                     .setShowWatched(v))
                           ]),
                           Row(children: [
                             const Text("显示正追踪"),
                             const Spacer(),
                             Switch.adaptive(
-                                value: setting?.showTracked ?? true,
+                                value: filter.showTracked,
                                 onChanged: (v) => ref
-                                    .read(movieSettingsProvider.notifier)
+                                    .read(movieFiltersProvider.notifier)
                                     .setShowTracked(v))
+                          ]),
+                          Row(children: [
+                            const Text("显示已忽略"),
+                            const Spacer(),
+                            Switch.adaptive(
+                                value: filter.showIgnored,
+                                onChanged: (v) => ref
+                                    .read(movieFiltersProvider.notifier)
+                                    .setShowIgnored(v))
                           ]),
                           const SizedBox(height: 20)
                         ])))));

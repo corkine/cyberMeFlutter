@@ -40,10 +40,10 @@ class MovieSetting with _$MovieSetting {
   const factory MovieSetting({
     @Default({}) Set<String> watchedTv,
     @Default({}) Set<String> watchedMovie,
-    @Default(true) bool showWatched,
-    @Default(true) bool showTracked,
+    @Default({}) Set<String> ignoreItems,
     @Default(true) bool showTv,
     @Default(true) bool showHot,
+    @Default(MovieFilter()) MovieFilter lastFilter,
   }) = _MovieSetting;
 
   factory MovieSetting.fromJson(Map<String, dynamic> json) =>
@@ -79,11 +79,13 @@ class MovieSettings extends _$MovieSettings {
     await s!.setString("movieSetting", jsonEncode(setting.toJson()));
   }
 
-  syncUpload() async {
+  syncUpload({MovieFilter? filter}) async {
     final d = state.value;
     if (d == null) return;
+    final u = d.copyWith(lastFilter: filter ?? d.lastFilter);
+    print("upload with $filter");
     try {
-      final (ok, msg) = await postFrom("/cyber/movie/setting", d.toJson());
+      final (ok, msg) = await postFrom("/cyber/movie/setting", u.toJson());
       if (!ok) {
         debugPrint("sync movie setting failed: $msg");
         return;
@@ -118,6 +120,21 @@ class MovieSettings extends _$MovieSettings {
     state = AsyncData(v);
   }
 
+  makeIgnored(String url, {bool reverse = false}) async {
+    s ??= await SharedPreferences.getInstance();
+    var v = state.value;
+    if (v == null) return;
+    if (!reverse) {
+      v = v.copyWith(ignoreItems: {url, ...v.ignoreItems});
+    } else {
+      v = v.copyWith(
+          ignoreItems:
+              v.ignoreItems.where((element) => element != url).toSet());
+    }
+    await s!.setString("movieSetting", jsonEncode(v.toJson()));
+    state = AsyncData(v);
+  }
+
   toggleShowTv() async {
     var v = state.value;
     if (v == null) return;
@@ -131,24 +148,6 @@ class MovieSettings extends _$MovieSettings {
     v = v.copyWith(showHot: !v.showHot);
     state = AsyncData(v);
   }
-
-  setShowWatched(bool show) async {
-    s ??= await SharedPreferences.getInstance();
-    var v = state.value;
-    if (v == null) return;
-    v = v.copyWith(showWatched: show);
-    await s!.setString("movieSetting", jsonEncode(v.toJson()));
-    state = AsyncData(v);
-  }
-
-  setShowTracked(bool show) async {
-    s ??= await SharedPreferences.getInstance();
-    var v = state.value;
-    if (v == null) return;
-    v = v.copyWith(showTracked: show);
-    await s!.setString("movieSetting", jsonEncode(v.toJson()));
-    state = AsyncData(v);
-  }
 }
 
 @freezed
@@ -156,8 +155,13 @@ class MovieFilter with _$MovieFilter {
   const factory MovieFilter(
       {@Default(0.0) double avgStar,
       @Default(0.0) double selectStar,
+      @Default(true) bool showWatched,
+      @Default(true) bool showTracked,
+      @Default(true) bool showIgnored,
       @Default({}) Set<String> allTags,
       @Default({}) Set<String> selectTags}) = _MovieFilter;
+  factory MovieFilter.fromJson(Map<String, dynamic> json) =>
+      _$MovieFilterFromJson(json);
 }
 
 @riverpod
@@ -177,11 +181,32 @@ class MovieFilters extends _$MovieFilters {
       }
     }
     avgStar /= movies.length;
+    var selectStar = 0.0;
+    var selectTags = <String>{};
+
+    selectStar = setting?.lastFilter.selectStar ?? 0.0;
+    selectTags = tags.intersection(setting?.lastFilter.selectTags ?? {});
+
     return MovieFilter(
         avgStar: avgStar,
         allTags: tags,
-        selectStar: stateOrNull?.selectStar ?? 0.0,
-        selectTags: stateOrNull?.selectTags ?? {});
+        selectStar: selectStar,
+        selectTags: selectTags,
+        showWatched: setting?.lastFilter.showWatched ?? true,
+        showTracked: setting?.lastFilter.showTracked ?? true,
+        showIgnored: setting?.lastFilter.showIgnored ?? true);
+  }
+
+  setShowWatched(bool show) async {
+    state = state.copyWith(showWatched: show);
+  }
+
+  setShowIgnored(bool show) async {
+    state = state.copyWith(showIgnored: show);
+  }
+
+  setShowTracked(bool show) async {
+    state = state.copyWith(showTracked: show);
   }
 
   setStar(double star) {
@@ -212,16 +237,21 @@ List<Movie> movieFiltered(MovieFilteredRef ref) {
       ref.watch(seriesDBProvider).value?.map((e) => e.url).toSet() ?? {};
   if (movie == null || setting == null) return [];
   final watched = setting.showTv ? setting.watchedTv : setting.watchedMovie;
+  final ignored = setting.ignoreItems;
   return movie.$1.where((element) {
-    if (!setting.showWatched && watched.contains(element.url)) {
+    if (!filter.showWatched && watched.contains(element.url)) {
       return false;
     }
-    if (!setting.showTracked && track.contains(element.url)) {
+    if (!filter.showTracked && track.contains(element.url)) {
+      return false;
+    }
+    if (!filter.showIgnored && ignored.contains(element.url)) {
       return false;
     }
     if (filter.selectStar != 0.0 &&
         element.star != null &&
-        element.star!.isNotEmpty) {
+        element.star!.isNotEmpty &&
+        element.star! != "N/A") {
       final star = double.tryParse(element.star!);
       if (star == null) return false;
       if (star < filter.selectStar) return false;
