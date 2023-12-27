@@ -50,7 +50,7 @@ Future<(T?, String)> requestFromList<T>(
     String path, T Function(List<dynamic>) func) async {
   try {
     final url = "$endpoint$path";
-    debugPrint("request from $url");
+    //debugPrint("request from $url");
     final r = await get(Uri.parse(url), headers: config.cyberBase64Header);
     final d = jsonDecode(r.body);
     final code = (d["status"] as int?) ?? -1;

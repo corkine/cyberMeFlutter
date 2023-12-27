@@ -3,6 +3,26 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+class StatusPainter extends CustomPainter {
+  final Color color;
+
+  StatusPainter(this.color);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+
+    canvas.drawRect(const Rect.fromLTWH(-1, 0, 50, 10), paint);
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) {
+    return color != (oldDelegate as StatusPainter).color;
+  }
+}
+
 class EsxiView extends ConsumerStatefulWidget {
   const EsxiView({super.key});
 
@@ -42,7 +62,7 @@ class _EsxiViewState extends ConsumerState<EsxiView> {
             ...data.vms.map((e) {
               return ListTile(
                   onTap: () => popVmMenu(e),
-                  title: Text(status2Logo(e) + " " + e.name),
+                  title: Row(children: [status2Logo(e), Text(e.name)]),
                   subtitle: Text(vmOs(e) + " / ${e.version}"),
                   trailing: Text(e.vmid),
                   dense: true);
@@ -61,7 +81,7 @@ class _EsxiViewState extends ConsumerState<EsxiView> {
         body: CustomScrollView(slivers: [
       SliverAppBar.large(
           title:
-              const Text("ESXi Manage", style: TextStyle(color: Colors.black)),
+              const Text("ESXi Manage", style: TextStyle(color: Colors.white)),
           actions: [
             IconButton(
                 onPressed: () {
@@ -79,26 +99,27 @@ class _EsxiViewState extends ConsumerState<EsxiView> {
                 },
                 icon: const Icon(Icons.sync))
           ],
-          expandedHeight: 250,
+          expandedHeight: 180,
           pinned: true,
           stretch: true,
           flexibleSpace: Container(
               decoration: const BoxDecoration(
                   image: DecorationImage(
-                      image: AssetImage("images/vms.png"),
+                      image: AssetImage("images/server.png"),
                       fit: BoxFit.cover)))),
       SliverToBoxAdapter(child: content)
     ]));
   }
 
-  String status2Logo(EsxiVm e) {
-    return e.powerEnum == VmPower.on
-        ? "🟢"
-        : e.powerEnum == VmPower.off
-            ? "🔴"
-            : e.powerEnum == VmPower.suspended
-                ? "🟡"
-                : "❓";
+  Widget status2Logo(EsxiVm e) {
+    return CustomPaint(
+        painter: StatusPainter(e.powerEnum == VmPower.on
+            ? Colors.green
+            : e.powerEnum == VmPower.off
+                ? Colors.red
+                : e.powerEnum == VmPower.suspended
+                    ? Colors.yellow
+                    : Colors.grey));
   }
 
   String vmOs(EsxiVm e) {
@@ -140,7 +161,8 @@ class _EsxiViewState extends ConsumerState<EsxiView> {
                       Row(children: [
                         Text(vm.name.toUpperCase()),
                         const Spacer(),
-                        Text("${status2Logo(vm)} may ${vm.power}",
+                        status2Logo(vm),
+                        Text("may ${vm.power}",
                             style: const TextStyle(fontSize: 12))
                       ]),
                       Text(
@@ -149,14 +171,16 @@ class _EsxiViewState extends ConsumerState<EsxiView> {
                     ]),
                 children: [
                   SimpleDialogOption(
-                      onPressed: () => change(VmPower.off),
-                      child: const Text("关闭此虚拟机")),
-                  SimpleDialogOption(
                       onPressed: () => change(VmPower.on),
                       child: const Text("启动此虚拟机")),
                   SimpleDialogOption(
                       onPressed: () => change(VmPower.suspended),
-                      child: const Text("暂停此虚拟机"))
+                      child: const Text("暂停此虚拟机")),
+                  SimpleDialogOption(
+                      onPressed: () => change(VmPower.off),
+                      child: Text("关闭此虚拟机",
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.error)))
                 ]));
   }
 }

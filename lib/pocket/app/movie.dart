@@ -119,6 +119,7 @@ class _MovieViewState extends ConsumerState<MovieView> {
                     return InkWell(
                         onTap: () => showItemMenu(
                             e, showTv, isWatched, isIgnored, isTracking),
+                        onLongPress: () => launchUrlString(e.url!),
                         child: MovieCard(
                             e: e,
                             key: ObjectKey(e),
@@ -178,14 +179,18 @@ class _MovieViewState extends ConsumerState<MovieView> {
                   }
                 : null,
             child: Text(isTracking ? "删除追踪" : "添加追踪")),
-        SimpleDialogOption(
-            onPressed: () {
-              Navigator.of(context).pop();
-              ref
-                  .read(movieSettingsProvider.notifier)
-                  .makeWatched(isTv, e.url!, reverse: isWatched);
-            },
-            child: Text(isWatched ? "标记为未观看" : "标记为已观看"))
+        ...!isTracking
+            ? [
+                SimpleDialogOption(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      ref
+                          .read(movieSettingsProvider.notifier)
+                          .makeWatched(isTv, e.url!, reverse: isWatched);
+                    },
+                    child: Text(isWatched ? "标记为未观看" : "标记为已观看"))
+              ]
+            : []
       ];
     } else {
       opts = [
@@ -204,6 +209,15 @@ class _MovieViewState extends ConsumerState<MovieView> {
         builder: (context) => Theme(
             data: appThemeData,
             child: SimpleDialog(title: Text(e.title!), children: [
+              SimpleDialogOption(
+                  onPressed: () => launchUrlString(e.url!),
+                  child: const Text("在站点查看详情...")),
+              SimpleDialogOption(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    handleAddShortLink(e.url!);
+                  },
+                  child: const Text("生成短链接...")),
               ...opts,
               SimpleDialogOption(
                   onPressed: () {
@@ -213,13 +227,9 @@ class _MovieViewState extends ConsumerState<MovieView> {
                         .makeIgnored(e.url!, reverse: isIgnored);
                   },
                   child: Text(
-                      "${isIgnored ? "不忽略" : "忽略"}此${isTv ? "电视剧" : "电影"}")),
-              SimpleDialogOption(
-                  onPressed: () => launchUrlString(e.url!),
-                  child: const Text("在站点查看详情...")),
-              SimpleDialogOption(
-                  onPressed: () => handleAddShortLink(e.url!),
-                  child: const Text("生成短链接..."))
+                      "${isIgnored ? "不忽略" : "忽略"}此${isTv ? "电视剧" : "电影"}",
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.error)))
             ])));
   }
 
@@ -648,8 +658,7 @@ class _SeriesSubscribeItemStatus extends ConsumerState<SeriesSubscribeItem> {
   late String updateAt;
 
   @override
-  void initState() {
-    super.initState();
+  Widget build(BuildContext context) {
     item = widget.item;
     series = [...item.info.series];
     series.sort();
@@ -657,10 +666,6 @@ class _SeriesSubscribeItemStatus extends ConsumerState<SeriesSubscribeItem> {
     lastUpdate = series.lastOrNull ?? "无更新信息";
     lastWatched = item.info.watched.contains(lastUpdate);
     updateAt = DateFormat("yyyy-MM-dd HH:mm").format(item.updateAt);
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return ListTile(
         onTap: () => handleTapItem(item, lastUpdate),
         title: Row(children: [
@@ -713,7 +718,7 @@ class _SeriesSubscribeItemStatus extends ConsumerState<SeriesSubscribeItem> {
     handleDelete() async {
       Navigator.of(context).pop();
       final msg = await ref.read(seriesDBProvider.notifier).delete(item.id);
-      showDialog(
+      await showDialog(
           context: context,
           builder: (ctx) => AlertDialog(
                   title: const Text("结果"),
@@ -733,7 +738,7 @@ class _SeriesSubscribeItemStatus extends ConsumerState<SeriesSubscribeItem> {
       final msg = await ref
           .read(seriesDBProvider.notifier)
           .updateWatched(item.name, lastUpdate);
-      showDialog(
+      await showDialog(
           context: context,
           builder: (ctx) => AlertDialog(
                   title: const Text("结果"),
@@ -753,7 +758,7 @@ class _SeriesSubscribeItemStatus extends ConsumerState<SeriesSubscribeItem> {
       final msg = await ref
           .read(seriesDBProvider.notifier)
           .updateAllWatched(item.name, item.info.series);
-      showDialog(
+      await showDialog(
           context: context,
           builder: (ctx) => AlertDialog(
                   title: const Text("结果"),
@@ -775,6 +780,10 @@ class _SeriesSubscribeItemStatus extends ConsumerState<SeriesSubscribeItem> {
                   onPressed: () => launchUrlString(item.url),
                   child: const Text("查看详情...")),
               SimpleDialogOption(
+                  onPressed: handleUpdateAll, child: const Text("标记所有已看")),
+              SimpleDialogOption(
+                  onPressed: handleUpdate, child: const Text("标记当前已看")),
+              SimpleDialogOption(
                   onPressed: () {
                     Navigator.of(context).pop();
                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -783,11 +792,10 @@ class _SeriesSubscribeItemStatus extends ConsumerState<SeriesSubscribeItem> {
                   },
                   child: const Text("调试信息")),
               SimpleDialogOption(
-                  onPressed: handleUpdateAll, child: const Text("标记所有已看")),
-              SimpleDialogOption(
-                  onPressed: handleUpdate, child: const Text("标记当前已看")),
-              SimpleDialogOption(
-                  onPressed: handleDelete, child: const Text("删除"))
+                  onPressed: handleDelete,
+                  child: Text("删除追踪",
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.error)))
             ]));
   }
 }
