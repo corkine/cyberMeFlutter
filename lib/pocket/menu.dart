@@ -74,7 +74,8 @@ class _MenuViewState extends State<MenuView> {
                       } else {
                         Navigator.of(context).pushNamed("/app/${e.key}");
                       }
-                      NativePlatform.setLastUsedAppRoute("/app/${e.key}");
+                      NativePlatform.setLastUsedAppRoute(
+                          e.value["name"] as String, "/app/${e.key}");
                     },
                     leading: Icon((e.value["icon"] as IconData?) ?? Icons.apps),
                     title: Text(e.value["name"] as String),

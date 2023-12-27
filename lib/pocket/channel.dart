@@ -12,9 +12,10 @@ class NativePlatform {
     return version;
   }
 
-  static void setLastUsedAppRoute(String appRoute) {
+  static void setLastUsedAppRoute(String appName, String appRoute) {
     if (Platform.isIOS) {
-      _channel.invokeMethod('setLastUsedAppRoute', appRoute);
+      _channel.invokeMethod('setLastUsedAppRoute',
+          <String, String>{"name": appName, "route": appRoute});
     }
   }
 }
