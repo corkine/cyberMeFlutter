@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cyberme_flutter/learn/game.dart';
 import 'package:cyberme_flutter/learn/snh.dart';
 import 'package:cyberme_flutter/pocket/app/body_mass.dart';
+import 'package:cyberme_flutter/pocket/app/esxi.dart';
 import 'package:cyberme_flutter/pocket/app/story.dart';
 import 'app/blog.dart';
 import 'app/blue.dart';
@@ -104,6 +105,12 @@ final apps = {
     "view": (c) => const StoryView(),
     "addToMenu": true,
     "icon": Icons.bookmark_add
+  },
+  "esxi": {
+    "name": "ESXI",
+    "view": (c) => const EsxiView(),
+    "addToMenu": true,
+    "icon": Icons.computer
   },
   "cloth": {
     "name": "衣物管理",

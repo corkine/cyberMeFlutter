@@ -5,9 +5,8 @@ import 'package:http/http.dart';
 
 import '../pocket/config.dart';
 
-const endpoint = kDebugMode
-    ? "https://cyber.mazhangjing.com"
-    : "https://cyber.mazhangjing.com";
+const endpoint =
+    kDebugMode ? "http://127.0.0.1:3002" : "https://cyber.mazhangjing.com";
 
 Future<(T?, String)> requestFrom<T>(
     String path, T Function(Map<String, dynamic>) func) async {
