@@ -9,6 +9,27 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart';
 import 'package:intl/intl.dart';
 
+class TicketPainter extends CustomPainter {
+  final bool isHistory;
+
+  TicketPainter({super.repaint, required this.isHistory});
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = isHistory
+          ? const Color.fromARGB(255, 78, 78, 78)
+          : Colors.red.shade400
+      ..style = PaintingStyle.fill;
+
+    canvas.drawRect(const Rect.fromLTWH(-1, 10, 60, 12), paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return false;
+  }
+}
+
 class TicketShowPage extends ConsumerStatefulWidget {
   const TicketShowPage({super.key});
 
@@ -42,7 +63,6 @@ class _TicketShowPageState extends ConsumerState<TicketShowPage> {
   }
 
   Future handleReloadTickets() async {
-    debugPrint("reload ticket from server");
     final d = await ticketRecent(config) as List<t.Data>;
     recent = d.where((element) => !element.isHistory).toList(growable: false);
     history = d.where((element) => element.isHistory).toList(growable: false);
@@ -53,8 +73,10 @@ class _TicketShowPageState extends ConsumerState<TicketShowPage> {
 
   @override
   Widget build(BuildContext context) {
-    final recentCards =
-        recent.map((e) => buildCard(e, handleDeleteTicket, context));
+    final recentCards = recent
+        .where((element) =>
+            showJustTake ? (element.canceled ?? false) == false : true)
+        .map((e) => buildCard(e, handleDeleteTicket, context));
     final historyCards = history
         .where((element) =>
             showJustTake ? (element.canceled ?? false) == false : true)
@@ -62,33 +84,52 @@ class _TicketShowPageState extends ConsumerState<TicketShowPage> {
     return Theme(
         data: appThemeData,
         child: Scaffold(
-            appBar: AppBar(title: const Text("12306 最近车票"), actions: [
-              IconButton(
-                  onPressed: () => setState(() => showJustTake = !showJustTake),
-                  icon: Icon(
-                      showJustTake ? Icons.filter_alt : Icons.filter_alt_off))
-            ]),
-            body: Column(children: [
-              Expanded(
-                  child: RefreshIndicator(
-                      onRefresh: handleReloadTickets,
-                      child: ListView(children: [
-                        const Padding(
-                            padding: EdgeInsets.only(left: 15, top: 8),
-                            child: Text("待出行车票",
-                                style: TextStyle(fontWeight: FontWeight.bold))),
-                        ...recentCards,
-                        const Padding(
-                            padding: EdgeInsets.only(left: 15, top: 8),
-                            child: Text("历史车票",
-                                style: TextStyle(fontWeight: FontWeight.bold))),
-                        ...historyCards
-                      ]))),
-              ButtonBar(alignment: MainAxisAlignment.center, children: [
-                TextButton(onPressed: handleParse, child: const Text("解析票据"))
-              ]),
-              const SizedBox(height: 20)
-            ])));
+            body: CustomScrollView(slivers: [
+          SliverAppBar.large(
+              actions: [
+                IconButton(
+                    onPressed: handleParse, icon: const Icon(Icons.add_card)),
+                IconButton(
+                    onPressed: handleReloadTickets,
+                    icon: const Icon(Icons.refresh)),
+                IconButton(
+                    onPressed: () =>
+                        setState(() => showJustTake = !showJustTake),
+                    icon: Icon(
+                        showJustTake ? Icons.filter_alt : Icons.filter_alt_off))
+              ],
+              pinned: true,
+              foregroundColor: Colors.black,
+              stretch: true,
+              expandedHeight: 190,
+              flexibleSpace: Container(
+                  decoration: const BoxDecoration(
+                      image: DecorationImage(
+                          image: AssetImage("images/train3.png"),
+                          fit: BoxFit.cover,
+                          alignment: Alignment.center)))),
+          SliverList(
+              delegate: SliverChildListDelegate([
+            Padding(
+                padding: const EdgeInsets.only(left: 15, top: 15),
+                child: CustomPaint(
+                    painter: TicketPainter(isHistory: false),
+                    child: const Text("待出行车票",
+                        style: TextStyle(fontWeight: FontWeight.bold)))),
+            ...recentCards,
+            Padding(
+                padding: const EdgeInsets.only(left: 15, top: 8),
+                child: CustomPaint(
+                    painter: TicketPainter(isHistory: true),
+                    child: const Text("历史车票",
+                        style: TextStyle(fontWeight: FontWeight.bold)))),
+            ...historyCards
+          ])),
+          SliverToBoxAdapter(
+              child: ButtonBar(alignment: MainAxisAlignment.center, children: [
+            TextButton(onPressed: handleParse, child: const Text("解析票据"))
+          ]))
+        ])));
   }
 
   handleParse() async {

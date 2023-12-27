@@ -99,7 +99,7 @@ class _EsxiViewState extends ConsumerState<EsxiView> {
                 },
                 icon: const Icon(Icons.sync))
           ],
-          expandedHeight: 180,
+          expandedHeight: 220,
           pinned: true,
           stretch: true,
           flexibleSpace: Container(

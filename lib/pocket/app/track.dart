@@ -114,7 +114,7 @@ class _TrackViewState extends ConsumerState<TrackView> {
         placeholder: "搜索",
         style: const TextStyle(color: Colors.white),
         padding: const EdgeInsets.only(left: 10, right: 10));
-
+    final changed = ref.watch(trackSearchChangedProvider);
     return Theme(
         data: appThemeData,
         child: Scaffold(
@@ -137,13 +137,14 @@ class _TrackViewState extends ConsumerState<TrackView> {
                               spacing: 5,
                               runSpacing: 5,
                               children: setting.searchItems
-                                  .map((e) => buildSearchItemChip(setting, e))
+                                  .map((e) => buildSearchItemChip(
+                                      setting, e, changed.contains(e.search)))
                                   .toList(growable: false))),
                       const SizedBox(height: 10)
                     ]))));
   }
 
-  Widget buildSearchItemChip(setting, e) {
+  Widget buildSearchItemChip(setting, e, isChange) {
     return GestureDetector(
         onLongPress: () => showDialog(
             context: context,
@@ -161,7 +162,9 @@ class _TrackViewState extends ConsumerState<TrackView> {
                       child: const Text("删除"))
                 ]))),
         child: RawChip(
-            label: Text(e.title),
+            label: Text(e.title + (isChange ? "*" : ""),
+                style: TextStyle(
+                    color: isChange ? Colors.greenAccent : Colors.white)),
             onSelected: (v) {
               search.text = v ? e.search : "";
               setState(() {});

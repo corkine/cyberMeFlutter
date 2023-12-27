@@ -32,6 +32,7 @@ class Data {
   String? end;
   final String? trainNo;
   String? siteNo;
+  @JsonKey(name: "canceled?")
   final bool? canceled;
 
   bool get isHistory => dateTime?.isBefore(DateTime.now()) ?? true;

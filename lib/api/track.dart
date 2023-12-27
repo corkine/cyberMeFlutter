@@ -35,6 +35,31 @@ class TrackSetting with _$TrackSetting {
 }
 
 @riverpod
+Set<String> trackSearchChanged(TrackSearchChangedRef ref) {
+  final setting = ref.watch(trackSettingsProvider).value;
+  final data = ref.watch(fetchTrackProvider).value ?? [];
+  if (setting == null) return {};
+  final lastData = setting.lastData.entries.toList(growable: false);
+  final res = <String>{};
+  for (var e in setting.searchItems) {
+    if (e.track) {
+      final last = lastData.where((element) => element.key.contains(e.search));
+      final current = data.where((element) => element.$1.contains(e.search));
+      if (current.length > last.length ||
+          current.any((element) {
+            final lastItem = last.firstWhere(
+                (element2) => element2.key == element.$1,
+                orElse: () => const MapEntry("", -1));
+            return lastItem.value != element.$2;
+          })) {
+        res.add(e.search);
+      }
+    }
+  }
+  return res;
+}
+
+@riverpod
 class TrackSettings extends _$TrackSettings {
   late SharedPreferences s;
   late bool dirty;
