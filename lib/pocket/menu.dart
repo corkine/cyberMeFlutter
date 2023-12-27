@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cyberme_flutter/pocket/app/note.dart';
+import 'package:cyberme_flutter/pocket/channel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -73,6 +74,7 @@ class _MenuViewState extends State<MenuView> {
                       } else {
                         Navigator.of(context).pushNamed("/app/${e.key}");
                       }
+                      NativePlatform.setLastUsedAppRoute("/app/${e.key}");
                     },
                     leading: Icon((e.value["icon"] as IconData?) ?? Icons.apps),
                     title: Text(e.value["name"] as String),
