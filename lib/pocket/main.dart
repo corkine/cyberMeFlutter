@@ -107,7 +107,7 @@ final apps = {
     "icon": Icons.bookmark_add
   },
   "esxi": {
-    "name": "ESXI",
+    "name": "ESXi",
     "view": (c) => const EsxiView(),
     "addToMenu": true,
     "icon": Icons.computer

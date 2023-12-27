@@ -43,7 +43,7 @@ class _EsxiViewState extends ConsumerState<EsxiView> {
               return ListTile(
                   onTap: () => popVmMenu(e),
                   title: Text(status2Logo(e) + " " + e.name),
-                  subtitle: Text(e.os + " / " + e.version),
+                  subtitle: Text(vmOs(e) + " / ${e.version}"),
                   trailing: Text(e.vmid),
                   dense: true);
             }).toList(),
@@ -101,6 +101,19 @@ class _EsxiViewState extends ConsumerState<EsxiView> {
                 : "❓";
   }
 
+  String vmOs(EsxiVm e) {
+    final os = e.os.toLowerCase();
+    if (os.contains("windows")) {
+      return "Windows";
+    } else if (os.contains("linux")) {
+      return "Linux";
+    } else if (os.contains("mac") || os.contains("darwin")) {
+      return "macOS";
+    } else {
+      return os;
+    }
+  }
+
   popVmMenu(EsxiVm vm) async {
     change(VmPower power) async {
       Navigator.of(context).pop();
@@ -124,8 +137,14 @@ class _EsxiViewState extends ConsumerState<EsxiView> {
                 title: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(vm.name.toUpperCase()),
-                      Text("${status2Logo(vm)} may ${vm.power}",
+                      Row(children: [
+                        Text(vm.name.toUpperCase()),
+                        const Spacer(),
+                        Text("${status2Logo(vm)} may ${vm.power}",
+                            style: const TextStyle(fontSize: 12))
+                      ]),
+                      Text(
+                          "id: ${vm.vmid}\nguest: ${vm.guest}\nos: ${vm.os}\nversion: ${vm.version}",
                           style: const TextStyle(fontSize: 12))
                     ]),
                 children: [
