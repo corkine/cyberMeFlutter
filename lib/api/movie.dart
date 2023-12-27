@@ -172,7 +172,7 @@ class MovieFilters extends _$MovieFilters {
     final movies = ref.watch(getMoviesProvider).value?.$1;
     final lastFilter = ref.watch(
         movieSettingsProvider.select((value) => value.value?.lastFilter));
-    if (movies == null) return const MovieFilter();
+    if (movies == null) return stateOrNull ?? const MovieFilter();
     var avgStar = 0.0;
     var tags = <String>{};
     for (final m in movies) {
@@ -251,9 +251,9 @@ List<Movie> movieFiltered(MovieFilteredRef ref) {
   final track =
       ref.watch(seriesDBProvider).value?.map((e) => e.url).toSet() ?? {};
   if (movie == null || setting == null) return [];
-  final watched = setting.showTv ? setting.watchedTv : setting.watchedMovie;
+  final watched = {...setting.watchedMovie, ...setting.watchedTv};
   final ignored = setting.ignoreItems;
-  return movie.$1.where((element) {
+  final res = movie.$1.where((element) {
     if (!filter.showWatched && watched.contains(element.url)) {
       return false;
     }
@@ -278,4 +278,5 @@ List<Movie> movieFiltered(MovieFilteredRef ref) {
     }
     return true;
   }).toList(growable: false);
+  return res;
 }
