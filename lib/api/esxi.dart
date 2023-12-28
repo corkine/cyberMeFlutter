@@ -1,9 +1,10 @@
+// ignore_for_file: non_constant_identifier_names
+
 import 'dart:convert';
 
 import 'package:cyberme_flutter/api/basic.dart';
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:http/http.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'esxi.freezed.dart';
@@ -12,15 +13,17 @@ part 'esxi.g.dart';
 @freezed
 class EsxiIp with _$EsxiIp {
   const factory EsxiIp({
-    @Default("") String address,
     @Default("") String interface,
-    @Default("") String ip,
-    @Default("") String family,
+    @Default("") String mac_address,
+    @Default("") String ip_address,
+    @Default("") String netmask,
+    @Default("") String ip_family,
+    @Default("") String netstack,
     @Default("") String mtu,
     @Default("") String broadcast,
-    @Default("") String port,
-    @Default("") String netmask,
-    @Default("") String mac,
+    @Default("") String tso_mss,
+    @Default("") String enabled,
+    @Default("") String type,
   }) = _EsxiIp;
 
   factory EsxiIp.fromJson(Map<String, dynamic> json) => _$EsxiIpFromJson(json);

@@ -50,8 +50,9 @@ class _EsxiViewState extends ConsumerState<EsxiView> {
                     style: TextStyle(fontWeight: FontWeight.bold))),
             ...data.ips.map((e) {
               return ListTile(
-                  title: Text(e.ip),
-                  subtitle: Text(e.address + " / " + e.family),
+                  title: Text(e.ip_address),
+                  subtitle:
+                      Text(e.ip_family + " / " + e.type.replaceAll("__", ", ")),
                   trailing: Text(e.interface),
                   dense: true);
             }).toList(),
