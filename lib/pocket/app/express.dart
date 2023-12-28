@@ -3,11 +3,25 @@ import 'dart:convert';
 import 'package:clipboard/clipboard.dart';
 import 'package:cyberme_flutter/main.dart';
 import 'package:cyberme_flutter/pocket/models/day.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 
 import '../config.dart';
+
+class StatusCircle extends CustomPainter {
+  final bool isLast;
+
+  StatusCircle({super.repaint, required this.isLast});
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = isLast ? Colors.green : const Color.fromARGB(255, 86, 86, 86);
+    canvas.drawCircle(const Offset(-15.9, 0), 6, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
 
 class ExpressView extends StatefulWidget {
   const ExpressView({super.key});
@@ -117,49 +131,49 @@ class _ExpressViewState extends State<ExpressView> {
             child: Row(children: [
               Text(e.name, style: const TextStyle(fontWeight: FontWeight.bold)),
               const Spacer(),
-              Text(e.id,
-                  style: const TextStyle(fontSize: 13, color: Colors.white70))
+              Text(e.id, style: const TextStyle(fontSize: 13))
             ])),
-        subtitle: DefaultTextStyle(
-            style: const TextStyle(fontSize: 13, color: Colors.white70),
-            child: Stack(children: [
-              Positioned(
-                  top: 5,
-                  left: 8.5,
-                  bottom: 4,
-                  child: Container(
-                      width: 1,
-                      height: 50,
-                      color: Colors.grey.withOpacity(0.3))),
-              Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ...e.extra.map((e) => Padding(
-                        padding: const EdgeInsets.only(left: 30),
-                        child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(children: [
-                                Transform.translate(
-                                    offset: const Offset(-29, 0),
-                                    child: const Text("🟢")),
-                                Transform.translate(
-                                  offset: const Offset(-16, 0),
-                                  child: Text(e.$1,
-                                      softWrap: true,
-                                      style: const TextStyle(
-                                          decoration: TextDecoration.underline,
-                                          fontFamily: "consolas")),
-                                )
-                              ]),
-                              const SizedBox(height: 2),
-                              Text(e.$2, softWrap: true),
-                              const SizedBox(height: 5)
-                            ])))
-                  ])
-            ])));
+        subtitle: Stack(children: [
+          Positioned(
+              top: 5,
+              left: 8.5,
+              bottom: 4,
+              child: Container(
+                  width: 1, height: 50, color: Colors.grey.withOpacity(0.3))),
+          Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ...e.extra.indexed.map((e) => Padding(
+                    padding: const EdgeInsets.only(left: 25),
+                    child: DefaultTextStyle(
+                      style: TextStyle(
+                          fontSize: 12,
+                          color: e.$1 == 0
+                              ? Colors.green
+                              : const Color.fromARGB(255, 88, 88, 88),
+                          fontWeight:
+                              e.$1 == 0 ? FontWeight.bold : FontWeight.normal),
+                      child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(children: [
+                              CustomPaint(
+                                  painter: StatusCircle(isLast: e.$1 == 0)),
+                              Text(e.$2.$1,
+                                  softWrap: true,
+                                  style: const TextStyle(
+                                      decoration: TextDecoration.underline,
+                                      fontFamily: "consolas"))
+                            ]),
+                            const SizedBox(height: 5),
+                            Text(e.$2.$2, softWrap: true),
+                            const SizedBox(height: 5)
+                          ]),
+                    )))
+              ])
+        ]));
   }
 
   handleDeleteExpress(String no) async {

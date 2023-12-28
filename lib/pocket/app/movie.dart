@@ -118,9 +118,17 @@ class _MovieViewState extends ConsumerState<MovieView> {
                         setting?.ignoreItems.contains(e.url) ?? false;
                     return InkWell(
                         onTap: () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                                builder: (context) => MovieDetailView(e))),
-                        onLongPress: () => launchUrlString(e.url!),
+                            PageRouteBuilder(
+                                pageBuilder:
+                                    (context, animation, secondaryAnimation) {
+                                  return MovieDetailView(e);
+                                },
+                                reverseTransitionDuration:
+                                    const Duration(seconds: 0),
+                                transitionDuration:
+                                    const Duration(seconds: 0))),
+                        onLongPress: () => showItemMenu(
+                            e, showTv, isWatched, isIgnored, isTracking),
                         child: MovieCard(
                             e: e,
                             key: ObjectKey(e),
@@ -265,6 +273,7 @@ class _MovieDetailViewState extends ConsumerState<MovieDetailView> {
   Widget build(BuildContext context) {
     final data =
         ref.watch(fetchMovieDetailProvider.call(widget.movie.url!, true)).value;
+    final x = data?.img == null ? 0.0 : 1.0;
     return Scaffold(
         body: CustomScrollView(slivers: [
       SliverAppBar.large(
@@ -287,64 +296,65 @@ class _MovieDetailViewState extends ConsumerState<MovieDetailView> {
           flexibleSpace: CachedNetworkImage(
               imageUrl: data?.img ?? widget.movie.img!, fit: BoxFit.cover)),
       SliverToBoxAdapter(
-          child: Padding(
-              padding: const EdgeInsets.only(left: 10, right: 10),
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(data?.title ?? widget.movie.title ?? "-",
-                                    style: const TextStyle(fontSize: 30)),
-                                Text(data?.titleEn ?? "",
-                                    style: const TextStyle(fontSize: 15))
-                              ]),
-                          const Spacer(),
-                          Container(
-                              width: 2,
-                              height: 60,
-                              margin: const EdgeInsets.only(right: 3),
-                              color: const Color.fromARGB(255, 222, 222, 222)),
-                          buildRating(data)
-                        ]),
-                    Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Text(data?.year ?? ""),
-                          const SizedBox(width: 5),
-                          Text(data?.country ?? ""),
-                          const SizedBox(width: 5),
-                          Text(data?.duration ?? "",
+          child: AnimatedOpacity(
+        opacity: x,
+        duration: const Duration(milliseconds: 500),
+        child: Padding(
+            padding: const EdgeInsets.only(left: 10, right: 10, top: 5),
+            child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+                    Expanded(
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                          Text(data?.title ?? widget.movie.title ?? "-",
                               style: const TextStyle(
-                                  decoration: TextDecoration.underline,
-                                  decorationColor: Colors.grey,
-                                  decorationStyle: TextDecorationStyle.dashed,
-                                  decorationThickness: 3)),
-                          const Spacer(),
-                          data?.level.isEmpty ?? true
-                              ? const SizedBox()
-                              : Container(
-                                  decoration: BoxDecoration(
-                                      color: Colors.red,
-                                      borderRadius: BorderRadius.circular(3.0)),
-                                  padding: const EdgeInsets.only(
-                                      left: 7, right: 7, bottom: 2, top: 2),
-                                  margin: const EdgeInsets.only(right: 7),
-                                  child: Text(data?.level ?? "",
-                                      style:
-                                          const TextStyle(color: Colors.white)))
-                        ]),
-                    ...data?.update.isEmpty ?? true
-                        ? []
-                        : [Text(data?.update ?? "")],
-                    const SizedBox(height: 15),
-                    Text(data?.description ?? ""),
-                    const SizedBox(height: 20),
-                  ]))),
+                                  fontSize: 30, overflow: TextOverflow.fade)),
+                          Text(data?.titleEn ?? "",
+                              style: const TextStyle(fontSize: 15))
+                        ])),
+                    Container(
+                        width: 2,
+                        height: 80,
+                        margin: const EdgeInsets.only(right: 3),
+                        color: const Color.fromARGB(255, 222, 222, 222)),
+                    buildRating(data)
+                  ]),
+                  const SizedBox(height: 5),
+                  Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+                    Text(data?.year ?? ""),
+                    const SizedBox(width: 5),
+                    Text(data?.country ?? ""),
+                    const SizedBox(width: 5),
+                    Text(data?.duration ?? "",
+                        style: const TextStyle(
+                            decoration: TextDecoration.underline,
+                            decorationColor: Colors.grey,
+                            decorationStyle: TextDecorationStyle.dashed,
+                            decorationThickness: 3)),
+                    const Spacer(),
+                    data?.level.isEmpty ?? true
+                        ? const SizedBox()
+                        : Container(
+                            decoration: BoxDecoration(
+                                color: Colors.red,
+                                borderRadius: BorderRadius.circular(3.0)),
+                            padding: const EdgeInsets.only(
+                                left: 7, right: 7, bottom: 2, top: 2),
+                            margin: const EdgeInsets.only(right: 7),
+                            child: Text(data?.level ?? "",
+                                style: const TextStyle(color: Colors.white)))
+                  ]),
+                  ...data?.update.isEmpty ?? true
+                      ? []
+                      : [Text(data?.update ?? "")],
+                  const SizedBox(height: 15),
+                  Text(data?.description ?? ""),
+                  const SizedBox(height: 20),
+                ])),
+      )),
       SliverFillRemaining(
           hasScrollBody: false,
           child: Column(children: [

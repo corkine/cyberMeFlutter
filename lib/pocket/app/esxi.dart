@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class StatusPainter extends CustomPainter {
+  final double width;
+  final double height;
   final Color color;
 
-  StatusPainter(this.color);
+  StatusPainter(this.color, this.width, this.height);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -14,12 +16,12 @@ class StatusPainter extends CustomPainter {
       ..color = color
       ..style = PaintingStyle.fill;
 
-    canvas.drawRect(const Rect.fromLTWH(-1, 0, 50, 10), paint);
+    canvas.drawRect(Rect.fromLTWH(-1, 10 - height, width, height), paint);
   }
 
   @override
   bool shouldRepaint(CustomPainter oldDelegate) {
-    return color != (oldDelegate as StatusPainter).color;
+    return true;
   }
 }
 
@@ -82,7 +84,7 @@ class _EsxiViewState extends ConsumerState<EsxiView> {
         body: CustomScrollView(slivers: [
       SliverAppBar.large(
           title:
-              const Text("ESXi Manage", style: TextStyle(color: Colors.white)),
+              const Text("Pocket ESXi", style: TextStyle(color: Colors.white)),
           actions: [
             IconButton(
                 onPressed: () {
@@ -113,14 +115,23 @@ class _EsxiViewState extends ConsumerState<EsxiView> {
   }
 
   Widget status2Logo(EsxiVm e) {
-    return CustomPaint(
-        painter: StatusPainter(e.powerEnum == VmPower.on
-            ? Colors.green
-            : e.powerEnum == VmPower.off
-                ? Colors.red
-                : e.powerEnum == VmPower.suspended
-                    ? Colors.yellow
-                    : Colors.grey));
+    return TweenAnimationBuilder(
+        key: ValueKey(e.power),
+        tween: IntTween(begin: 0, end: 100),
+        duration: const Duration(milliseconds: 300),
+        builder: (context, value, child) {
+          return CustomPaint(
+              painter: StatusPainter(
+                  e.powerEnum == VmPower.on
+                      ? Colors.green
+                      : e.powerEnum == VmPower.off
+                          ? Colors.red
+                          : e.powerEnum == VmPower.suspended
+                              ? Colors.yellow
+                              : Colors.grey,
+                  50 * value * 0.01,
+                  10 * value * 0.01));
+        });
   }
 
   String vmOs(EsxiVm e) {
