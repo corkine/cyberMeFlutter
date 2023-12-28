@@ -109,28 +109,27 @@ class TrackSettings extends _$TrackSettings {
   }
 
   setTrack(List<TrackSearchItem>? items) async {
-    final sort = state.value?.sortByName ?? true;
-    final data = TrackSetting(sortByName: sort, searchItems: items ?? []);
+    if (state.value == null) return;
+    final data = state.value!.copyWith(searchItems: items ?? []);
     await s.setString('trackSetting', jsonEncode(data.toJson()));
     dirty = true;
     state = AsyncData(data);
   }
 
   setTrackSortReversed() async {
+    if (state.value == null) return;
     final sort = state.value?.sortByName ?? true;
-    final items = state.value?.searchItems;
-    final data = TrackSetting(sortByName: !sort, searchItems: items ?? []);
+    final data = state.value!.copyWith(
+        sortByName: !sort, searchItems: state.value?.searchItems ?? []);
     await s.setString('trackSetting', jsonEncode(data.toJson()));
     dirty = true;
     state = AsyncData(data);
   }
 
   addTrack(TrackSearchItem item) async {
-    final sort = state.value?.sortByName ?? true;
-    final items = state.value?.searchItems;
-    final data = TrackSetting(
-        sortByName: sort,
-        searchItems: {...items ?? <TrackSearchItem>[], item}.toList());
+    if (state.value == null) return;
+    final data = state.value!
+        .copyWith(searchItems: [...state.value?.searchItems ?? [], item]);
     await s.setString('trackSetting', jsonEncode(data.toJson()));
     dirty = true;
     state = AsyncData(data);
