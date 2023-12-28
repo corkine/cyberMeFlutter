@@ -1,4 +1,6 @@
-﻿import 'package:flutter/material.dart';
+﻿import 'dart:io';
+
+import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'pocket/config.dart';
@@ -15,7 +17,7 @@ void main() async {
   runApp(ProviderScope(
       child: MaterialApp(
           title: 'CyberMe',
-          debugShowCheckedModeBanner: true,
+          debugShowCheckedModeBanner: Platform.isWindows ? false : true,
           theme: ThemeData(useMaterial3: true, brightness: Brightness.light),
           initialRoute: "/",
           routes: (apps.map((key, value) => MapEntry("/app/$key", (c) {
