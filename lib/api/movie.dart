@@ -1,3 +1,5 @@
+// ignore_for_file: invalid_annotation_target
+
 import 'dart:convert';
 
 import 'package:cyberme_flutter/api/tv.dart';
@@ -27,6 +29,53 @@ class MovieSetting with _$MovieSetting {
 
   factory MovieSetting.fromJson(Map<String, dynamic> json) =>
       _$MovieSettingFromJson(json);
+}
+
+@freezed
+class MovieRating with _$MovieRating {
+  const factory MovieRating(
+          {@Default("") @JsonKey(name: "imdb-star") String imdbStar,
+          @Default("") @JsonKey(name: "douban-star") String doubanStar,
+          @Default("") @JsonKey(name: "imdb-count") String imdbCount,
+          @Default("") @JsonKey(name: "douban-count") String doubanCount}) =
+      _MovieRating;
+
+  factory MovieRating.fromJson(Map<String, dynamic> json) =>
+      _$MovieRatingFromJson(json);
+}
+
+@freezed
+class MovieDetail with _$MovieDetail {
+  const factory MovieDetail(
+      {@Default("") String title,
+      @Default("") @JsonKey(name: "title-en") titleEn,
+      @Default("") String description,
+      @Default("") String update,
+      @Default("") String duration,
+      @Default("") String level,
+      @Default("") String year,
+      @Default("") String url,
+      @Default("") String country,
+      @Default("") String img,
+      @Default([]) List<String> types,
+      @Default(MovieRating()) MovieRating rating}) = _MovieDetail;
+
+  factory MovieDetail.fromJson(Map<String, dynamic> json) =>
+      _$MovieDetailFromJson(json);
+}
+
+@riverpod
+Future<MovieDetail?> fetchMovieDetail(
+    FetchMovieDetailRef ref, String url) async {
+  final encodeUrl = Uri.encodeQueryComponent(url);
+  final (ok, res) = await requestFrom(
+      "/cyber/movie/detail?url=$encodeUrl&cache=true", MovieDetail.fromJson);
+  if (res.isNotEmpty) {
+    debugPrint(res);
+    return null;
+  } else {
+    return ok;
+  }
 }
 
 @riverpod
