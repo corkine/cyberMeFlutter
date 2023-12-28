@@ -117,8 +117,9 @@ class _MovieViewState extends ConsumerState<MovieView> {
                     final isIgnored =
                         setting?.ignoreItems.contains(e.url) ?? false;
                     return InkWell(
-                        onTap: () => showItemMenu(
-                            e, showTv, isWatched, isIgnored, isTracking),
+                        onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                                builder: (context) => MovieDetailView(e))),
                         onLongPress: () => launchUrlString(e.url!),
                         child: MovieCard(
                             e: e,
@@ -251,6 +252,163 @@ class _MovieViewState extends ConsumerState<MovieView> {
   }
 }
 
+class MovieDetailView extends ConsumerStatefulWidget {
+  final Movie movie;
+  const MovieDetailView(this.movie, {super.key});
+
+  @override
+  ConsumerState<MovieDetailView> createState() => _MovieDetailViewState();
+}
+
+class _MovieDetailViewState extends ConsumerState<MovieDetailView> {
+  @override
+  Widget build(BuildContext context) {
+    final data =
+        ref.watch(fetchMovieDetailProvider.call(widget.movie.url!, true)).value;
+    return Scaffold(
+        body: CustomScrollView(slivers: [
+      SliverAppBar.large(
+          title: Text(widget.movie.title.toString()),
+          expandedHeight: 300,
+          actions: [
+            IconButton(
+                onPressed: () async {
+                  final _ = await ref.refresh(fetchMovieDetailProvider
+                      .call(widget.movie.url!, false)
+                      .future);
+                  ref.invalidate(
+                      fetchMovieDetailProvider.call(widget.movie.url!, true));
+                },
+                icon: const Icon(Icons.refresh)),
+            IconButton(
+                onPressed: () => launchUrlString(widget.movie.url!),
+                icon: const Icon(Icons.open_in_browser))
+          ],
+          flexibleSpace: CachedNetworkImage(
+              imageUrl: data?.img ?? widget.movie.img!, fit: BoxFit.cover)),
+      SliverToBoxAdapter(
+          child: Padding(
+              padding: const EdgeInsets.only(left: 10, right: 10),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(data?.title ?? widget.movie.title ?? "-",
+                                    style: const TextStyle(fontSize: 30)),
+                                Text(data?.titleEn ?? "",
+                                    style: const TextStyle(fontSize: 15))
+                              ]),
+                          const Spacer(),
+                          Container(
+                              width: 2,
+                              height: 60,
+                              margin: const EdgeInsets.only(right: 3),
+                              color: const Color.fromARGB(255, 222, 222, 222)),
+                          buildRating(data)
+                        ]),
+                    Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(data?.year ?? ""),
+                          const SizedBox(width: 5),
+                          Text(data?.country ?? ""),
+                          const SizedBox(width: 5),
+                          Text(data?.duration ?? "",
+                              style: const TextStyle(
+                                  decoration: TextDecoration.underline,
+                                  decorationColor: Colors.grey,
+                                  decorationStyle: TextDecorationStyle.dashed,
+                                  decorationThickness: 3)),
+                          const Spacer(),
+                          data?.level.isEmpty ?? true
+                              ? const SizedBox()
+                              : Container(
+                                  decoration: BoxDecoration(
+                                      color: Colors.red,
+                                      borderRadius: BorderRadius.circular(3.0)),
+                                  padding: const EdgeInsets.only(
+                                      left: 7, right: 7, bottom: 2, top: 2),
+                                  margin: const EdgeInsets.only(right: 7),
+                                  child: Text(data?.level ?? "",
+                                      style:
+                                          const TextStyle(color: Colors.white)))
+                        ]),
+                    ...data?.update.isEmpty ?? true
+                        ? []
+                        : [Text(data?.update ?? "")],
+                    const SizedBox(height: 15),
+                    Text(data?.description ?? ""),
+                    const SizedBox(height: 20),
+                  ]))),
+      SliverFillRemaining(
+          hasScrollBody: false,
+          child: Column(children: [
+            const Spacer(),
+            ButtonBar(alignment: MainAxisAlignment.center, children: [
+              TextButton(
+                  onPressed: () => launchUrlString(widget.movie.url!),
+                  child: const Text("查看资源...")),
+              // TextButton(
+              //     onPressed: () => launchUrlString(widget.movie.url!),
+              //     child: const Text("添加追踪")),
+              // TextButton(
+              //     onPressed: () => launchUrlString(widget.movie.url!),
+              //     child: const Text("标记已看")),
+              // TextButton(
+              //     onPressed: () => launchUrlString(widget.movie.url!),
+              //     child: const Text("加入黑名单"))
+            ])
+          ]))
+    ]));
+  }
+
+  Padding buildRating(MovieDetail? data) {
+    return Padding(
+        padding: const EdgeInsets.only(left: 8, top: 8, bottom: 8, right: 10),
+        child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(data?.rating.imdbStar ?? "-",
+                      style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          height: 1)),
+                  Transform.translate(
+                      offset: const Offset(2, 2), child: const Text("IMDB"))
+                ],
+              ),
+              Text(data?.rating.imdbCount ?? "",
+                  style: const TextStyle(fontSize: 10)),
+              const SizedBox(height: 2),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(data?.rating.doubanStar ?? "-",
+                      style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          height: 1)),
+                  Transform.translate(
+                      offset: const Offset(2, 2), child: const Text("豆瓣"))
+                ],
+              ),
+              Text(data?.rating.doubanCount ?? "",
+                  style: const TextStyle(fontSize: 10))
+            ]));
+  }
+}
+
 class MovieCard extends StatelessWidget {
   final bool watched;
   final bool isTracking;
@@ -314,7 +472,7 @@ class MovieCard extends StatelessWidget {
                               style: const TextStyle(
                                   color: Colors.white, fontSize: 10))
                         ])),
-                    Text(e.star! == "N/A" ? "" : e.star!,
+                    Text(e.star! == "-" ? "" : e.star!,
                         style: const TextStyle(color: Colors.white))
                   ])))
     ]);

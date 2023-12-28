@@ -66,10 +66,10 @@ class MovieDetail with _$MovieDetail {
 
 @riverpod
 Future<MovieDetail?> fetchMovieDetail(
-    FetchMovieDetailRef ref, String url) async {
+    FetchMovieDetailRef ref, String url, bool cache) async {
   final encodeUrl = Uri.encodeQueryComponent(url);
   final (ok, res) = await requestFrom(
-      "/cyber/movie/detail?url=$encodeUrl&cache=true", MovieDetail.fromJson);
+      "/cyber/movie/detail?url=$encodeUrl&cache=$cache", MovieDetail.fromJson);
   if (res.isNotEmpty) {
     debugPrint(res);
     return null;
