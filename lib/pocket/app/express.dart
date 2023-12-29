@@ -83,6 +83,7 @@ class _ExpressViewState extends State<ExpressView> {
   }
 
   ListTile buildExpressTile(Express e, BuildContext context) {
+    final itemCount = e.extra.length;
     return ListTile(
         onTap: () {
           showDialog(
@@ -123,9 +124,6 @@ class _ExpressViewState extends State<ExpressView> {
                             child: const Text("删除"))
                       ])));
         },
-        onLongPress: () => FlutterClipboard.copy(e.id).then((value) =>
-            ScaffoldMessenger.of(context)
-                .showSnackBar(const SnackBar(content: Text("已拷贝快递单号到剪贴板。")))),
         title: Padding(
             padding: const EdgeInsets.only(bottom: 10),
             child: Row(children: [
@@ -147,31 +145,39 @@ class _ExpressViewState extends State<ExpressView> {
                 ...e.extra.indexed.map((e) => Padding(
                     padding: const EdgeInsets.only(left: 25),
                     child: DefaultTextStyle(
-                      style: TextStyle(
-                          fontSize: 12,
-                          color: e.$1 == 0
-                              ? Colors.green
-                              : const Color.fromARGB(255, 88, 88, 88),
-                          fontWeight:
-                              e.$1 == 0 ? FontWeight.bold : FontWeight.normal),
-                      child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(children: [
-                              CustomPaint(
-                                  painter: StatusCircle(isLast: e.$1 == 0)),
-                              Text(e.$2.$1,
-                                  softWrap: true,
-                                  style: const TextStyle(
-                                      decoration: TextDecoration.underline,
-                                      fontFamily: "consolas"))
-                            ]),
-                            const SizedBox(height: 5),
-                            Text(e.$2.$2, softWrap: true),
-                            const SizedBox(height: 5)
-                          ]),
-                    )))
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: e.$1 == 0
+                                ? Colors.green
+                                : const Color.fromARGB(255, 88, 88, 88),
+                            fontWeight: e.$1 == 0
+                                ? FontWeight.bold
+                                : FontWeight.normal),
+                        child: TweenAnimationBuilder(
+                          duration: const Duration(milliseconds: 300),
+                          tween: Tween(
+                              begin: (itemCount - e.$1) * 0.001, end: 1.0),
+                          builder: (context, value, child) {
+                            return Opacity(opacity: value, child: child);
+                          },
+                          child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(children: [
+                                  CustomPaint(
+                                      painter: StatusCircle(isLast: e.$1 == 0)),
+                                  Text(e.$2.$1,
+                                      softWrap: true,
+                                      style: const TextStyle(
+                                          decoration: TextDecoration.underline,
+                                          fontFamily: "consolas"))
+                                ]),
+                                const SizedBox(height: 5),
+                                Text(e.$2.$2, softWrap: true),
+                                const SizedBox(height: 5)
+                              ]),
+                        ))))
               ])
         ]));
   }
