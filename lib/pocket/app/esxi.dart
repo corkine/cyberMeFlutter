@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:cyberme_flutter/api/esxi.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -62,12 +64,15 @@ class _EsxiViewState extends ConsumerState<EsxiView> {
                 padding: EdgeInsets.only(left: 15, top: 8, bottom: 0),
                 child:
                     Text("VMS", style: TextStyle(fontWeight: FontWeight.bold))),
-            ...data.vms.map((e) {
+            ...data.vms.indexed.map((e) {
               return ListTile(
-                  onTap: () => popVmMenu(e),
-                  title: Row(children: [status2Logo(e), Text(e.name)]),
-                  subtitle: Text(vmOs(e) + " / ${e.version}"),
-                  trailing: Text(e.vmid),
+                  onTap: () => popVmMenu(e.$2),
+                  title: Row(children: [
+                    status2Logo(e.$2, index: e.$1),
+                    Text(e.$2.name)
+                  ]),
+                  subtitle: Text(vmOs(e.$2) + " / ${e.$2.version}"),
+                  trailing: Text(e.$2.vmid),
                   dense: true);
             }).toList(),
             const SizedBox(height: 100),
@@ -114,10 +119,12 @@ class _EsxiViewState extends ConsumerState<EsxiView> {
     ]));
   }
 
-  Widget status2Logo(EsxiVm e) {
+  Widget status2Logo(EsxiVm e, {int index = 0}) {
     return TweenAnimationBuilder(
         key: ValueKey(e.power),
-        tween: IntTween(begin: 0, end: 100),
+        //key: UniqueKey(),
+        tween: IntTween(begin: max(30 - index * 30, 0), end: 100),
+        curve: Curves.easeOutQuad,
         duration: const Duration(milliseconds: 300),
         builder: (context, value, child) {
           return CustomPaint(
@@ -129,7 +136,7 @@ class _EsxiViewState extends ConsumerState<EsxiView> {
                           : e.powerEnum == VmPower.suspended
                               ? Colors.yellow
                               : Colors.grey,
-                  50 * value * 0.01,
+                  30 * value * 0.01,
                   10 * value * 0.01));
         });
   }
@@ -178,7 +185,7 @@ class _EsxiViewState extends ConsumerState<EsxiView> {
                             style: const TextStyle(fontSize: 12))
                       ]),
                       Text(
-                          "id: ${vm.vmid}\nguest: ${vm.guest}\nos: ${vm.os}\nversion: ${vm.version}",
+                          "id: ${vm.vmid}\nfile: ${vm.guest}\nos: ${vm.os}\nversion: ${vm.version}",
                           style: const TextStyle(fontSize: 12))
                     ]),
                 children: [
