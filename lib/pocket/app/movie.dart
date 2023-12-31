@@ -116,6 +116,7 @@ class _MovieViewState extends ConsumerState<MovieView> {
                     final isTracking = tracking.contains(e.url);
                     final isIgnored =
                         setting?.ignoreItems.contains(e.url) ?? false;
+                    final want = setting?.wantItems.contains(e.url) ?? false;
                     return InkWell(
                         onTap: () {
                           Navigator.of(context).push(PageRouteBuilder(
@@ -128,9 +129,9 @@ class _MovieViewState extends ConsumerState<MovieView> {
                                   FadeTransition(
                                       opacity: animation, child: child),
                               reverseTransitionDuration:
-                                  const Duration(milliseconds: 300),
+                                  const Duration(milliseconds: 200),
                               transitionDuration:
-                                  const Duration(milliseconds: 300)));
+                                  const Duration(milliseconds: 200)));
                         },
                         onLongPress: () => showItemMenu(
                             e, showTv, isWatched, isIgnored, isTracking),
@@ -139,7 +140,8 @@ class _MovieViewState extends ConsumerState<MovieView> {
                             key: ObjectKey(e),
                             watched: isWatched,
                             isTracking: isTracking,
-                            ignored: isIgnored));
+                            ignored: isIgnored,
+                            want: want));
                   })),
           Positioned(
               child: SafeArea(child: searchBar), left: 0, right: 0, bottom: 0)
@@ -151,19 +153,16 @@ class _MovieViewState extends ConsumerState<MovieView> {
     final selectTags = filter.selectTags;
     final showWatched = filter.showWatched;
     final showTracked = filter.showTracked;
+    final showWant = !filter.hideWant;
+    final enableFilter = !showWatched || !showTracked || !showWant;
+    final useSort = filter.useSort;
     String more = "";
-    if (showWatched && showTracked) {
-      more = ", 显示已看和追踪";
-    } else if (showWatched) {
-      more = ", 显示已看";
-    } else if (showTracked) {
-      more = ", 显示追踪";
-    } else if (!showWatched && !showTracked) {
-      more = ", 不显示已看和追踪";
-    } else if (!showWatched) {
-      more = ", 不显示已看";
-    } else if (!showTracked) {
-      more = ", 不显示追踪";
+    if (enableFilter && useSort) {
+      more = ", 开启筛选和排序";
+    } else if (enableFilter) {
+      more = ", 开启筛选";
+    } else if (useSort) {
+      more = ", 开启排序";
     }
     if (selectStar == 0 && selectTags.isEmpty) {
       return "过滤器关$more";
@@ -278,12 +277,14 @@ class _MovieDetailViewState extends ConsumerState<MovieDetailView> {
   Widget build(BuildContext context) {
     final data =
         ref.watch(fetchMovieDetailProvider.call(widget.movie.url!, true)).value;
-    final x = data?.img == null ? 0.8 : 1.0;
+    final setting = ref.watch(movieSettingsProvider).value;
+    final isWanted = setting?.wantItems.contains(widget.movie.url!) ?? false;
+    final x = data?.img == null ? 0.3 : 1.0;
     return Scaffold(
         body: CustomScrollView(slivers: [
       SliverAppBar.large(
           title: Text(widget.movie.title.toString()),
-          expandedHeight: 300,
+          expandedHeight: 230,
           actions: [
             IconButton(
                 onPressed: () async {
@@ -299,10 +300,26 @@ class _MovieDetailViewState extends ConsumerState<MovieDetailView> {
                 icon: const Icon(Icons.open_in_browser))
           ],
           flexibleSpace: FlexibleSpaceBar(
-              background: Hero(
-            tag: widget.movie.url!,
-            child: CachedNetworkImage(
-                imageUrl: widget.movie.img!, fit: BoxFit.cover),
+              background: Stack(
+            fit: StackFit.expand,
+            children: [
+              ImageFiltered(
+                  imageFilter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: CachedNetworkImage(
+                    imageUrl: widget.movie.img!,
+                    fit: BoxFit.fitWidth,
+                    repeat: ImageRepeat.repeat,
+                  )),
+              Padding(
+                padding: const EdgeInsets.only(top: 10, bottom: 10),
+                child: Hero(
+                    tag: widget.movie.url!,
+                    child: CachedNetworkImage(
+                      imageUrl: widget.movie.img!,
+                      fit: BoxFit.fitHeight,
+                    )),
+              )
+            ],
           ))),
       SliverToBoxAdapter(
           child: AnimatedOpacity(
@@ -393,9 +410,20 @@ class _MovieDetailViewState extends ConsumerState<MovieDetailView> {
               // TextButton(
               //     onPressed: () => launchUrlString(widget.movie.url!),
               //     child: const Text("添加追踪")),
-              // TextButton(
-              //     onPressed: () => launchUrlString(widget.movie.url!),
-              //     child: const Text("标记已看")),
+              TextButton(
+                  onPressed: () {
+                    ref
+                        .read(movieSettingsProvider.notifier)
+                        .makeWanted(widget.movie.url!, reverse: isWanted);
+                  },
+                  child: Row(children: [
+                    Icon(
+                      isWanted ? Icons.star : Icons.star_border_outlined,
+                      color: Colors.yellow,
+                    ),
+                    const SizedBox(width: 3),
+                    Text(isWanted ? "取消想看" : "想看")
+                  ])),
               // TextButton(
               //     onPressed: () => launchUrlString(widget.movie.url!),
               //     child: const Text("加入黑名单"))
@@ -454,6 +482,7 @@ class _MovieDetailViewState extends ConsumerState<MovieDetailView> {
 
 class MovieCard extends StatelessWidget {
   final bool watched;
+  final bool want;
   final bool isTracking;
   final bool ignored;
   const MovieCard(
@@ -461,7 +490,8 @@ class MovieCard extends StatelessWidget {
       required this.e,
       required this.watched,
       required this.ignored,
-      required this.isTracking});
+      required this.isTracking,
+      required this.want});
 
   final Movie e;
 
@@ -483,12 +513,16 @@ class MovieCard extends StatelessWidget {
                           ? "已看"
                           : ignored
                               ? "忽略"
-                              : null,
+                              : want
+                                  ? "想看"
+                                  : null,
                   color: isTracking
                       ? Colors.red
                       : ignored
                           ? const Color.fromARGB(255, 0, 0, 0)
-                          : const Color.fromARGB(255, 13, 32, 243)))),
+                          : want
+                              ? const Color.fromARGB(255, 8, 193, 20)
+                              : const Color.fromARGB(255, 13, 32, 243)))),
       Positioned(
           bottom: 0,
           left: 0,
@@ -663,6 +697,24 @@ class _MovieFilterViewState extends ConsumerState<MovieFilterView> {
                                 onChanged: (v) => ref
                                     .read(movieFiltersProvider.notifier)
                                     .setShowIgnored(v))
+                          ]),
+                          Row(children: [
+                            const Text("不显示想看"),
+                            const Spacer(),
+                            Switch.adaptive(
+                                value: filter.hideWant,
+                                onChanged: (v) => ref
+                                    .read(movieFiltersProvider.notifier)
+                                    .setHideWant(v))
+                          ]),
+                          Row(children: [
+                            const Text("想看、评分排序"),
+                            const Spacer(),
+                            Switch.adaptive(
+                                value: filter.useSort,
+                                onChanged: (v) => ref
+                                    .read(movieFiltersProvider.notifier)
+                                    .setUseSort(v))
                           ]),
                           const SizedBox(height: 20)
                         ])))));

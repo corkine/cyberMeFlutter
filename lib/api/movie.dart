@@ -21,6 +21,7 @@ class MovieSetting with _$MovieSetting {
   const factory MovieSetting({
     @Default({}) Set<String> watchedTv,
     @Default({}) Set<String> watchedMovie,
+    @Default({}) Set<String> wantItems,
     @Default({}) Set<String> ignoreItems,
     @Default(true) bool showTv,
     @Default(true) bool showHot,
@@ -162,6 +163,20 @@ class MovieSettings extends _$MovieSettings {
     state = AsyncData(v);
   }
 
+  makeWanted(String url, {bool reverse = false}) async {
+    s ??= await SharedPreferences.getInstance();
+    var v = state.value;
+    if (v == null) return;
+    if (!reverse) {
+      v = v.copyWith(wantItems: {url, ...v.wantItems});
+    } else {
+      v = v.copyWith(
+          wantItems: v.wantItems.where((element) => element != url).toSet());
+    }
+    await s!.setString("movieSetting", jsonEncode(v.toJson()));
+    state = AsyncData(v);
+  }
+
   toggleShowTv() async {
     var v = state.value;
     if (v == null) return;
@@ -207,6 +222,8 @@ class MovieFilter with _$MovieFilter {
       @Default(true) bool showWatched,
       @Default(true) bool showTracked,
       @Default(true) bool showIgnored,
+      @Default(false) bool hideWant,
+      @Default(true) bool useSort,
       @Default({}) Set<String> allTags,
       @Default({}) Set<String> selectTags,
       @Default(0) int update}) = _MovieFilter;
@@ -265,6 +282,16 @@ class MovieFilters extends _$MovieFilters {
         showIgnored: show, update: DateTime.now().millisecondsSinceEpoch);
   }
 
+  setHideWant(bool want) async {
+    state = state.copyWith(
+        hideWant: want, update: DateTime.now().millisecondsSinceEpoch);
+  }
+
+  setUseSort(bool yes) async {
+    state = state.copyWith(
+        useSort: yes, update: DateTime.now().millisecondsSinceEpoch);
+  }
+
   setShowTracked(bool show) async {
     state = state.copyWith(
         showTracked: show, update: DateTime.now().millisecondsSinceEpoch);
@@ -302,7 +329,8 @@ List<Movie> movieFiltered(MovieFilteredRef ref) {
   if (movie == null || setting == null) return [];
   final watched = {...setting.watchedMovie, ...setting.watchedTv};
   final ignored = setting.ignoreItems;
-  final res = movie.$1.where((element) {
+  final wanted = setting.wantItems;
+  var res = movie.$1.where((element) {
     if (!filter.showWatched && watched.contains(element.url)) {
       return false;
     }
@@ -310,6 +338,9 @@ List<Movie> movieFiltered(MovieFilteredRef ref) {
       return false;
     }
     if (!filter.showIgnored && ignored.contains(element.url)) {
+      return false;
+    }
+    if (filter.hideWant && wanted.contains(element.url)) {
       return false;
     }
     if (filter.selectStar != 0.0 &&
@@ -327,5 +358,20 @@ List<Movie> movieFiltered(MovieFilteredRef ref) {
     }
     return true;
   }).toList(growable: false);
+  if (filter.useSort) {
+    res.sort((a, b) {
+      final aw = wanted.contains(a.url);
+      final bw = wanted.contains(b.url);
+      if (aw && bw) {
+        return b.star?.compareTo(a.star ?? "") ?? 0;
+      } else if (aw) {
+        return -10;
+      } else if (bw) {
+        return 10;
+      } else {
+        return b.star?.compareTo(a.star ?? "") ?? 0;
+      }
+    });
+  }
   return res;
 }
