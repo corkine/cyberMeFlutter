@@ -281,7 +281,7 @@ class _TrackViewState extends ConsumerState<TrackView> {
   }
 }
 
-class TrackDetailView extends StatefulWidget {
+class TrackDetailView extends ConsumerStatefulWidget {
   final String url;
   final int count;
   final int? privCount;
@@ -290,10 +290,10 @@ class TrackDetailView extends StatefulWidget {
       {super.key, required this.url, required this.count, this.privCount});
 
   @override
-  State<TrackDetailView> createState() => _TrackDetailViewState();
+  ConsumerState<TrackDetailView> createState() => _TrackDetailViewState();
 }
 
-class _TrackDetailViewState extends State<TrackDetailView> {
+class _TrackDetailViewState extends ConsumerState<TrackDetailView> {
   late DateTime weekDayOne;
   late DateTime lastWeekDayOne;
   late DateTime monthDayOne;
@@ -334,6 +334,9 @@ class _TrackDetailViewState extends State<TrackDetailView> {
       setState(() {});
     }
 
+    final logsFiltered =
+        ref.watch(trackUrlFilteredLogsProvider.call(logs)).value ?? logs;
+
     final appBar = AppBar(title: Text(widget.url.split("/").last), actions: [
       IconButton(
           onPressed: handleAddTrack,
@@ -344,28 +347,59 @@ class _TrackDetailViewState extends State<TrackDetailView> {
             await showAddShortLinkDialog();
             setState(() {});
           },
-          icon: const RotatedBox(quarterTurns: 1, child: Icon(Icons.link)))
+          icon: const RotatedBox(quarterTurns: 1, child: Icon(Icons.link))),
+      IconButton(
+          onPressed: () => showModalBottomSheet(
+              backgroundColor: Colors.transparent,
+              context: context,
+              builder: (context) => TrackDetailFilterView(logs)),
+          icon: const Icon(Icons.filter_alt))
     ]);
 
     final items = ListView.builder(
         itemBuilder: (ctx, idx) {
-          final c = logs[idx];
+          final c = logsFiltered[idx];
+          final tag = c.iptag as String? ?? "";
           return ListTile(
               dense: true,
               visualDensity: VisualDensity.compact,
               onTap: () async {
-                await FlutterClipboard.copy(c.ip ?? "");
-                ScaffoldMessenger.of(context)
-                    .showSnackBar(const SnackBar(content: Text("已拷贝地址到剪贴板")));
-              },
-              onLongPress: () async {
-                await launchUrlString("https://www.ipshudi.com/${c.ip}.htm");
+                showDialog(
+                    context: context,
+                    builder: (context) => Theme(
+                        data: appThemeData,
+                        child: SimpleDialog(
+                            title: Text(c.ip.toString()),
+                            children: [
+                              SimpleDialogOption(
+                                  onPressed: () async {
+                                    await FlutterClipboard.copy(c.ip ?? "");
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                            content: Text("已拷贝地址到剪贴板")));
+                                  },
+                                  child: const Text("拷贝地址到剪贴板")),
+                              SimpleDialogOption(
+                                  onPressed: () => launchUrlString(
+                                      "https://www.ipshudi.com/${c.ip}.htm"),
+                                  child: const Text("查看 IP 归属地详情...")),
+                              tag.isEmpty
+                                  ? SimpleDialogOption(
+                                      onPressed: () => addIpTag(c),
+                                      child: const Text("添加标签"))
+                                  : SimpleDialogOption(
+                                      onPressed: () => removeIpTag(c),
+                                      child: const Text("删除标签",
+                                          style: TextStyle(color: Colors.red)))
+                            ])));
               },
               title: Text(c.ip ?? "No IP"),
               subtitle: buildDataRich(c.timestamp?.split(".").first),
-              trailing: Text(c.ipInfo ?? ""));
+              trailing: Text(
+                  tag.isEmpty ? c.ipInfo ?? "" : "${c.iptag}\n${c.ipInfo}",
+                  textAlign: TextAlign.end));
         },
-        itemCount: logs.length);
+        itemCount: logsFiltered.length);
 
     return Theme(
         data: appThemeData,
@@ -374,8 +408,7 @@ class _TrackDetailViewState extends State<TrackDetailView> {
             body: RefreshIndicator(
                 onRefresh: () async {
                   final d = await fetchDetail();
-                  logs = d?.logs ?? [];
-                  debugPrint("reload svc details done!");
+                  setState(() => logs = d?.logs ?? []);
                 },
                 child: Column(children: [
                   Expanded(child: items),
@@ -392,6 +425,49 @@ class _TrackDetailViewState extends State<TrackDetailView> {
                               mainAxisAlignment:
                                   MainAxisAlignment.spaceBetween)))
                 ]))));
+  }
+
+  addIpTag(Logs c) async {
+    Navigator.of(context).pop();
+    final label = TextEditingController();
+    final answer = await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => Theme(
+              data: appThemeData,
+              child: AlertDialog(
+                  title: Text("请输入 ${c.ip} 地址标签"),
+                  content: TextField(
+                      autofocus: true,
+                      controller: label,
+                      decoration: const InputDecoration(
+                          border: UnderlineInputBorder(),
+                          hintText: "请输入 IP 地址标签")),
+                  actions: [
+                    TextButton(
+                        onPressed: () => Navigator.of(context).pop(false),
+                        child: const Text("取消")),
+                    TextButton(
+                        onPressed: () => Navigator.of(context).pop(true),
+                        child: const Text("确定"))
+                  ]),
+            ));
+    if (answer == true && label.text.isNotEmpty) {
+      await ref
+          .read(trackMarksProvider.notifier)
+          .addOrRemoveLabel(c.ip!, label.text, true);
+      final d = await fetchDetail();
+      setState(() => logs = d?.logs ?? []);
+    }
+  }
+
+  removeIpTag(Logs c) async {
+    Navigator.of(context).pop();
+    await ref
+        .read(trackMarksProvider.notifier)
+        .addOrRemoveLabel(c.ip!, "", false);
+    final d = await fetchDetail();
+    setState(() => logs = d?.logs ?? []);
   }
 
   Future showAddShortLinkDialog() async {
@@ -518,6 +594,63 @@ class _TrackDetailViewState extends State<TrackDetailView> {
     final data = jsonDecode(r.body);
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(data["message"])));
+  }
+}
+
+class TrackDetailFilterView extends ConsumerStatefulWidget {
+  final List<Logs> logs;
+  const TrackDetailFilterView(this.logs, {super.key});
+
+  @override
+  ConsumerState<TrackDetailFilterView> createState() =>
+      _TrackDetailFilterViewState();
+}
+
+class _TrackDetailFilterViewState extends ConsumerState<TrackDetailFilterView> {
+  @override
+  Widget build(BuildContext context) {
+    final logs =
+        ref.watch(trackUrlFiltersProvider.call(widget.logs)).value ?? {};
+    final savedTrackCount = ref.read(trackMarksProvider).value?.length ?? -1;
+    logs.remove("");
+    return Theme(
+      data: appThemeData,
+      child: Scaffold(
+          body: Padding(
+              padding: const EdgeInsets.only(
+                  left: 10, right: 10, top: 10, bottom: 10),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text("显示标签", style: TextStyle(fontSize: 18)),
+                    const SizedBox(height: 10),
+                    Expanded(
+                        child: logs.isEmpty
+                            ? const Text("当前日志无 IP 地址标签")
+                            : Wrap(
+                                children: logs.entries
+                                    .map((e) => RawChip(
+                                          label: Text(e.key),
+                                          selected: !e.value,
+                                          onSelected: (v) {
+                                            ref
+                                                .read(
+                                                    trackMarksProvider.notifier)
+                                                .set(e.key, !v);
+                                          },
+                                        ))
+                                    .toList(growable: false))),
+                    const Spacer(),
+                    Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                      Text("已存储 $savedTrackCount 个键"),
+                      const SizedBox(width: 20),
+                      TextButton(
+                          onPressed: () =>
+                              ref.read(trackMarksProvider.notifier).clean(true),
+                          child: const Text("清空"))
+                    ])
+                  ]))),
+    );
   }
 }
 

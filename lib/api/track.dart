@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
+
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -7,6 +9,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../pocket/config.dart';
+import '../pocket/models/track.dart';
 import 'basic.dart';
 
 part 'track.g.dart';
@@ -160,6 +163,79 @@ class TrackSettings extends _$TrackSettings {
       await syncUpload();
     }
   }
+}
+
+@riverpod
+class TrackMarks extends _$TrackMarks {
+  late SharedPreferences s;
+  @override
+  Future<Map<String, bool>> build() async {
+    s = await SharedPreferences.getInstance();
+    final res = s.getString("trackMarks") ?? "{}";
+    return (jsonDecode(res) as Map<String, dynamic>? ?? {})
+        .map((key, value) => MapEntry(key, value as bool? ?? false));
+  }
+
+  void mergeWith(Map<String, bool> panel) async {
+    final data = {...state.value ?? {}, ...panel};
+    await s.setString("trackMarks", jsonEncode(data));
+    state = AsyncData(data);
+  }
+
+  void set(String key, bool disabled) async {
+    final data = {...state.value ?? {}, key: disabled};
+    await s.setString("trackMarks", jsonEncode(data));
+    state = AsyncData(data);
+  }
+
+  void clean(bool all) async {
+    if (all) {
+      await s.setString("trackMarks", "{}");
+      state = AsyncData(<String, bool>{});
+    } else {
+      final newData = {...state.value ?? {}};
+      newData.removeWhere((key, value) => value == false);
+      await s.setString("trackMarks", jsonEncode(newData));
+      state = AsyncData(newData);
+    }
+  }
+
+  Future<String> addOrRemoveLabel(String ip, String label, bool add) async {
+    final (ok, res) = await postFrom(
+        "/cyber/service/visits/mark-ip", {"add": add, "ip": ip, "tag": label});
+    if (ok) {
+      ref.invalidateSelf();
+    }
+    return res;
+  }
+}
+
+@riverpod
+Future<Map<String, bool>> trackUrlFilters(
+    TrackUrlFiltersRef ref, List<Logs> logs) async {
+  final marks = await ref.watch(trackMarksProvider.future);
+  final tags = logs
+      .map((e) => e.iptag as String? ?? "")
+      .where((e) => e.isNotEmpty)
+      .toSet();
+  final marksCopy = {...marks};
+  marksCopy.removeWhere((key, value) => !tags.contains(key));
+  for (var disabledTag in tags) {
+    if (marksCopy[disabledTag] == null) {
+      marksCopy[disabledTag] = false;
+    }
+  }
+  marksCopy[""] = false;
+  return marksCopy;
+}
+
+@riverpod
+Future<List<Logs>> trackUrlFilteredLogs(
+    TrackUrlFilteredLogsRef ref, List<Logs> logs) async {
+  final filters = await ref.watch(trackUrlFiltersProvider.call(logs).future);
+  return logs
+      .where((element) => filters[element.iptag as String? ?? ""] == false)
+      .toList(growable: false);
 }
 
 @riverpod
