@@ -49,6 +49,7 @@ class _MenuViewState extends State<MenuView> {
         backgroundColor: Colors.white,
         body: CustomScrollView(slivers: [
           SliverAppBar.large(
+              stretch: true,
               title: const Text("Cyber Apps",
                   style: TextStyle(color: Colors.white)),
               expandedHeight: 200,

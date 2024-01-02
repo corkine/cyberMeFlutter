@@ -29,7 +29,6 @@ class StoryView extends StatefulWidget {
 }
 
 class _StoryViewState extends State<StoryView> {
-
   List<(String, List<String>)> model = [];
 
   @override
@@ -145,7 +144,8 @@ class _BookStoryViewState extends State<BookStoryView> {
                   imageUrl: cover[widget.bookName] ?? defaultCover)),
           Positioned.fill(child: Container(color: Colors.black54)),
           SafeArea(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               TapRegion(
                   onTapInside: (_) => Navigator.of(context).pop(),
                   child: Padding(
@@ -210,7 +210,6 @@ class StoryReadView extends StatefulWidget {
 }
 
 class _StoryReadViewState extends State<StoryReadView> {
-
   List<String> content = [];
 
   @override
@@ -225,38 +224,33 @@ class _StoryReadViewState extends State<StoryReadView> {
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: Colors.black,
-        body: ListView.builder(
-            itemBuilder: (c, i) {
-              if (i == 0) {
+        body: CustomScrollView(slivers: [
+          SliverAppBar(
+              stretch: true,
+              title: Text(widget.storyName),
+              leading: const BackButton(color: Colors.white38),
+              expandedHeight: 350,
+              backgroundColor: Colors.black,
+              foregroundColor: Colors.white,
+              automaticallyImplyLeading: true,
+              flexibleSpace: FlexibleSpaceBar(
+                  titlePadding: const EdgeInsets.only(bottom: 15),
+                  background:
+                      Image.asset("images/app_bg.jpg", fit: BoxFit.cover))),
+          const SliverPadding(padding: EdgeInsets.only(top: 15)),
+          SliverList.builder(
+              itemCount: content.length,
+              itemBuilder: (c, i) {
                 return Padding(
                     padding:
-                        const EdgeInsets.only(right: 20, bottom: 20, left: 20),
-                    child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          TapRegion(
-                              onTapInside: (_) => Navigator.of(context).pop(),
-                              child: Text(widget.storyName,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyLarge
-                                      ?.copyWith(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white70)))
-                        ]));
-              }
-              final s = content[i - 1];
-              return Padding(
-                  padding:
-                      const EdgeInsets.only(left: 15, right: 5, bottom: 10),
-                  child: Text(s,
-                      style: const TextStyle(
-                          fontSize: 16,
-                          letterSpacing: 1,
-                          color: Colors.white70)));
-            },
-            itemCount: content.length + 1,
-            cacheExtent: 999));
+                        const EdgeInsets.only(left: 15, right: 5, bottom: 10),
+                    child: Text(content[i],
+                        style: const TextStyle(
+                            fontSize: 16,
+                            letterSpacing: 1,
+                            color: Colors.white70)));
+              })
+        ]));
   }
 
   Future handleLoadStory() async {

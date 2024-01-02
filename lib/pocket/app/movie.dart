@@ -5,6 +5,7 @@ import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:clipboard/clipboard.dart';
 import 'package:cyberme_flutter/api/movie.dart';
+import 'package:cyberme_flutter/pocket/app/util.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -55,7 +56,7 @@ class _MovieViewState extends ConsumerState<MovieView> {
     ]);
     var appBar = AppBar(
         foregroundColor: Colors.white,
-        backgroundColor: Colors.black26,
+        backgroundColor: Colors.black,
         title: title,
         centerTitle: false,
         actions: [
@@ -72,8 +73,9 @@ class _MovieViewState extends ConsumerState<MovieView> {
               icon: Icon(showHot
                   ? Icons.local_fire_department_outlined
                   : Icons.new_releases))
-        ]);
-    var searchBar = Container(
+        ],
+        toolbarHeight: 55);
+    var filterBar = Container(
         margin: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
         decoration: BoxDecoration(
             color: Colors.black54, borderRadius: BorderRadius.circular(10)),
@@ -98,54 +100,61 @@ class _MovieViewState extends ConsumerState<MovieView> {
                       Text(toDesc(filter, setting),
                           style: const TextStyle(color: Colors.white))
                     ]))));
-    return Scaffold(
-        backgroundColor: Colors.black,
-        appBar: appBar,
-        body: Stack(children: [
-          RefreshIndicator(
-              onRefresh: () async => await ref.refresh(getMoviesProvider),
-              child: GridView.builder(
-                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                      maxCrossAxisExtent: 150, childAspectRatio: 0.7),
-                  itemCount: movies.length,
-                  itemBuilder: (c, i) {
-                    final e = movies[i];
-                    final isWatched = showTv
-                        ? setting?.watchedTv.contains(e.url) ?? false
-                        : setting?.watchedMovie.contains(e.url) ?? false;
-                    final isTracking = tracking.contains(e.url);
-                    final isIgnored =
-                        setting?.ignoreItems.contains(e.url) ?? false;
-                    final want = setting?.wantItems.contains(e.url) ?? false;
-                    return InkWell(
-                        onTap: () {
-                          Navigator.of(context).push(PageRouteBuilder(
-                              pageBuilder:
-                                  (context, animation, secondaryAnimation) {
-                                return MovieDetailView(e);
-                              },
-                              transitionsBuilder: (context, animation,
-                                      secondaryAnimation, child) =>
-                                  FadeTransition(
-                                      opacity: animation, child: child),
-                              reverseTransitionDuration:
-                                  const Duration(milliseconds: 200),
-                              transitionDuration:
-                                  const Duration(milliseconds: 200)));
-                        },
-                        onLongPress: () => showItemMenu(
-                            e, showTv, isWatched, isIgnored, isTracking),
-                        child: MovieCard(
-                            e: e,
-                            key: ObjectKey(e),
-                            watched: isWatched,
-                            isTracking: isTracking,
-                            ignored: isIgnored,
-                            want: want));
-                  })),
-          Positioned(
-              child: SafeArea(child: searchBar), left: 0, right: 0, bottom: 0)
-        ]));
+    return Theme(
+        data: appThemeData,
+        child: Scaffold(
+            appBar: appBar,
+            backgroundColor: Colors.black,
+            body: Stack(children: [
+              RefreshIndicator(
+                  onRefresh: () async => await ref.refresh(getMoviesProvider),
+                  child: GridView.builder(
+                      gridDelegate:
+                          const SliverGridDelegateWithMaxCrossAxisExtent(
+                              maxCrossAxisExtent: 150, childAspectRatio: 0.7),
+                      itemCount: movies.length,
+                      itemBuilder: (c, i) {
+                        final e = movies[i];
+                        final isWatched = showTv
+                            ? setting?.watchedTv.contains(e.url) ?? false
+                            : setting?.watchedMovie.contains(e.url) ?? false;
+                        final isTracking = tracking.contains(e.url);
+                        final isIgnored =
+                            setting?.ignoreItems.contains(e.url) ?? false;
+                        final want =
+                            setting?.wantItems.contains(e.url) ?? false;
+                        return InkWell(
+                            onTap: () {
+                              Navigator.of(context).push(PageRouteBuilder(
+                                  pageBuilder:
+                                      (context, animation, secondaryAnimation) {
+                                    return MovieDetailView(e);
+                                  },
+                                  transitionsBuilder: (context, animation,
+                                          secondaryAnimation, child) =>
+                                      FadeTransition(
+                                          opacity: animation, child: child),
+                                  reverseTransitionDuration:
+                                      const Duration(milliseconds: 200),
+                                  transitionDuration:
+                                      const Duration(milliseconds: 200)));
+                            },
+                            onLongPress: () => showItemMenu(
+                                e, showTv, isWatched, isIgnored, isTracking),
+                            child: MovieCard(
+                                e: e,
+                                key: ObjectKey(e),
+                                watched: isWatched,
+                                isTracking: isTracking,
+                                ignored: isIgnored,
+                                want: want));
+                      })),
+              Positioned(
+                  child: SafeArea(child: filterBar),
+                  left: 0,
+                  right: 0,
+                  bottom: 0)
+            ])));
   }
 
   String toDesc(MovieFilter filter, MovieSetting? setting) {
@@ -217,6 +226,7 @@ class _MovieViewState extends ConsumerState<MovieView> {
             child: Text(isWatched ? "标记为未观看" : "标记为已观看"))
       ];
     }
+    final sm = ScaffoldMessenger.of(context);
     showDialog(
         context: context,
         builder: (context) => Theme(
@@ -231,6 +241,9 @@ class _MovieViewState extends ConsumerState<MovieView> {
                     handleAddShortLink(e.url!);
                   },
                   child: const Text("生成短链接...")),
+              SimpleDialogOption(
+                  onPressed: () => showDebugBar(context, e, withPop: true),
+                  child: const Text("调试信息...")),
               ...opts,
               SimpleDialogOption(
                   onPressed: () {
@@ -266,6 +279,7 @@ class _MovieViewState extends ConsumerState<MovieView> {
 
 class MovieDetailView extends ConsumerStatefulWidget {
   final Movie movie;
+
   const MovieDetailView(this.movie, {super.key});
 
   @override
@@ -279,123 +293,16 @@ class _MovieDetailViewState extends ConsumerState<MovieDetailView> {
         ref.watch(fetchMovieDetailProvider.call(widget.movie.url!, true)).value;
     final setting = ref.watch(movieSettingsProvider).value;
     final isWanted = setting?.wantItems.contains(widget.movie.url!) ?? false;
-    final x = data?.img == null ? 0.3 : 1.0;
+    final x = data?.img == null ? 0.0 : 1.0;
     return Scaffold(
         body: CustomScrollView(slivers: [
-      SliverAppBar.large(
-          title: Text(widget.movie.title.toString()),
-          expandedHeight: 230,
-          actions: [
-            IconButton(
-                onPressed: () async {
-                  final _ = await ref.refresh(fetchMovieDetailProvider
-                      .call(widget.movie.url!, false)
-                      .future);
-                  ref.invalidate(
-                      fetchMovieDetailProvider.call(widget.movie.url!, true));
-                },
-                icon: const Icon(Icons.refresh)),
-            IconButton(
-                onPressed: () => launchUrlString(widget.movie.url!),
-                icon: const Icon(Icons.open_in_browser))
-          ],
-          flexibleSpace: FlexibleSpaceBar(
-              background: Stack(
-            fit: StackFit.expand,
-            children: [
-              ImageFiltered(
-                  imageFilter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                  child: CachedNetworkImage(
-                    imageUrl: widget.movie.img!,
-                    fit: BoxFit.fitWidth,
-                    repeat: ImageRepeat.repeat,
-                  )),
-              Padding(
-                padding: const EdgeInsets.only(top: 10, bottom: 10),
-                child: Hero(
-                    tag: widget.movie.url!,
-                    child: CachedNetworkImage(
-                      imageUrl: widget.movie.img!,
-                      fit: BoxFit.fitHeight,
-                    )),
-              )
-            ],
-          ))),
+      buildAppBar(),
       SliverToBoxAdapter(
-          child: AnimatedOpacity(
-              opacity: x,
-              duration: const Duration(milliseconds: 500),
-              child: Padding(
-                  padding: const EdgeInsets.only(left: 10, right: 10, top: 5),
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Expanded(
-                                  child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                    Text(
-                                        data?.title ??
-                                            widget.movie.title ??
-                                            "-",
-                                        style: const TextStyle(
-                                            fontSize: 30,
-                                            overflow: TextOverflow.fade)),
-                                    Text(data?.titleEn ?? "",
-                                        style: const TextStyle(fontSize: 15))
-                                  ])),
-                              Container(
-                                  width: 2,
-                                  height: 80,
-                                  margin: const EdgeInsets.only(right: 3),
-                                  color:
-                                      const Color.fromARGB(255, 222, 222, 222)),
-                              buildRating(data)
-                            ]),
-                        const SizedBox(height: 5),
-                        Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text(data?.year ?? ""),
-                              const SizedBox(width: 5),
-                              Text(data?.country ?? ""),
-                              const SizedBox(width: 5),
-                              Text(data?.duration ?? "",
-                                  style: const TextStyle(
-                                      decoration: TextDecoration.underline,
-                                      decorationColor: Colors.grey,
-                                      decorationStyle:
-                                          TextDecorationStyle.dashed,
-                                      decorationThickness: 3)),
-                              const Spacer(),
-                              data?.level.isEmpty ?? true
-                                  ? const SizedBox()
-                                  : Container(
-                                      decoration: BoxDecoration(
-                                          color: Colors.red,
-                                          borderRadius:
-                                              BorderRadius.circular(3.0)),
-                                      padding: const EdgeInsets.only(
-                                          left: 7, right: 7, bottom: 2, top: 2),
-                                      margin: const EdgeInsets.only(right: 7),
-                                      child: Text(data?.level ?? "",
-                                          style: const TextStyle(
-                                              color: Colors.white)))
-                            ]),
-                        ...data?.update.isEmpty ?? true
-                            ? []
-                            : [
-                                Text(data?.update ?? "",
-                                    style: const TextStyle(color: Colors.green))
-                              ],
-                        const SizedBox(height: 15),
-                        Text(data?.description ?? ""),
-                        const SizedBox(height: 20),
-                      ])))),
+          child: data == null
+              ? const Padding(
+                  padding: EdgeInsets.only(top: 60),
+                  child: CupertinoActivityIndicator())
+              : buildContent(x, data)),
       SliverFillRemaining(
           hasScrollBody: false,
           child: Column(children: [
@@ -407,15 +314,10 @@ class _MovieDetailViewState extends ConsumerState<MovieDetailView> {
               TextButton(
                   onPressed: () => launchUrlString(widget.movie.url!),
                   child: const Text("查看资源...")),
-              // TextButton(
-              //     onPressed: () => launchUrlString(widget.movie.url!),
-              //     child: const Text("添加追踪")),
               TextButton(
-                  onPressed: () {
-                    ref
-                        .read(movieSettingsProvider.notifier)
-                        .makeWanted(widget.movie.url!, reverse: isWanted);
-                  },
+                  onPressed: () => ref
+                      .read(movieSettingsProvider.notifier)
+                      .makeWanted(widget.movie.url!, reverse: isWanted),
                   child: Row(children: [
                     Icon(
                       isWanted ? Icons.star : Icons.star_border_outlined,
@@ -423,13 +325,106 @@ class _MovieDetailViewState extends ConsumerState<MovieDetailView> {
                     ),
                     const SizedBox(width: 3),
                     Text(isWanted ? "取消想看" : "想看")
-                  ])),
-              // TextButton(
-              //     onPressed: () => launchUrlString(widget.movie.url!),
-              //     child: const Text("加入黑名单"))
+                  ]))
             ])
           ]))
     ]));
+  }
+
+  SliverAppBar buildAppBar() {
+    return SliverAppBar.large(
+        title: Text(widget.movie.title.toString()),
+        expandedHeight: 230,
+        actions: [
+          IconButton(
+              onPressed: () async {
+                final _ = await ref.refresh(fetchMovieDetailProvider
+                    .call(widget.movie.url!, false)
+                    .future);
+                ref.invalidate(
+                    fetchMovieDetailProvider.call(widget.movie.url!, true));
+              },
+              icon: const Icon(Icons.refresh)),
+          IconButton(
+              onPressed: () => launchUrlString(widget.movie.url!),
+              icon: const Icon(Icons.open_in_browser))
+        ],
+        flexibleSpace: FlexibleSpaceBar(
+            background: Stack(fit: StackFit.expand, children: [
+          ImageFiltered(
+              imageFilter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: CachedNetworkImage(
+                imageUrl: widget.movie.img!,
+                fit: BoxFit.fitWidth,
+                repeat: ImageRepeat.repeat,
+              )),
+          SafeArea(
+              child: Padding(
+                  padding: const EdgeInsets.only(top: 10, bottom: 10),
+                  child: Hero(
+                      tag: widget.movie.url!,
+                      child: CachedNetworkImage(
+                          imageUrl: widget.movie.img!, fit: BoxFit.fitHeight))))
+        ])));
+  }
+
+  Widget buildContent(x, data) {
+    return Padding(
+        padding: const EdgeInsets.only(left: 10, right: 10, top: 5),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+            Expanded(
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                  Text(data?.title ?? widget.movie.title ?? "-",
+                      style: const TextStyle(
+                          fontSize: 30, overflow: TextOverflow.fade)),
+                  Text(data?.titleEn ?? "",
+                      style: const TextStyle(fontSize: 15))
+                ])),
+            Container(
+                width: 2,
+                height: 80,
+                margin: const EdgeInsets.only(right: 3),
+                color: const Color.fromARGB(255, 222, 222, 222)),
+            buildRating(data)
+          ]),
+          const SizedBox(height: 5),
+          Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+            Text(data?.year ?? ""),
+            const SizedBox(width: 5),
+            Text(data?.country ?? ""),
+            const SizedBox(width: 5),
+            Text(data?.duration ?? "",
+                style: const TextStyle(
+                    decoration: TextDecoration.underline,
+                    decorationColor: Colors.grey,
+                    decorationStyle: TextDecorationStyle.dashed,
+                    decorationThickness: 3)),
+            const Spacer(),
+            data?.level.isEmpty ?? true
+                ? const SizedBox()
+                : Container(
+                    decoration: BoxDecoration(
+                        color: Colors.red,
+                        borderRadius: BorderRadius.circular(3.0)),
+                    padding: const EdgeInsets.only(
+                        left: 7, right: 7, bottom: 2, top: 2),
+                    margin: const EdgeInsets.only(right: 7),
+                    child: Text(data?.level ?? "",
+                        style: const TextStyle(color: Colors.white)))
+          ]),
+          ...data?.update.isEmpty ?? true
+              ? []
+              : [
+                  Text(data?.update ?? "",
+                      style: const TextStyle(color: Colors.green))
+                ],
+          const SizedBox(height: 15),
+          Text(data?.description ?? ""),
+          const SizedBox(height: 20)
+        ]));
   }
 
   Padding buildRating(MovieDetail? data) {
@@ -485,6 +480,7 @@ class MovieCard extends StatelessWidget {
   final bool want;
   final bool isTracking;
   final bool ignored;
+
   const MovieCard(
       {super.key,
       required this.e,
@@ -559,6 +555,7 @@ class ReadPainter extends CustomPainter {
   final Color? color;
 
   ReadPainter({super.repaint, required this.draw, this.color});
+
   @override
   void paint(Canvas canvas, Size size) {
     if (draw == null) return;
@@ -724,6 +721,7 @@ class _MovieFilterViewState extends ConsumerState<MovieFilterView> {
 class SeriesSubscribeView extends ConsumerStatefulWidget {
   final Movie? addMovie;
   final Movie? delMovie;
+
   const SeriesSubscribeView({super.key, this.addMovie, this.delMovie});
 
   @override
@@ -893,6 +891,7 @@ class _SeriesSubscribeViewState extends ConsumerState<SeriesSubscribeView> {
 class SeriesSubscribeItem extends ConsumerStatefulWidget {
   final Series item;
   final DateTime now;
+
   const SeriesSubscribeItem(this.item, this.now, {super.key});
 
   @override
