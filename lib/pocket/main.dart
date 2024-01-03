@@ -4,6 +4,7 @@ import 'package:cyberme_flutter/learn/game.dart';
 import 'package:cyberme_flutter/learn/snh.dart';
 import 'package:cyberme_flutter/pocket/app/body_mass.dart';
 import 'package:cyberme_flutter/pocket/app/esxi.dart';
+import 'package:cyberme_flutter/pocket/app/gitea.dart';
 import 'package:cyberme_flutter/pocket/app/story.dart';
 import 'app/blog.dart';
 import 'app/blue.dart';
@@ -129,6 +130,12 @@ final apps = {
     "view": (c) => const BlogView(),
     "addToMenu": true,
     "icon": Icons.article
+  },
+  "gitea": {
+    "name": "Gitea",
+    "view": (c) => const GiteaView(),
+    "addToMenu": true,
+    "icon": Icons.source
   }
 };
 
