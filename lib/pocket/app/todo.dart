@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:cyberme_flutter/pocket/app/util.dart';
 import 'package:cyberme_flutter/pocket/models/todo.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
@@ -129,11 +130,12 @@ class _TodoViewState extends State<TodoView> with TickerProviderStateMixin {
                       }
                       final t = tl[i];
                       return ListTile(
+                          visualDensity: VisualDensity.compact,
                           title: Text(t.title ?? "",
                               style: const TextStyle(
                                   fontSize: 15, color: Colors.black)),
                           subtitle: Padding(
-                              padding: const EdgeInsets.only(top: 7),
+                              padding: const EdgeInsets.only(top: 5),
                               child: DefaultTextStyle(
                                   style: const TextStyle(
                                       fontSize: 12, color: Colors.black),
@@ -148,7 +150,7 @@ class _TodoViewState extends State<TodoView> with TickerProviderStateMixin {
               controller: tc)),
       SafeArea(
           child: TabBar(
-              indicatorColor: Colors.transparent,
+              indicatorSize: TabBarIndicatorSize.tab,
               dividerColor: Colors.transparent,
               labelPadding: const EdgeInsets.only(bottom: 10, top: 10),
               tabs: lists.map((e) => Text(e)).toList(growable: false),
@@ -172,7 +174,7 @@ class _TodoViewState extends State<TodoView> with TickerProviderStateMixin {
               title: Text(t.title ?? "",
                   style: const TextStyle(fontSize: 15, color: Colors.black)),
               subtitle: Padding(
-                  padding: const EdgeInsets.only(top: 7),
+                  padding: const EdgeInsets.only(top: 5),
                   child: DefaultTextStyle(
                       style: const TextStyle(fontSize: 12, color: Colors.black),
                       child: Row(children: [
@@ -194,12 +196,15 @@ class _TodoViewState extends State<TodoView> with TickerProviderStateMixin {
             ? const RotatedBox(
                 quarterTurns: 2, child: Icon(Icons.table_chart_sharp))
             : const Icon(Icons.format_list_bulleted));
+    final reload =
+        IconButton(onPressed: syncTodo, icon: const Icon(Icons.sync));
     return AppBar(
         title: const Text("待办事项"),
         centerTitle: true,
         actions: useTab
-            ? [viewBtn]
+            ? [reload, viewBtn]
             : [
+                reload,
                 viewBtn,
                 PopupMenuButton(
                     tooltip: "List Filter",
@@ -274,10 +279,20 @@ class _TodoViewState extends State<TodoView> with TickerProviderStateMixin {
     indent += (step + 1);
   }
 
+  syncTodo() async {
+    showWaitingBar(context, text: "正在同步");
+    var resp = await get(Uri.parse(Config.todoSyncUrl),
+        headers: config.cyberBase64Header);
+    final res = jsonDecode(resp.body)["message"];
+    ScaffoldMessenger.of(context).clearMaterialBanners();
+    await showSimpleMessage(context, content: res);
+    fetchTodo().then((value) => setState(() {}));
+  }
+
   Future fetchTodo() async {
     final url = Uri.parse(Config.todoUrl(indent, indent + step));
     debugPrint("req for $url");
-    final r = await get(url, headers: config!.cyberBase64Header);
+    final r = await get(url, headers: config.cyberBase64Header);
     final d = jsonDecode(r.body);
     final m = d["message"] ?? "";
     final s = d["status"] as int? ?? -1;

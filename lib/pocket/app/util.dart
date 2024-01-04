@@ -14,6 +14,26 @@ showDebugBar(BuildContext context, dynamic e, {bool withPop = false}) {
       actions: const [SizedBox()]));
 }
 
+showWaitingBar(BuildContext context,
+    {String text = "正在刷新", Future Function()? func}) async {
+  ScaffoldMessenger.of(context).showMaterialBanner(MaterialBanner(
+      content: Row(children: [
+        const SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator.adaptive(strokeWidth: 2)),
+        const SizedBox(width: 10),
+        Text(text)
+      ]),
+      actions: const [SizedBox()]));
+  if (func != null) {
+    try {
+      await func();
+    } catch (_) {}
+    ScaffoldMessenger.of(context).clearMaterialBanners();
+  }
+}
+
 showSimpleMessage(BuildContext context,
     {String? title, required String content, bool withPopFirst = false}) async {
   if (withPopFirst) {

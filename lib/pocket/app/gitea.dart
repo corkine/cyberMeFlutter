@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:cyberme_flutter/api/gitea.dart';
 import 'package:cyberme_flutter/pocket/app/util.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:url_launcher/url_launcher_string.dart';
@@ -28,24 +29,23 @@ class _GiteaViewState extends ConsumerState<GiteaView>
 
     return Scaffold(
         appBar: AppBar(
-          title: const Text("Pocket Gitea"),
-          actions: [
-            IconButton(
-                onPressed: () => showLoginPopup(setting, context),
-                icon: (setting?.endpoint ?? "").isEmpty
-                    ? const Icon(Icons.cloud_off)
-                    : const Icon(Icons.cloud)),
-            const SizedBox(width: 5)
-          ],
-          bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(30),
-              child: TabBar(
-                  indicatorColor: Colors.transparent,
-                  dividerColor: Colors.transparent,
-                  labelPadding: const EdgeInsets.only(bottom: 10, top: 10),
-                  tabs: [Text("ISSUE(${issues.length})"), const Text("REPO")],
-                  controller: tabController)),
-        ),
+            title: const Text("Pocket Gitea"),
+            actions: [
+              IconButton(
+                  onPressed: () => showLoginPopup(setting, context),
+                  icon: (setting?.endpoint ?? "").isEmpty
+                      ? const Icon(Icons.cloud_off)
+                      : const Icon(Icons.cloud)),
+              const SizedBox(width: 5)
+            ],
+            bottom: PreferredSize(
+                preferredSize: const Size.fromHeight(20),
+                child: TabBar(
+                    dividerColor: Colors.transparent,
+                    indicatorSize: TabBarIndicatorSize.tab,
+                    labelPadding: const EdgeInsets.only(bottom: 5, top: 5),
+                    tabs: [Text("ISSUE(${issues.length})"), const Text("REPO")],
+                    controller: tabController))),
         body: Stack(children: [
           AnimatedPositioned(
               duration: const Duration(milliseconds: 600),
@@ -58,9 +58,10 @@ class _GiteaViewState extends ConsumerState<GiteaView>
                   duration: const Duration(milliseconds: 600),
                   opacity: issues.isEmpty ? 1 : 0.1,
                   child: Image.asset("images/ship.jpg", fit: BoxFit.cover))),
-          TabBarView(
-              controller: tabController,
-              children: [buildIssueView(issues, repos), buildReposView(repos)])
+          TabBarView(controller: tabController, children: [
+            buildIssueView(issues, repos),
+            buildReposView(repos, setting)
+          ])
         ]));
   }
 
@@ -73,6 +74,7 @@ class _GiteaViewState extends ConsumerState<GiteaView>
       ScaffoldMessenger.of(context).showMaterialBanner(MaterialBanner(
           content:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            const SizedBox(height: 10),
             Text("登录到 Gitea",
                 style: Theme.of(context).textTheme.headlineMedium),
             TextField(
@@ -89,29 +91,31 @@ class _GiteaViewState extends ConsumerState<GiteaView>
                     errorText: tokenErr)),
             Padding(
                 padding: const EdgeInsets.only(top: 15, bottom: 10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    OutlinedButton(
-                        onPressed: () => ScaffoldMessenger.of(context)
-                            .clearMaterialBanners(),
-                        child: const Text("取消", textAlign: TextAlign.center)),
-                    const SizedBox(width: 10),
-                    OutlinedButton(
-                        onPressed: () {
-                          ref.read(gitSettingsProvider.notifier).set(GitSetting(
-                              token: token.text, endpoint: endPoint.text));
-                          ScaffoldMessenger.of(context).clearMaterialBanners();
-                        },
-                        child: const Text("确定", textAlign: TextAlign.center)),
-                  ],
-                ))
+                child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                  OutlinedButton(
+                      onPressed: () =>
+                          ScaffoldMessenger.of(context).clearMaterialBanners(),
+                      child: const Text("取消", textAlign: TextAlign.center)),
+                  const SizedBox(width: 10),
+                  OutlinedButton(
+                      onPressed: () {
+                        final ep = endPoint.text.endsWith("/")
+                            ? endPoint.text
+                                .substring(0, endPoint.text.length - 1)
+                            : endPoint.text;
+                        ref
+                            .read(gitSettingsProvider.notifier)
+                            .set(GitSetting(token: token.text, endpoint: ep));
+                        ScaffoldMessenger.of(context).clearMaterialBanners();
+                      },
+                      child: const Text("确定", textAlign: TextAlign.center)),
+                ]))
           ]),
           actions: const [SizedBox()]));
     }
   }
 
-  Widget buildReposView(List<GitRepoDetail> repos) {
+  Widget buildReposView(List<GitRepoDetail> repos, GitSetting? setting) {
     return Column(children: [
       Expanded(
           child: ListView.builder(
@@ -155,26 +159,31 @@ class _GiteaViewState extends ConsumerState<GiteaView>
                             ])));
               },
               itemCount: repos.length)),
-      ButtonBar(children: [
-        TextButton(
-            onPressed: () async {
-              ScaffoldMessenger.of(context)
-                  .showMaterialBanner(const MaterialBanner(
-                      content: Row(children: [
-                        SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator.adaptive(
-                                strokeWidth: 2)),
-                        SizedBox(width: 10),
-                        Text("正在刷新...")
-                      ]),
-                      actions: [SizedBox()]));
-              final _ = await ref.refresh(getGitReposProvider.future);
-              ScaffoldMessenger.of(context).clearMaterialBanners();
-            },
-            child: const Text("刷新"))
-      ])
+      SafeArea(
+        child: ButtonBar(children: [
+          TextButton(
+              onPressed: () => launchUrlString(setting?.endpoint ?? ""),
+              child: const Text("主页")),
+          TextButton(
+              onPressed: () async {
+                ScaffoldMessenger.of(context)
+                    .showMaterialBanner(const MaterialBanner(
+                        content: Row(children: [
+                          SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator.adaptive(
+                                  strokeWidth: 2)),
+                          SizedBox(width: 10),
+                          Text("正在刷新...")
+                        ]),
+                        actions: [SizedBox()]));
+                final _ = await ref.refresh(getGitReposProvider.future);
+                ScaffoldMessenger.of(context).clearMaterialBanners();
+              },
+              child: const Text("刷新"))
+        ]),
+      )
     ]);
   }
 
@@ -183,7 +192,10 @@ class _GiteaViewState extends ConsumerState<GiteaView>
         context: context,
         builder: (context) => SimpleDialog(title: Text(issue.title), children: [
               SimpleDialogOption(
-                  onPressed: () => launchUrlString(issue.htmlUrl),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    launchUrlString(issue.htmlUrl);
+                  },
                   child: const Text("在 Web 查看...")),
               SimpleDialogOption(
                   onPressed: () async {
@@ -246,23 +258,9 @@ class _GiteaViewState extends ConsumerState<GiteaView>
               itemCount: issues.length)),
       ButtonBar(children: [
         TextButton(
-            onPressed: () async {
-              ScaffoldMessenger.of(context)
-                  .showMaterialBanner(const MaterialBanner(
-                      content: Row(children: [
-                        SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator.adaptive(
-                                strokeWidth: 2)),
-                        SizedBox(width: 10),
-                        Text("正在刷新...")
-                      ]),
-                      actions: [SizedBox()]));
-              final _ =
-                  await ref.refresh(getGitIssuesProvider.call(showOpen).future);
-              ScaffoldMessenger.of(context).clearMaterialBanners();
-            },
+            onPressed: () => showWaitingBar(context,
+                func: () async => await ref
+                    .refresh(getGitIssuesProvider.call(showOpen).future)),
             child: const Text("刷新")),
         TextButton(
             onPressed: () {
@@ -278,7 +276,7 @@ class _GiteaViewState extends ConsumerState<GiteaView>
                                   MediaQuery.sizeOf(context).width / 1.3, 800),
                               child: StatefulBuilder(
                                   builder: (context, setState) => Column(
-                                          mainAxisSize: MainAxisSize.max,
+                                          mainAxisSize: MainAxisSize.min,
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [

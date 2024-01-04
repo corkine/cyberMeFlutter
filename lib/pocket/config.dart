@@ -324,8 +324,7 @@ class Config {
     prefs.setBool(key, set);
   }
 
-  justNotify() {
-  }
+  justNotify() {}
 
   @override
   String toString() {

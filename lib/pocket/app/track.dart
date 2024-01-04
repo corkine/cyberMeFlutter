@@ -628,6 +628,8 @@ class _TrackDetailFilterViewState extends ConsumerState<TrackDetailFilterView> {
                         child: logs.isEmpty
                             ? const Text("当前日志无 IP 地址标签")
                             : Wrap(
+                                runSpacing: 5,
+                                spacing: 5,
                                 children: logs.entries
                                     .map((e) => RawChip(
                                           label: Text(e.key),
