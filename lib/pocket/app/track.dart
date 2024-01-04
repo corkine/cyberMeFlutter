@@ -353,7 +353,9 @@ class _TrackDetailViewState extends ConsumerState<TrackDetailView> {
               backgroundColor: Colors.transparent,
               context: context,
               builder: (context) => TrackDetailFilterView(logs)),
-          icon: const Icon(Icons.filter_alt))
+          icon: logsFiltered.length == logs.length
+              ? const Icon(Icons.filter_alt_off)
+              : const Icon(Icons.filter_alt, color: Colors.green))
     ]);
 
     final items = ListView.builder(
@@ -411,7 +413,11 @@ class _TrackDetailViewState extends ConsumerState<TrackDetailView> {
                   setState(() => logs = d?.logs ?? []);
                 },
                 child: Column(children: [
-                  Expanded(child: items),
+                  Expanded(
+                      child: AnimatedOpacity(
+                          opacity: logsFiltered.isNotEmpty ? 1 : 0,
+                          duration: const Duration(milliseconds: 300),
+                          child: items)),
                   SafeArea(
                       child: Padding(
                           padding: const EdgeInsets.only(

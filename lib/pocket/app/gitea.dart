@@ -155,7 +155,26 @@ class _GiteaViewState extends ConsumerState<GiteaView>
                                             style: const TextStyle(
                                                 color: Colors.white))))
                               ]),
-                              Row(children: [Text(i.private ? "私有" : "公开")]),
+                              Row(children: [
+                                i.private
+                                    ? const Text("私有")
+                                    : const Text("公开",
+                                        style: TextStyle(
+                                            decoration:
+                                                TextDecoration.underline,
+                                            fontWeight: FontWeight.bold)),
+                                const SizedBox(width: 5),
+                                i.pushMirrors.isNotEmpty
+                                    ? Text(
+                                        i.pushMirrors.any((element) =>
+                                                element.syncOnCommit)
+                                            ? "推送同步"
+                                            : "定时同步",
+                                        style: const TextStyle(
+                                            color: Colors.green))
+                                    : const Text("无同步",
+                                        style: TextStyle(color: Colors.red))
+                              ]),
                               const SizedBox(height: 5),
                               Row(children: [
                                 Icon(Icons.access_time,
@@ -392,7 +411,7 @@ class _GiteaRepoSyncViewState extends ConsumerState<GiteaRepoSyncView> {
         [];
     final setting = ref.watch(gitSettingsProvider).value;
     return Scaffold(
-        body: Column(children: [
+        body: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       SingleChildScrollView(
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

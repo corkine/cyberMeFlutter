@@ -114,37 +114,37 @@ Future<List<GitIssue>> getGitIssues(GetGitIssuesRef ref, bool open) async {
 @freezed
 class GitRepoDetail with _$GitRepoDetail {
   factory GitRepoDetail(
-          {@Default(0) int id,
-          @Default(GitUser()) GitUser owner,
-          @Default("") String name,
-          @Default("") @JsonKey(name: "full_name") String fullName,
-          @Default("") String description,
-          @Default(false) bool empty,
-          @Default(false) bool private,
-          @Default(false) bool template,
-          @Default(false) bool fork,
-          @Default(false) bool mirror,
-          @Default(-1) int size,
-          @Default("") String language,
-          @Default("") @JsonKey(name: "languates_url") String languatesUrl,
-          @Default("") @JsonKey(name: "html_url") String htmlUrl,
-          @Default("") String link,
-          @Default("") @JsonKey(name: "ssh_url") String sshUrl,
-          @Default("") @JsonKey(name: "clone_url") String cloneUrl,
-          @Default("") @JsonKey(name: "original_url") String originalUrl,
-          @Default("") String website,
-          @Default(0) @JsonKey(name: "stars_count") int startCount,
-          @Default(0) @JsonKey(name: "forks_count") int forksCount,
-          @Default(0) @JsonKey(name: "watchers_count") int watchedsCount,
-          @Default(0) @JsonKey(name: "open_issues_count") int openIssuesCount,
-          @Default(0) @JsonKey(name: "open_pr_counter") int openPrCounter,
-          @Default(0) @JsonKey(name: "release_counter") int releaseCounter,
-          @Default("") @JsonKey(name: "default_branch") String defaultBranch,
-          @Default(false) bool archived,
-          @Default("") @JsonKey(name: "created_at") String createdAt,
-          @Default("") @JsonKey(name: "updated_at") String updatedAt,
-          @Default("") @JsonKey(name: "avatar_url") String avatarUrl}) =
-      _GitRepoDetail;
+      {@Default(0) int id,
+      @Default(GitUser()) GitUser owner,
+      @Default("") String name,
+      @Default("") @JsonKey(name: "full_name") String fullName,
+      @Default("") String description,
+      @Default(false) bool empty,
+      @Default(false) bool private,
+      @Default(false) bool template,
+      @Default(false) bool fork,
+      @Default(false) bool mirror,
+      @Default(-1) int size,
+      @Default("") String language,
+      @Default("") @JsonKey(name: "languates_url") String languatesUrl,
+      @Default("") @JsonKey(name: "html_url") String htmlUrl,
+      @Default("") String link,
+      @Default("") @JsonKey(name: "ssh_url") String sshUrl,
+      @Default("") @JsonKey(name: "clone_url") String cloneUrl,
+      @Default("") @JsonKey(name: "original_url") String originalUrl,
+      @Default("") String website,
+      @Default(0) @JsonKey(name: "stars_count") int startCount,
+      @Default(0) @JsonKey(name: "forks_count") int forksCount,
+      @Default(0) @JsonKey(name: "watchers_count") int watchedsCount,
+      @Default(0) @JsonKey(name: "open_issues_count") int openIssuesCount,
+      @Default(0) @JsonKey(name: "open_pr_counter") int openPrCounter,
+      @Default(0) @JsonKey(name: "release_counter") int releaseCounter,
+      @Default("") @JsonKey(name: "default_branch") String defaultBranch,
+      @Default(false) bool archived,
+      @Default("") @JsonKey(name: "created_at") String createdAt,
+      @Default("") @JsonKey(name: "updated_at") String updatedAt,
+      @Default("") @JsonKey(name: "avatar_url") String avatarUrl,
+      @Default([]) List<GitRepoPushMirror> pushMirrors}) = _GitRepoDetail;
 
   factory GitRepoDetail.fromJson(Map<String, dynamic> json) =>
       _$GitRepoDetailFromJson(json);
@@ -156,9 +156,25 @@ Future<List<GitRepoDetail>> getGitRepos(GetGitReposRef ref) async {
   if (entity.endpoint == null || entity.token == null) return [];
   final resp = await get(Uri.parse(
       "${entity.endpoint}/api/v1/repos/search?token=${entity.token}"));
-  return (jsonDecode(resp.body)["data"] as List? ?? [])
+  final repos = (jsonDecode(resp.body)["data"] as List? ?? [])
       .map((e) => GitRepoDetail.fromJson(e))
       .toList(growable: false);
+  final reposWithPushMirror = repos.map((e) async {
+    final owner = e.owner.username;
+    final repo = e.name;
+    var pushMirrors = <GitRepoPushMirror>[];
+    try {
+      final resp = await get(Uri.parse(
+          "${entity.endpoint}/api/v1/repos/$owner/$repo/push_mirrors?token=${entity.token}"));
+      pushMirrors = (jsonDecode(resp.body) as List? ?? [])
+          .map((e) => GitRepoPushMirror.fromJson(e))
+          .toList(growable: false);
+    } catch (_, st) {
+      debugPrintStack(stackTrace: st);
+    }
+    return e.copyWith(pushMirrors: pushMirrors);
+  });
+  return await Future.wait(reposWithPushMirror);
 }
 
 @riverpod
@@ -187,7 +203,7 @@ Future<String> deleteGitIssue(
 
 @freezed
 class GitRepoPushMirror with _$GitRepoPushMirror {
-  factory GitRepoPushMirror(
+  const factory GitRepoPushMirror(
           {@Default("") @JsonKey(name: "repo_name") String repoName,
           @Default("") @JsonKey(name: "remote_name") String remoteName,
           @Default("") @JsonKey(name: "remote_address") String remoteAddress,
