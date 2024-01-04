@@ -13,7 +13,8 @@ part 'gitea.g.dart';
 
 @freezed
 class GitSetting with _$GitSetting {
-  factory GitSetting({String? token, String? endpoint}) = _GitSetting;
+  factory GitSetting({String? token, String? endpoint, String? githubToken}) =
+      _GitSetting;
 
   factory GitSetting.fromJson(Map<String, dynamic> json) =>
       _$GitSettingFromJson(json);
@@ -182,4 +183,79 @@ Future<String> deleteGitIssue(
       "${entity.endpoint}/api/v1/repos/$owner/$repo/issues/$index?token=${entity.token}");
   final resp = await delete(url);
   return resp.body;
+}
+
+@freezed
+class GitRepoPushMirror with _$GitRepoPushMirror {
+  factory GitRepoPushMirror(
+          {@Default("") @JsonKey(name: "repo_name") String repoName,
+          @Default("") @JsonKey(name: "remote_name") String remoteName,
+          @Default("") @JsonKey(name: "remote_address") String remoteAddress,
+          @Default("") String created,
+          @Default("") @JsonKey(name: "last_update") String lastUpdate,
+          @Default("") @JsonKey(name: "last_error") String lastError,
+          @Default("") String interval,
+          @Default(false) @JsonKey(name: "sync_on_commit") bool syncOnCommit}) =
+      _GitRepoPushMirror;
+
+  factory GitRepoPushMirror.fromJson(Map<String, dynamic> json) =>
+      _$GitRepoPushMirrorFromJson(json);
+}
+
+@riverpod
+class GitMirrors extends _$GitMirrors {
+  @override
+  Future<List<GitRepoPushMirror>> build(String owner, String repo) async {
+    final entity = await ref.watch(gitSettingsProvider.future);
+    if (entity.endpoint == null || entity.token == null) return [];
+    final resp = await get(Uri.parse(
+        "${entity.endpoint}/api/v1/repos/$owner/$repo/push_mirrors?token=${entity.token}"));
+    return (jsonDecode(resp.body) as List? ?? [])
+        .map((e) => GitRepoPushMirror.fromJson(e))
+        .toList(growable: false);
+  }
+
+  Future<String> setGitMirrors(
+      String owner,
+      String repo,
+      String remoteAddress,
+      String remoteUser,
+      String remotePass,
+      String interval,
+      bool syncOnCommit) async {
+    final entity = await ref.watch(gitSettingsProvider.future);
+    if (entity.endpoint == null || entity.token == null) return "";
+    final url = Uri.parse(
+        "${entity.endpoint}/api/v1/repos/$owner/$repo/push_mirrors?token=${entity.token}");
+    final resp = await post(url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "interval": interval,
+          "remote_address": remoteAddress,
+          "remote_password": remotePass,
+          "remote_username": remoteUser,
+          "sync_on_commit": syncOnCommit
+        }));
+    ref.invalidateSelf();
+    return resp.body;
+  }
+
+  Future<String> gitMirrorSync(String owner, String repo) async {
+    final entity = await ref.watch(gitSettingsProvider.future);
+    if (entity.endpoint == null || entity.token == null) return "";
+    final _ = await post(Uri.parse(
+        "${entity.endpoint}/api/v1/repos/$owner/$repo/push_mirrors-sync?token=${entity.token}"));
+    return "Sync 请求已提交";
+  }
+
+  Future<String> deletePushMirror(
+      String owner, String repo, String name) async {
+    final entity = await ref.watch(gitSettingsProvider.future);
+    if (entity.endpoint == null || entity.token == null) return "";
+    final url = Uri.parse(
+        "${entity.endpoint}/api/v1/repos/$owner/$repo/push_mirrors/$name?token=${entity.token}");
+    final res = await delete(url);
+    ref.invalidateSelf();
+    return res.body;
+  }
 }

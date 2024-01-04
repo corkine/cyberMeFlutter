@@ -1,12 +1,11 @@
 import 'dart:math';
-import 'dart:ui';
 
 import 'package:cyberme_flutter/api/gitea.dart';
-import 'package:cyberme_flutter/pocket/app/util.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:url_launcher/url_launcher_string.dart';
+
+import 'util.dart';
 
 class GiteaView extends ConsumerStatefulWidget {
   const GiteaView({super.key});
@@ -69,6 +68,7 @@ class _GiteaViewState extends ConsumerState<GiteaView>
     {
       final endPoint = TextEditingController(text: setting?.endpoint ?? "");
       final token = TextEditingController(text: setting?.token ?? "");
+      final ghToken = TextEditingController(text: setting?.githubToken ?? "");
       String? endpointErr;
       String? tokenErr;
       ScaffoldMessenger.of(context).showMaterialBanner(MaterialBanner(
@@ -89,6 +89,10 @@ class _GiteaViewState extends ConsumerState<GiteaView>
                     border: const UnderlineInputBorder(),
                     labelText: "Token",
                     errorText: tokenErr)),
+            TextField(
+                controller: ghToken,
+                decoration: const InputDecoration(
+                    border: UnderlineInputBorder(), labelText: "Github Token")),
             Padding(
                 padding: const EdgeInsets.only(top: 15, bottom: 10),
                 child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
@@ -103,9 +107,10 @@ class _GiteaViewState extends ConsumerState<GiteaView>
                             ? endPoint.text
                                 .substring(0, endPoint.text.length - 1)
                             : endPoint.text;
-                        ref
-                            .read(gitSettingsProvider.notifier)
-                            .set(GitSetting(token: token.text, endpoint: ep));
+                        ref.read(gitSettingsProvider.notifier).set(GitSetting(
+                            token: token.text,
+                            endpoint: ep,
+                            githubToken: ghToken.text));
                         ScaffoldMessenger.of(context).clearMaterialBanners();
                       },
                       child: const Text("确定", textAlign: TextAlign.center)),
@@ -122,7 +127,8 @@ class _GiteaViewState extends ConsumerState<GiteaView>
               itemBuilder: (context, index) {
                 final i = repos[index];
                 return InkWell(
-                    onTap: () => launchUrlString(i.htmlUrl),
+                    onLongPress: () => launchUrlString(i.htmlUrl),
+                    onTap: () => showRepoPopup(i),
                     child: Padding(
                         padding: const EdgeInsets.only(
                             bottom: 7, top: 7, left: 10, right: 10),
@@ -160,30 +166,29 @@ class _GiteaViewState extends ConsumerState<GiteaView>
               },
               itemCount: repos.length)),
       SafeArea(
-        child: ButtonBar(children: [
-          TextButton(
-              onPressed: () => launchUrlString(setting?.endpoint ?? ""),
-              child: const Text("主页")),
-          TextButton(
-              onPressed: () async {
-                ScaffoldMessenger.of(context)
-                    .showMaterialBanner(const MaterialBanner(
-                        content: Row(children: [
-                          SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator.adaptive(
-                                  strokeWidth: 2)),
-                          SizedBox(width: 10),
-                          Text("正在刷新...")
-                        ]),
-                        actions: [SizedBox()]));
-                final _ = await ref.refresh(getGitReposProvider.future);
-                ScaffoldMessenger.of(context).clearMaterialBanners();
-              },
-              child: const Text("刷新"))
-        ]),
-      )
+          child: ButtonBar(children: [
+        TextButton(
+            onPressed: () => launchUrlString(setting?.endpoint ?? ""),
+            child: const Text("主页")),
+        TextButton(
+            onPressed: () async {
+              ScaffoldMessenger.of(context)
+                  .showMaterialBanner(const MaterialBanner(
+                      content: Row(children: [
+                        SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator.adaptive(
+                                strokeWidth: 2)),
+                        SizedBox(width: 10),
+                        Text("正在刷新...")
+                      ]),
+                      actions: [SizedBox()]));
+              final _ = await ref.refresh(getGitReposProvider.future);
+              ScaffoldMessenger.of(context).clearMaterialBanners();
+            },
+            child: const Text("刷新"))
+      ]))
     ]);
   }
 
@@ -211,6 +216,28 @@ class _GiteaViewState extends ConsumerState<GiteaView>
                   child: Text("删除",
                       style: TextStyle(
                           color: Theme.of(context).colorScheme.error)))
+            ]));
+  }
+
+  void showRepoPopup(GitRepoDetail repo) async {
+    await showDialog(
+        context: context,
+        builder: (context) =>
+            SimpleDialog(title: Text(repo.fullName), children: [
+              SimpleDialogOption(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    launchUrlString(repo.htmlUrl);
+                  },
+                  child: const Text("在 Web 查看...")),
+              SimpleDialogOption(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    showModalBottomSheet(
+                        context: context,
+                        builder: (context) => GiteaRepoSyncView(repo: repo));
+                  },
+                  child: const Text("查看同步信息"))
             ]));
   }
 
@@ -258,9 +285,11 @@ class _GiteaViewState extends ConsumerState<GiteaView>
               itemCount: issues.length)),
       ButtonBar(children: [
         TextButton(
-            onPressed: () => showWaitingBar(context,
-                func: () async => await ref
-                    .refresh(getGitIssuesProvider.call(showOpen).future)),
+            onPressed: () {
+              showWaitingBar(context,
+                  func: () async => await ref
+                      .refresh(getGitIssuesProvider.call(showOpen).future));
+            },
             child: const Text("刷新")),
         TextButton(
             onPressed: () {
@@ -342,5 +371,127 @@ class _GiteaViewState extends ConsumerState<GiteaView>
             child: Text(!showOpen ? "显示打开" : "显示已关闭"))
       ])
     ]);
+  }
+}
+
+class GiteaRepoSyncView extends ConsumerStatefulWidget {
+  final GitRepoDetail repo;
+  const GiteaRepoSyncView({super.key, required this.repo});
+
+  @override
+  ConsumerState<GiteaRepoSyncView> createState() => _GiteaRepoSyncViewState();
+}
+
+class _GiteaRepoSyncViewState extends ConsumerState<GiteaRepoSyncView> {
+  @override
+  Widget build(BuildContext context) {
+    final mirror = ref
+            .watch(gitMirrorsProvider.call(
+                widget.repo.owner.username, widget.repo.name))
+            .value ??
+        [];
+    final setting = ref.watch(gitSettingsProvider).value;
+    return Scaffold(
+        body: Column(children: [
+      SingleChildScrollView(
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 12, right: 12, top: 13),
+          child:
+              Text(widget.repo.fullName, style: const TextStyle(fontSize: 20)),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(left: 12, right: 12),
+          child: Text(widget.repo.description),
+        ),
+        const SizedBox(height: 8),
+        ...mirror.map((e) => buildMirroCard(e, context))
+      ])),
+      const Spacer(),
+      Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: SafeArea(
+              child:
+                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+            TextButton(
+                onPressed: () async => ref.invalidate(gitMirrorsProvider.call(
+                    widget.repo.owner.username, widget.repo.name)),
+                child: const Text("刷新页面")),
+            TextButton(
+                onPressed: setting?.githubToken?.isEmpty ?? true
+                    ? null
+                    : () async {
+                        final user = widget.repo.owner.username;
+                        final repoName = widget.repo.name;
+                        final remotePass = setting?.githubToken ?? "";
+                        final remoteAddress =
+                            "https://github.com/$user/$repoName.git";
+                        final res = await ref
+                            .read(gitMirrorsProvider
+                                .call(widget.repo.owner.username,
+                                    widget.repo.name)
+                                .notifier)
+                            .setGitMirrors(user, repoName, remoteAddress, user,
+                                remotePass, "8h0m0s", true);
+                        await showSimpleMessage(context, content: res);
+                      },
+                child: const Text("新建 Github 同步")),
+            TextButton(
+                onPressed: () async {
+                  final res = await ref
+                      .read(gitMirrorsProvider
+                          .call(widget.repo.owner.username, widget.repo.name)
+                          .notifier)
+                      .gitMirrorSync(
+                          widget.repo.owner.username, widget.repo.name);
+                  await showSimpleMessage(context, content: res);
+                },
+                child: const Text("所有镜像同步"))
+          ])))
+    ]));
+  }
+
+  ListTile buildMirroCard(GitRepoPushMirror e, BuildContext context) {
+    return ListTile(
+        onTap: () {
+          showDialog(
+              context: context,
+              builder: (context) =>
+                  SimpleDialog(title: const Text("操作"), children: [
+                    SimpleDialogOption(
+                        child: const Text("删除"),
+                        onPressed: () async {
+                          Navigator.of(context).pop();
+                          await ref
+                              .read(gitMirrorsProvider
+                                  .call(widget.repo.owner.username,
+                                      widget.repo.name)
+                                  .notifier)
+                              .deletePushMirror(widget.repo.owner.username,
+                                  widget.repo.name, e.remoteName);
+                        })
+                  ]));
+        },
+        title: Row(children: [
+          Text(e.repoName),
+          const Spacer(),
+          Text(e.interval, style: const TextStyle(fontSize: 12)),
+          const SizedBox(width: 5),
+          Text(e.syncOnCommit ? "推送同步" : "定时同步",
+              style: const TextStyle(fontSize: 12, color: Colors.green))
+        ]),
+        subtitle:
+            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(e.remoteAddress, maxLines: 1, overflow: TextOverflow.ellipsis),
+          const SizedBox(height: 5),
+          Text(
+              "更新于 ${e.lastUpdate}\n创建于 ${e.created}\nEntityID: ${e.remoteName}",
+              style: const TextStyle(fontSize: 10)),
+          e.lastError.isEmpty
+              ? const SizedBox()
+              : Text(e.lastError,
+                  style: const TextStyle(fontSize: 10, color: Colors.red))
+        ]));
   }
 }
