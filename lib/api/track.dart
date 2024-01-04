@@ -38,31 +38,6 @@ class TrackSetting with _$TrackSetting {
 }
 
 @riverpod
-Set<String> trackSearchChanged(TrackSearchChangedRef ref) {
-  final setting = ref.watch(trackSettingsProvider).value;
-  final data = ref.watch(fetchTrackProvider).value ?? [];
-  if (setting == null) return {};
-  final lastData = setting.lastData.entries.toList(growable: false);
-  final res = <String>{};
-  for (var e in setting.searchItems) {
-    if (e.track) {
-      final last = lastData.where((element) => element.key.contains(e.search));
-      final current = data.where((element) => element.$1.contains(e.search));
-      if (current.length > last.length ||
-          current.any((element) {
-            final lastItem = last.firstWhere(
-                (element2) => element2.key == element.$1,
-                orElse: () => const MapEntry("", -1));
-            return lastItem.value != element.$2;
-          })) {
-        res.add(e.search);
-      }
-    }
-  }
-  return res;
-}
-
-@riverpod
 class TrackSettings extends _$TrackSettings {
   late SharedPreferences s;
   late bool dirty;
@@ -165,6 +140,85 @@ class TrackSettings extends _$TrackSettings {
   }
 }
 
+/// 读取主屏远程追踪数据
+@riverpod
+Future<List<(String, int)>> fetchTrack(FetchTrackRef ref) async {
+  final setting = ref.watch(trackSettingsProvider).value;
+  if (setting == null) return [];
+  final Response r =
+      await get(Uri.parse(Config.visitsUrl), headers: config.cyberBase64Header);
+  final d = jsonDecode(r.body);
+  if ((d["status"] as int?) == 1) {
+    final res = (d["data"] as List)
+        .map((e) => e as List)
+        .map((e) => (e.first.toString(), int.tryParse(e.last) ?? -1))
+        .toList(growable: false);
+    return res;
+  } else {
+    return [];
+  }
+}
+
+/// 删除当前追踪
+@riverpod
+Future<String> deleteTrack(DeleteTrackRef ref, List<String> keys) async {
+  final res = await Future.wait(keys.map((e) async =>
+      await postFrom("/cyber/service/visits/delete-key", {"visit-key": e})));
+  ref.invalidate(fetchTrackProvider);
+  return res.map((e) => e.$2).join("\n");
+}
+
+/// 当前主屏搜索过滤，排序后的结果
+@riverpod
+List<(String, int)> trackData(TrackDataRef ref, String searchText) {
+  final setting = ref.watch(trackSettingsProvider).value;
+  final data = ref.watch(fetchTrackProvider).value;
+  if (setting == null || data == null) return [];
+  var res = data;
+  if (setting.sortByName) {
+    res.sort((a, b) {
+      return a.$1.compareTo(b.$1);
+    });
+  } else {
+    res.sort((a, b) {
+      return b.$2.compareTo(a.$2);
+    });
+  }
+  if (searchText.isNotEmpty) {
+    res = res.where((e) {
+      return e.$1.contains(searchText);
+    }).toList(growable: false);
+  }
+  return res;
+}
+
+/// 相比较上一次搜索变更的搜索条目
+@riverpod
+Set<String> trackSearchChanged(TrackSearchChangedRef ref) {
+  final setting = ref.watch(trackSettingsProvider).value;
+  final data = ref.watch(fetchTrackProvider).value ?? [];
+  if (setting == null) return {};
+  final lastData = setting.lastData.entries.toList(growable: false);
+  final res = <String>{};
+  for (var e in setting.searchItems) {
+    if (e.track) {
+      final last = lastData.where((element) => element.key.contains(e.search));
+      final current = data.where((element) => element.$1.contains(e.search));
+      if (current.length > last.length ||
+          current.any((element) {
+            final lastItem = last.firstWhere(
+                (element2) => element2.key == element.$1,
+                orElse: () => const MapEntry("", -1));
+            return lastItem.value != element.$2;
+          })) {
+        res.add(e.search);
+      }
+    }
+  }
+  return res;
+}
+
+/// 本地保存的标签是否打开数据
 @riverpod
 class TrackMarks extends _$TrackMarks {
   late SharedPreferences s;
@@ -210,6 +264,7 @@ class TrackMarks extends _$TrackMarks {
   }
 }
 
+/// 详情屏当前日志中所出现的标签以及其是否选中
 @riverpod
 Future<Map<String, bool>> trackUrlFilters(
     TrackUrlFiltersRef ref, List<Logs> logs) async {
@@ -229,6 +284,7 @@ Future<Map<String, bool>> trackUrlFilters(
   return marksCopy;
 }
 
+/// 详情屏应用了标签过滤的列表结果
 @riverpod
 Future<List<Logs>> trackUrlFilteredLogs(
     TrackUrlFilteredLogsRef ref, List<Logs> logs) async {
@@ -236,53 +292,4 @@ Future<List<Logs>> trackUrlFilteredLogs(
   return logs
       .where((element) => filters[element.iptag as String? ?? ""] == false)
       .toList(growable: false);
-}
-
-@riverpod
-Future<List<(String, int)>> fetchTrack(FetchTrackRef ref) async {
-  final setting = ref.watch(trackSettingsProvider).value;
-  if (setting == null) return [];
-  final Response r =
-      await get(Uri.parse(Config.visitsUrl), headers: config.cyberBase64Header);
-  final d = jsonDecode(r.body);
-  if ((d["status"] as int?) == 1) {
-    final res = (d["data"] as List)
-        .map((e) => e as List)
-        .map((e) => (e.first.toString(), int.tryParse(e.last) ?? -1))
-        .toList(growable: false);
-    return res;
-  } else {
-    return [];
-  }
-}
-
-@riverpod
-Future<String> deleteTrack(DeleteTrackRef ref, List<String> keys) async {
-  final res = await Future.wait(keys.map((e) async =>
-      await postFrom("/cyber/service/visits/delete-key", {"visit-key": e})));
-  ref.invalidate(fetchTrackProvider);
-  return res.map((e) => e.$2).join("\n");
-}
-
-@riverpod
-List<(String, int)> trackData(TrackDataRef ref, String searchText) {
-  final setting = ref.watch(trackSettingsProvider).value;
-  final data = ref.watch(fetchTrackProvider).value;
-  if (setting == null || data == null) return [];
-  var res = data;
-  if (setting.sortByName) {
-    res.sort((a, b) {
-      return a.$1.compareTo(b.$1);
-    });
-  } else {
-    res.sort((a, b) {
-      return b.$2.compareTo(a.$2);
-    });
-  }
-  if (searchText.isNotEmpty) {
-    res = res.where((e) {
-      return e.$1.contains(searchText);
-    }).toList(growable: false);
-  }
-  return res;
 }

@@ -49,6 +49,7 @@ class _TrackViewState extends ConsumerState<TrackView> {
   Widget build(BuildContext context) {
     final setting = ref.watch(trackSettingsProvider).value;
     final data = ref.watch(trackDataProvider.call(search.text));
+    final changed = ref.watch(trackSearchChangedProvider);
 
     final appBar =
         AppBar(centerTitle: false, title: const Text("Track!Me"), actions: [
@@ -114,7 +115,7 @@ class _TrackViewState extends ConsumerState<TrackView> {
         placeholder: "搜索",
         style: const TextStyle(color: Colors.white),
         padding: const EdgeInsets.only(left: 10, right: 10));
-    final changed = ref.watch(trackSearchChangedProvider);
+
     return Theme(
         data: appThemeData,
         child: Scaffold(
@@ -125,7 +126,11 @@ class _TrackViewState extends ConsumerState<TrackView> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(child: dataList),
+                      Expanded(
+                          child: AnimatedOpacity(
+                              opacity: data.isEmpty ? 0 : 1,
+                              duration: const Duration(milliseconds: 500),
+                              child: dataList)),
                       Container(
                           height: 45,
                           padding: const EdgeInsets.only(
@@ -246,38 +251,44 @@ class _TrackViewState extends ConsumerState<TrackView> {
     await showDialog(
         context: context,
         builder: (context) => StatefulBuilder(
-            builder: (context, setState) => AlertDialog(
-                    title: const Text("添加快捷方式"),
-                    content: Column(mainAxisSize: MainAxisSize.min, children: [
-                      TextField(
-                          controller: searchC2,
-                          decoration: const InputDecoration(labelText: "搜索内容")),
-                      const SizedBox(height: 10),
-                      TextField(
-                          autofocus: true,
-                          decoration:
-                              const InputDecoration(labelText: "快捷方式标题"),
-                          onChanged: (value) => title = value),
-                      const SizedBox(height: 10),
-                      Transform.translate(
-                          offset: const Offset(-10, 0),
-                          child: Row(children: [
-                            Checkbox.adaptive(
-                                visualDensity: VisualDensity.compact,
-                                value: enableTrack,
-                                onChanged: (v) {
-                                  setState(() => enableTrack = v!);
-                                }),
-                            const SizedBox(width: 10),
-                            const Text("追踪变更")
-                          ]))
-                    ]),
-                    actions: [
-                      TextButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          child: const Text("取消")),
-                      TextButton(onPressed: handleAdd, child: const Text("确定"))
-                    ])));
+            builder: (context, setState) => Theme(
+                  data: appThemeData,
+                  child: AlertDialog(
+                      title: const Text("添加快捷方式"),
+                      content:
+                          Column(mainAxisSize: MainAxisSize.min, children: [
+                        TextField(
+                            controller: searchC2,
+                            decoration:
+                                const InputDecoration(labelText: "搜索内容")),
+                        const SizedBox(height: 10),
+                        TextField(
+                            autofocus: true,
+                            decoration:
+                                const InputDecoration(labelText: "快捷方式标题"),
+                            onChanged: (value) => title = value),
+                        const SizedBox(height: 10),
+                        Transform.translate(
+                            offset: const Offset(-10, 0),
+                            child: Row(children: [
+                              Checkbox.adaptive(
+                                  visualDensity: VisualDensity.compact,
+                                  value: enableTrack,
+                                  onChanged: (v) {
+                                    setState(() => enableTrack = v!);
+                                  }),
+                              const SizedBox(width: 10),
+                              const Text("追踪变更")
+                            ]))
+                      ]),
+                      actions: [
+                        TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: const Text("取消")),
+                        TextButton(
+                            onPressed: handleAdd, child: const Text("确定"))
+                      ]),
+                )));
   }
 }
 

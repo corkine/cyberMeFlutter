@@ -185,7 +185,7 @@ class _GiteaViewState extends ConsumerState<GiteaView>
               },
               itemCount: repos.length)),
       SafeArea(
-          child: ButtonBar(children: [
+          child: ButtonBar(alignment: MainAxisAlignment.center, children: [
         TextButton(
             onPressed: () => launchUrlString(setting?.endpoint ?? ""),
             child: const Text("主页")),
@@ -302,7 +302,7 @@ class _GiteaViewState extends ConsumerState<GiteaView>
                             ])));
               },
               itemCount: issues.length)),
-      ButtonBar(children: [
+      ButtonBar(alignment: MainAxisAlignment.center, children: [
         TextButton(
             onPressed: () {
               showWaitingBar(context,
@@ -412,22 +412,35 @@ class _GiteaRepoSyncViewState extends ConsumerState<GiteaRepoSyncView> {
     final setting = ref.watch(gitSettingsProvider).value;
     return Scaffold(
         body: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      SingleChildScrollView(
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 12, right: 12, top: 13),
-          child:
-              Text(widget.repo.fullName, style: const TextStyle(fontSize: 20)),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(left: 12, right: 12),
-          child: Text(widget.repo.description),
-        ),
-        const SizedBox(height: 8),
-        ...mirror.map((e) => buildMirroCard(e, context))
-      ])),
-      const Spacer(),
+      Expanded(
+          child: SingleChildScrollView(
+              child: AnimatedOpacity(
+                  opacity: mirror.isEmpty ? 0 : 1,
+                  duration: const Duration(milliseconds: 400),
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(
+                              left: 12, right: 12, top: 13),
+                          child: Text(widget.repo.fullName,
+                              style: const TextStyle(fontSize: 20)),
+                        ),
+                        ...widget.repo.description.isEmpty
+                            ? []
+                            : [
+                                Padding(
+                                    padding: const EdgeInsets.only(
+                                        left: 12, right: 12),
+                                    child: Text(widget.repo.description,
+                                        style: const TextStyle(
+                                            height: 1.2,
+                                            fontSize: 12,
+                                            color: Colors.grey))),
+                                const SizedBox(height: 8)
+                              ],
+                        ...mirror.map((e) => buildMirroCard(e, context))
+                      ])))),
       Padding(
           padding: const EdgeInsets.all(8.0),
           child: SafeArea(
@@ -476,25 +489,30 @@ class _GiteaRepoSyncViewState extends ConsumerState<GiteaRepoSyncView> {
         onTap: () {
           showDialog(
               context: context,
-              builder: (context) =>
-                  SimpleDialog(title: const Text("操作"), children: [
-                    SimpleDialogOption(
-                        child: const Text("删除"),
-                        onPressed: () async {
-                          Navigator.of(context).pop();
-                          await ref
-                              .read(gitMirrorsProvider
-                                  .call(widget.repo.owner.username,
-                                      widget.repo.name)
-                                  .notifier)
-                              .deletePushMirror(widget.repo.owner.username,
-                                  widget.repo.name, e.remoteName);
-                        })
-                  ]));
+              builder: (context) => SimpleDialog(
+                      title: Text(e.remoteName.toUpperCase(),
+                          style: const TextStyle(fontSize: 14)),
+                      children: [
+                        SimpleDialogOption(
+                            child: const Text("删除"),
+                            onPressed: () async {
+                              Navigator.of(context).pop();
+                              await ref
+                                  .read(gitMirrorsProvider
+                                      .call(widget.repo.owner.username,
+                                          widget.repo.name)
+                                      .notifier)
+                                  .deletePushMirror(widget.repo.owner.username,
+                                      widget.repo.name, e.remoteName);
+                            })
+                      ]));
         },
         title: Row(children: [
-          Text(e.repoName),
-          const Spacer(),
+          Text(
+            e.repoName.toUpperCase(),
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(width: 5),
           Text(e.interval, style: const TextStyle(fontSize: 12)),
           const SizedBox(width: 5),
           Text(e.syncOnCommit ? "推送同步" : "定时同步",
@@ -504,8 +522,7 @@ class _GiteaRepoSyncViewState extends ConsumerState<GiteaRepoSyncView> {
             Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(e.remoteAddress, maxLines: 1, overflow: TextOverflow.ellipsis),
           const SizedBox(height: 5),
-          Text(
-              "更新于 ${e.lastUpdate}\n创建于 ${e.created}\nEntityID: ${e.remoteName}",
+          Text("更新于${e.lastUpdate}，创建于${e.created}",
               style: const TextStyle(fontSize: 10)),
           e.lastError.isEmpty
               ? const SizedBox()

@@ -4,6 +4,7 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart';
+import 'package:intl/intl.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -226,9 +227,12 @@ class GitMirrors extends _$GitMirrors {
     if (entity.endpoint == null || entity.token == null) return [];
     final resp = await get(Uri.parse(
         "${entity.endpoint}/api/v1/repos/$owner/$repo/push_mirrors?token=${entity.token}"));
-    return (jsonDecode(resp.body) as List? ?? [])
-        .map((e) => GitRepoPushMirror.fromJson(e))
-        .toList(growable: false);
+    return (jsonDecode(resp.body) as List? ?? []).map((e) {
+      final res = GitRepoPushMirror.fromJson(e);
+      return res.copyWith(
+          created: formatDateTime(parseDateTime(res.created)),
+          lastUpdate: formatDateTime(parseDateTime(res.lastUpdate)));
+    }).toList(growable: false);
   }
 
   Future<String> setGitMirrors(
@@ -273,5 +277,30 @@ class GitMirrors extends _$GitMirrors {
     final res = await delete(url);
     ref.invalidateSelf();
     return res.body;
+  }
+}
+
+DateTime parseDateTime(String input) {
+  final DateFormat formatter = DateFormat('EEE, dd MMM yyyy HH:mm:ss Z');
+  return formatter.parse(input);
+}
+
+String formatDateTime(DateTime dateTime) {
+  DateFormat formatter = DateFormat('yyyy-MM-dd HH:mm');
+  String formattedDate = formatter.format(dateTime);
+
+  final DateTime now = DateTime.now();
+  final DateTime yesterday = DateTime.now().subtract(const Duration(days: 1));
+
+  if (dateTime.year == now.year &&
+      dateTime.month == now.month &&
+      dateTime.day == now.day) {
+    return '今天 ${DateFormat('HH:mm').format(dateTime)}';
+  } else if (dateTime.year == yesterday.year &&
+      dateTime.month == yesterday.month &&
+      dateTime.day == yesterday.day) {
+    return '昨天 ${DateFormat('HH:mm').format(dateTime)}';
+  } else {
+    return formattedDate;
   }
 }

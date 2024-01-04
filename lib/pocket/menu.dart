@@ -48,11 +48,10 @@ class _MenuViewState extends State<MenuView> {
     return Scaffold(
         backgroundColor: Colors.white,
         body: CustomScrollView(slivers: [
-          SliverAppBar.large(
+          SliverAppBar.medium(
               stretch: true,
               title: const Text("Cyber Apps",
                   style: TextStyle(color: Colors.white)),
-              expandedHeight: 200,
               flexibleSpace: Container(
                   decoration: const BoxDecoration(
                       image: DecorationImage(

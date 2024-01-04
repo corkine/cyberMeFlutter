@@ -34,26 +34,30 @@ class _BlogViewState extends ConsumerState<BlogView> {
         return e.title.toUpperCase().contains(searchText) ||
             e.summary.toUpperCase().contains(searchText);
       }).toList();
-      final blogList = ListView.builder(
-          itemCount: blogs.length,
-          itemBuilder: (c, i) => ListTile(
-              title: Text(blogs![i].title),
-              subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(blogs[i].summary,
-                        style:
-                            const TextStyle(fontSize: 12, color: Colors.grey),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis),
-                    const SizedBox(height: 4),
-                    Text(
-                        (blogs[i].author?.name ?? "") +
-                            " @ " +
-                            blogs[i].date_modified.substring(0, 10),
-                        style: const TextStyle(fontSize: 12))
-                  ]),
-              onTap: () => launchUrlString(blogs![i].url)));
+      final blogList = AnimatedOpacity(
+        duration: const Duration(milliseconds: 400),
+        opacity: blogs.isEmpty ? 0 : 1,
+        child: ListView.builder(
+            itemCount: blogs.length,
+            itemBuilder: (c, i) => ListTile(
+                title: Text(blogs![i].title),
+                subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(blogs[i].summary,
+                          style:
+                              const TextStyle(fontSize: 12, color: Colors.grey),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis),
+                      const SizedBox(height: 4),
+                      Text(
+                          (blogs[i].author?.name ?? "") +
+                              " @ " +
+                              blogs[i].date_modified.substring(0, 10),
+                          style: const TextStyle(fontSize: 12))
+                    ]),
+                onTap: () => launchUrlString(blogs![i].url))),
+      );
       content = SafeArea(
           child: Column(children: [
         Expanded(
@@ -66,25 +70,24 @@ class _BlogViewState extends ConsumerState<BlogView> {
             child: CupertinoSearchTextField(
                 style: const TextStyle(color: Colors.white),
                 controller: search,
-                onChanged: (value) {
-                  setState(() {});
-                },
-                onSuffixTap: () {
-                  search.clear();
-                  setState(() {});
-                }))
+                onChanged: (value) => setState(() {}),
+                onSuffixTap: () => setState(() => search.clear())))
       ]));
     }
     return Theme(
         data: appThemeData,
         child: Scaffold(
             appBar: AppBar(
-                title: const Column(
+                title: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Blogs Feed'),
-                      Text('www.mazhangjing.com/blog',
-                          style: TextStyle(fontSize: 10, fontFamily: "mono"))
+                      Text(search.text == "案例" ? '案例' : '博客'),
+                      Text(
+                          search.text == "案例"
+                              ? 'www.mazhangjing.com/cases'
+                              : 'www.mazhangjing.com/blog',
+                          style:
+                              const TextStyle(fontSize: 10, fontFamily: "mono"))
                     ]),
                 actions: [
                   IconButton(
