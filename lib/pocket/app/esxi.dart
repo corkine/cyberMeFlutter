@@ -43,7 +43,12 @@ class _EsxiViewState extends ConsumerState<EsxiView> {
       content = const Padding(
           padding: EdgeInsets.only(top: 50),
           child: CupertinoActivityIndicator());
+    } else if (data.$2.isNotEmpty) {
+      content = Padding(
+          padding: const EdgeInsets.only(top: 50),
+          child: Center(child: Text(data.$2)));
     } else {
+      final d = data.$1!;
       content = Padding(
           padding: const EdgeInsets.only(left: 0, right: 0),
           child:
@@ -52,7 +57,7 @@ class _EsxiViewState extends ConsumerState<EsxiView> {
                 padding: EdgeInsets.only(left: 15, top: 8, bottom: 0),
                 child: Text("ADDRESS",
                     style: TextStyle(fontWeight: FontWeight.bold))),
-            ...data.ips.map((e) {
+            ...d.ips.map((e) {
               return ListTile(
                   title: Text(e.ip_address),
                   subtitle:
@@ -64,7 +69,7 @@ class _EsxiViewState extends ConsumerState<EsxiView> {
                 padding: EdgeInsets.only(left: 15, top: 8, bottom: 0),
                 child:
                     Text("VMS", style: TextStyle(fontWeight: FontWeight.bold))),
-            ...data.vms.indexed.map((e) {
+            ...d.vms.indexed.map((e) {
               return ListTile(
                   onTap: () => popVmMenu(e.$2),
                   title: Row(children: [
@@ -77,7 +82,7 @@ class _EsxiViewState extends ConsumerState<EsxiView> {
             }).toList(),
             const SizedBox(height: 100),
             Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-              Text(data.version,
+              Text(d.version,
                   textAlign: TextAlign.center,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(color: Colors.grey, fontSize: 10))

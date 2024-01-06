@@ -134,6 +134,10 @@ class MovieSettings extends _$MovieSettings {
       } else {
         v = v.copyWith(watchedMovie: {url, ...v.watchedMovie});
       }
+      if (v.wantItems.contains(url)) {
+        v = v.copyWith(
+            wantItems: v.wantItems.where((element) => element != url).toSet());
+      }
     } else {
       if (isTv) {
         v = v.copyWith(

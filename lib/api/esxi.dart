@@ -1,6 +1,7 @@
 // ignore_for_file: non_constant_identifier_names
 
 import 'package:cyberme_flutter/api/basic.dart';
+import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -72,11 +73,19 @@ class EsxiInfo with _$EsxiInfo {
 @riverpod
 class EsxiInfos extends _$EsxiInfos {
   @override
-  Future<EsxiInfo> build() async {
-    final (res, ok) = await requestFrom(
-        "/cyber/service/esxi/info?cache=true", EsxiInfo.fromJson);
-    if (ok.isNotEmpty) throw Exception(ok);
-    return res!;
+  Future<(EsxiInfo?, String)> build() async {
+    try {
+      final (res, ok) = await requestFrom(
+          "/cyber/service/esxi/info?cache=true", EsxiInfo.fromJson);
+      if (ok.isNotEmpty) {
+        return (null, ok);
+      } else {
+        return (res!, "");
+      }
+    } catch (e, st) {
+      debugPrintStack(stackTrace: st);
+      return (null, e.toString());
+    }
   }
 
   Future<void> sync() async {
@@ -84,7 +93,7 @@ class EsxiInfos extends _$EsxiInfos {
         "/cyber/service/esxi/info?cache=false", EsxiInfo.fromJson);
     if (ok.isNotEmpty) throw Exception(ok);
     if (res != null) {
-      state = AsyncData(res);
+      state = AsyncData((res, ""));
     }
   }
 
@@ -94,14 +103,17 @@ class EsxiInfos extends _$EsxiInfos {
     if (ok) {
       final old = state.valueOrNull;
       if (old == null) return res;
-      state = AsyncData(old.copyWith(
-          vms: old.vms.map((e) {
-        if (e.vmid == vm.vmid) {
-          return e.copyWith(power: power.name);
-        } else {
-          return e;
-        }
-      }).toList(growable: false)));
+      state = AsyncData((
+        old.$1!.copyWith(
+            vms: old.$1!.vms.map((e) {
+          if (e.vmid == vm.vmid) {
+            return e.copyWith(power: power.name);
+          } else {
+            return e;
+          }
+        }).toList(growable: false)),
+        ""
+      ));
     }
     return res;
   }
