@@ -9,6 +9,7 @@ import 'package:cyberme_flutter/pocket/app/story.dart';
 import 'app/blog.dart';
 import 'app/blue.dart';
 import 'app/cloth.dart';
+import 'app/gpt.dart';
 import 'app/medic.dart';
 import 'dashboard.dart' as dash;
 import 'package:flutter/foundation.dart';
@@ -40,18 +41,6 @@ final apps = {
     "view": (c) => const dash.DashHome(),
     "addToMenu": true,
     "replace": false
-  },
-  "game": {
-    "name": "健康游戏",
-    "view": (c) => const Game(info: null),
-    "addToMenu": true,
-    "icon": Icons.gamepad
-  },
-  "snh48": {
-    "name": "SNH Pocket",
-    "view": (c) => const SNHApp(),
-    "addToMenu": true,
-    "icon": Icons.heart_broken_rounded
   },
   "ticket": {
     "name": "12306 车票",
@@ -113,6 +102,24 @@ final apps = {
     "addToMenu": true,
     "icon": Icons.computer
   },
+  "blog": {
+    "name": "博客",
+    "view": (c) => const BlogView(),
+    "addToMenu": true,
+    "icon": Icons.article
+  },
+  "gitea": {
+    "name": "Gitea",
+    "view": (c) => const GiteaView(),
+    "addToMenu": true,
+    "icon": Icons.source
+  },
+  "gpt": {
+    "name": "GPT",
+    "view": (c) => const GPTView(),
+    "addToMenu": true,
+    "icon": Icons.android
+  },
   "cloth": {
     "name": "衣物管理",
     "view": (c) => const ClothView(),
@@ -125,18 +132,18 @@ final apps = {
     "addToMenu": true,
     "icon": Icons.medical_services_sharp
   },
-  "blog": {
-    "name": "博客",
-    "view": (c) => const BlogView(),
+  "game": {
+    "name": "健康游戏",
+    "view": (c) => const Game(info: null),
     "addToMenu": true,
-    "icon": Icons.article
+    "icon": Icons.gamepad
   },
-  "gitea": {
-    "name": "Gitea",
-    "view": (c) => const GiteaView(),
+  "snh48": {
+    "name": "SNH Pocket",
+    "view": (c) => const SNHApp(),
     "addToMenu": true,
-    "icon": Icons.source
-  }
+    "icon": Icons.heart_broken_rounded
+  },
 };
 
 class PocketHome extends StatefulWidget {

@@ -1,3 +1,4 @@
+import 'package:cyberme_flutter/main.dart';
 import 'package:flutter/material.dart';
 
 showDebugBar(BuildContext context, dynamic e, {bool withPop = false}) {
@@ -34,23 +35,27 @@ showWaitingBar(BuildContext context,
   }
 }
 
-showSimpleMessage(BuildContext context,
+Future<bool> showSimpleMessage(BuildContext context,
     {String? title, required String content, bool withPopFirst = false}) async {
   if (withPopFirst) {
     Navigator.of(context).pop();
   }
-  await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-            title: Text(title ?? "提示"),
-            content: Text(content),
-            actions: [
-              TextButton(
-                  onPressed: () => Navigator.of(context).pop(false),
-                  child: const Text("取消")),
-              TextButton(
-                  onPressed: () => Navigator.of(context).pop(true),
-                  child: const Text("确定"))
-            ],
-          ));
+  return await showDialog<bool>(
+          context: context,
+          builder: (context) => Theme(
+                data: appThemeData,
+                child: AlertDialog(
+                  title: Text(title ?? "提示"),
+                  content: Text(content),
+                  actions: [
+                    TextButton(
+                        onPressed: () => Navigator.of(context).pop(false),
+                        child: const Text("取消")),
+                    TextButton(
+                        onPressed: () => Navigator.of(context).pop(true),
+                        child: const Text("确定"))
+                  ],
+                ),
+              )) ??
+      false;
 }

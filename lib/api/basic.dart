@@ -27,6 +27,24 @@ Future<(T?, String)> requestFrom<T>(
   }
 }
 
+Future<(T?, String)> requestFromType<T, Y>(
+    String path, T Function(Y) func) async {
+  try {
+    final url = "$endpoint$path";
+    //debugPrint("request from $url");
+    final r = await get(Uri.parse(url), headers: config.cyberBase64Header);
+    final d = jsonDecode(r.body);
+    final code = (d["status"] as int?) ?? -1;
+    //debugPrint("request from $url, data: $d");
+    if (code <= 0) return (null, d["message"]?.toString() ?? "未知错误");
+    final originData = d["data"] as Y;
+    return (func(originData), "");
+  } catch (e, st) {
+    debugPrintStack(stackTrace: st);
+    return (null, e.toString());
+  }
+}
+
 Future<(bool, String)> postFrom<T>(
     String path, Map<String, dynamic> data) async {
   try {

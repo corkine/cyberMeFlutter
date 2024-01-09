@@ -1,8 +1,10 @@
 ﻿import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:window_manager/window_manager.dart';
 import 'pocket/config.dart';
 import 'pocket/main.dart';
 import 'pocket/menu.dart';
@@ -13,7 +15,14 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   config = await Config().init();
   await initializeDateFormatting();
-  debugPrint("now config is ${config.password}");
+  if (!kIsWeb && (Platform.isWindows || Platform.isMacOS)) {
+    await windowManager.ensureInitialized();
+    windowManager.waitUntilReadyToShow(
+        const WindowOptions(size: Size(400, 700)), () async {
+      await windowManager.show();
+      await windowManager.focus();
+    });
+  }
   runApp(ProviderScope(
       child: MaterialApp(
           title: 'CyberMe',

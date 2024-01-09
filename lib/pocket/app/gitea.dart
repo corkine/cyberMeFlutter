@@ -172,8 +172,13 @@ class _GiteaViewState extends ConsumerState<GiteaView>
                                             : "定时同步",
                                         style: const TextStyle(
                                             color: Colors.green))
-                                    : const Text("无同步",
-                                        style: TextStyle(color: Colors.red))
+                                    : i.mirror
+                                        ? const Text("镜像",
+                                            style: TextStyle(
+                                                color: Color.fromARGB(
+                                                    255, 26, 76, 185)))
+                                        : const Text("无同步",
+                                            style: TextStyle(color: Colors.red))
                               ]),
                               const SizedBox(height: 5),
                               Row(children: [
@@ -420,12 +425,13 @@ class _GiteaRepoSyncViewState extends ConsumerState<GiteaRepoSyncView> {
                   child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Padding(
-                          padding: const EdgeInsets.only(
-                              left: 12, right: 12, top: 13),
-                          child: Text(widget.repo.fullName,
-                              style: const TextStyle(fontSize: 20)),
-                        ),
+                        Row(children: [
+                          Padding(
+                              padding: const EdgeInsets.only(
+                                  left: 12, right: 12, top: 13),
+                              child: Text(widget.repo.fullName,
+                                  style: const TextStyle(fontSize: 20)))
+                        ]),
                         ...widget.repo.description.isEmpty
                             ? []
                             : [
