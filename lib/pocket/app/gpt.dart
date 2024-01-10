@@ -33,56 +33,68 @@ class _GPTViewState extends ConsumerState<GPTView> {
     return Theme(
         data: appThemeData,
         child: Scaffold(
-            appBar: AppBar(title: const Text("GPT"), actions: [
+            appBar: AppBar(title: const Text("Gemini Lite"), actions: [
               IconButton(
                   onPressed: handleAddLastQuestion, icon: const Icon(Icons.add))
             ]),
             body: Padding(
-                padding: const EdgeInsets.all(8.0),
+                padding: const EdgeInsets.only(left: 8, right: 8, bottom: 8),
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       lastQuestion.isEmpty
                           ? const SizedBox()
-                          : Row(children: [
-                              const Icon(Icons.account_circle),
-                              const SizedBox(width: 10),
-                              GestureDetector(
-                                  onTap: () {
-                                    input.text = lastQuestion;
-                                    FocusScope.of(context).requestFocus(fn);
-                                  },
-                                  child: Text(lastQuestion))
-                            ]),
-                      const Padding(
-                          padding: EdgeInsets.only(bottom: 5, top: 5),
-                          child: Row(children: [
-                            Icon(Icons.android),
-                            SizedBox(width: 10),
-                            Text("Gemini: ")
-                          ])),
+                          : Padding(
+                              padding: const EdgeInsets.only(bottom: 10),
+                              child: Row(children: [
+                                const Icon(Icons.account_circle),
+                                const SizedBox(width: 5),
+                                GestureDetector(
+                                    onTap: () {
+                                      input.text = lastQuestion;
+                                      FocusScope.of(context).requestFocus(fn);
+                                    },
+                                    child: Text(lastQuestion))
+                              ])),
                       Expanded(
                           child: Container(
                               width: double.infinity,
                               decoration: BoxDecoration(
                                   color: const Color.fromARGB(255, 44, 44, 44),
                                   borderRadius: BorderRadius.circular(10)),
-                              child: GestureDetector(
-                                  onTap: () {
-                                    Clipboard.setData(
-                                        ClipboardData(text: lastResp));
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(
-                                            content: Text("已复制到剪贴板"),
-                                            duration:
-                                                Duration(milliseconds: 400)));
-                                  },
-                                  onDoubleTap: () =>
-                                      setState(() => lastResp = "已清空"),
-                                  child: SingleChildScrollView(
-                                      child: Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Text(lastResp)))))),
+                              child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.max,
+                                  children: [
+                                    const Padding(
+                                        padding: EdgeInsets.only(
+                                            left: 10, bottom: 5, top: 5),
+                                        child: Row(children: [
+                                          Icon(Icons.android),
+                                          SizedBox(width: 10),
+                                          Text("Gemini")
+                                        ])),
+                                    Expanded(
+                                        child: GestureDetector(
+                                            onTap: () {
+                                              Clipboard.setData(ClipboardData(
+                                                  text: lastResp));
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(const SnackBar(
+                                                      content: Text("已复制到剪贴板"),
+                                                      duration: Duration(
+                                                          milliseconds: 400)));
+                                            },
+                                            onDoubleTap: () => setState(
+                                                () => lastResp = "已清空"),
+                                            child: SingleChildScrollView(
+                                                child: Container(
+                                                    width: double.infinity,
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            8.0),
+                                                    child: Text(lastResp)))))
+                                  ]))),
                       TextField(
                           focusNode: fn,
                           controller: input,
@@ -90,38 +102,38 @@ class _GPTViewState extends ConsumerState<GPTView> {
                               border: const UnderlineInputBorder(),
                               labelText: "输入问题",
                               suffix: IconButton(
+                                  visualDensity: VisualDensity.compact,
                                   onPressed: handleQuestion,
-                                  icon: const Icon(
-                                    Icons.send,
-                                    size: 18,
-                                  ))),
+                                  icon: const Icon(Icons.send, size: 15))),
                           onSubmitted: (v) async => handleQuestion()),
                       setting.quickQuestion.isEmpty
                           ? const SizedBox()
-                          : Padding(
-                              padding: const EdgeInsets.only(top: 10),
-                              child: Wrap(
-                                  runSpacing: 5,
-                                  spacing: 5,
-                                  children:
-                                      setting.quickQuestion.entries.map((e) {
-                                    return RawChip(
-                                      label: Text(e.key),
-                                      selected: input.text == e.value,
-                                      onPressed: () {
-                                        input.text = e.value;
-                                        FocusScope.of(context).requestFocus(fn);
-                                      },
-                                      onDeleted: () =>
-                                          handleDeleteQuickQuestion(e.key),
-                                    );
-                                  }).toList(growable: false)),
-                            )
+                          : SafeArea(
+                              child: Padding(
+                                  padding: const EdgeInsets.only(top: 10),
+                                  child: Wrap(
+                                      runSpacing: 5,
+                                      spacing: 5,
+                                      children: setting.quickQuestion.entries
+                                          .map((e) {
+                                        return RawChip(
+                                          label: Text(e.key),
+                                          selected: input.text == e.value,
+                                          onPressed: () {
+                                            input.text = e.value;
+                                            FocusScope.of(context)
+                                                .requestFocus(fn);
+                                          },
+                                          onDeleted: () =>
+                                              handleDeleteQuickQuestion(e.key),
+                                        );
+                                      }).toList(growable: false))))
                     ]))));
   }
 
   handleQuestion() async {
     final v = input.text;
+    if (v.isEmpty) return;
     FocusManager.instance.primaryFocus?.unfocus();
     lastResp = "等待中...";
     lastQuestion = v;
