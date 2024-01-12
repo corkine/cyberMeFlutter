@@ -77,7 +77,15 @@ class _EsxiViewState extends ConsumerState<EsxiView> {
                     Text(e.$2.name)
                   ]),
                   subtitle: Text(vmOs(e.$2) + " / ${e.$2.version}"),
-                  trailing: Text(e.$2.vmid),
+                  trailing: Container(
+                      padding: const EdgeInsets.only(
+                          left: 5, right: 5, bottom: 3, top: 1),
+                      decoration: BoxDecoration(
+                        color: Colors.blueGrey.shade200,
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: Text("服务 ${e.$2.vmid}",
+                          style: const TextStyle(color: Colors.white))),
                   dense: true);
             }).toList(),
             const SizedBox(height: 100),
@@ -150,10 +158,14 @@ class _EsxiViewState extends ConsumerState<EsxiView> {
     final os = e.os.toLowerCase();
     if (os.contains("windows")) {
       return "Windows";
-    } else if (os.contains("linux")) {
-      return "Linux";
+    } else if (os.contains("ubuntu")) {
+      return "Ubuntu Linux";
+    } else if (os.contains("cent")) {
+      return "CentOS Linux";
     } else if (os.contains("mac") || os.contains("darwin")) {
       return "macOS";
+    } else if (os.contains("linux")) {
+      return "Linux";
     } else {
       return os;
     }

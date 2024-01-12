@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cyberme_flutter/pocket/app/note.dart';
 import 'package:cyberme_flutter/pocket/channel.dart';
 import 'package:flutter/material.dart';
@@ -48,14 +49,16 @@ class _MenuViewState extends State<MenuView> {
     return Scaffold(
         backgroundColor: Colors.white,
         body: CustomScrollView(slivers: [
-          SliverAppBar.medium(
+          SliverAppBar.large(
               stretch: true,
               title: const Text("Cyber Apps",
                   style: TextStyle(color: Colors.white)),
               flexibleSpace: Container(
                   decoration: const BoxDecoration(
                       image: DecorationImage(
-                          image: AssetImage("images/app_bg.jpg"),
+                          image: //AssetImage("images/app_bg.jpg"),
+                              CachedNetworkImageProvider(
+                                  "https://go.mazhangjing.com/bing-today-image?normal=true"),
                           fit: BoxFit.cover)))),
           SliverGrid.builder(
               gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(

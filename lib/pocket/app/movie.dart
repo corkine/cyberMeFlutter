@@ -125,19 +125,23 @@ class _MovieViewState extends ConsumerState<MovieView> {
                             setting?.wantItems.contains(e.url) ?? false;
                         return InkWell(
                             onTap: () {
-                              Navigator.of(context).push(PageRouteBuilder(
-                                  pageBuilder:
-                                      (context, animation, secondaryAnimation) {
-                                    return MovieDetailView(e);
-                                  },
-                                  transitionsBuilder: (context, animation,
-                                          secondaryAnimation, child) =>
-                                      FadeTransition(
-                                          opacity: animation, child: child),
-                                  reverseTransitionDuration:
-                                      const Duration(milliseconds: 200),
-                                  transitionDuration:
-                                      const Duration(milliseconds: 200)));
+                              // Navigator.of(context).push(PageRouteBuilder(
+                              //     pageBuilder:
+                              //         (context, animation, secondaryAnimation) {
+                              //       return MovieDetailView(e);
+                              //     },
+                              //     transitionsBuilder: (context, animation,
+                              //             secondaryAnimation, child) =>
+                              //         FadeTransition(
+                              //             opacity: animation, child: child),
+                              //     reverseTransitionDuration:
+                              //         const Duration(milliseconds: 200),
+                              //     transitionDuration:
+                              //         const Duration(milliseconds: 200)));
+                              Navigator.of(context)
+                                  .push(MaterialPageRoute(builder: (context) {
+                                return MovieDetailView(e);
+                              }));
                             },
                             onLongPress: () => showItemMenu(
                                 e, showTv, isWatched, isIgnored, isTracking),

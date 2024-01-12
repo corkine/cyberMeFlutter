@@ -3,6 +3,7 @@
 import 'dart:convert';
 
 import 'package:cyberme_flutter/api/basic.dart';
+import 'package:cyberme_flutter/api/movie.dart';
 import 'package:http/http.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -85,6 +86,10 @@ class SeriesDB extends _$SeriesDB {
         headers: config.cyberBase64JsonContentHeader,
         body: jsonEncode({"name": name, "url": url}));
     final msg = jsonDecode(resp.body)["message"] ?? "无信息";
+    //如果此剧集为想看，则删除想看标签
+    await ref
+        .read(movieSettingsProvider.notifier)
+        .makeWanted(url, reverse: true);
     return msg;
   }
 
