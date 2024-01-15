@@ -1,8 +1,10 @@
 import 'dart:math';
 
 import 'package:cyberme_flutter/api/esxi.dart';
+import 'package:cyberme_flutter/main.dart';
 import 'package:cyberme_flutter/pocket/app/util.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:url_launcher/url_launcher_string.dart';
@@ -61,80 +63,95 @@ class _EsxiViewState extends ConsumerState<EsxiView> {
                 padding: EdgeInsets.only(left: 15, top: 8, bottom: 0),
                 child: Text("ADDRESS",
                     style: TextStyle(fontWeight: FontWeight.bold))),
-            ...d.ips.map((e) {
-              return ListTile(
-                  title: Text(e.ip_address),
-                  subtitle:
-                      Text(e.ip_family + " / " + e.type.replaceAll("__", ", ")),
-                  trailing: Text(e.interface),
-                  dense: true);
-            }).toList(),
+            ...d.ips
+                .map((e) {
+                  return ListTile(
+                      title: Text(e.ip_address),
+                      subtitle: Text(
+                          e.ip_family + " / " + e.type.replaceAll("__", ", ")),
+                      trailing: Text(e.interface),
+                      dense: true);
+                })
+                .toList()
+                .animate()
+                .fadeIn()
+                .moveY(begin: 10, end: 0),
             const Padding(
                 padding: EdgeInsets.only(left: 15, top: 8, bottom: 0),
                 child:
                     Text("VMS", style: TextStyle(fontWeight: FontWeight.bold))),
-            ...d.vms.indexed.map((e) {
-              final vm = e.$2;
-              final svc = setting.services[e.$2.vmid]?.toList() ?? [];
-              final ip = setting.ips[e.$2.vmid] ?? "";
-              return Dismissible(
-                key: ValueKey(e),
-                confirmDismiss: (direction) async {
-                  final res = await ref
-                      .read(esxiInfosProvider.notifier)
-                      .changeState(
-                          vm,
-                          direction == DismissDirection.endToStart
-                              ? VmPower.suspended
-                              : VmPower.on);
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: Text(res),
-                      duration: const Duration(milliseconds: 500)));
-                  return false;
-                },
-                secondaryBackground: Container(
-                    color: Colors.yellow,
-                    child: const Align(
-                        alignment: Alignment.centerRight,
-                        child: Padding(
-                            padding: EdgeInsets.only(right: 20),
-                            child: Text("休眠",
-                                style: TextStyle(
-                                    color: Colors.black, fontSize: 15))))),
-                background: Container(
-                    color: Colors.green,
-                    child: const Align(
-                        alignment: Alignment.centerLeft,
-                        child: Padding(
-                            padding: EdgeInsets.only(left: 20),
-                            child: Text("启动",
-                                style: TextStyle(
-                                    color: Colors.white, fontSize: 15))))),
-                child: ListTile(
-                    onTap: () => showModalBottomSheet(
-                        context: context,
-                        builder: (context) => ESXiVmDeatilView(e.$2.vmid)),
-                    title: Row(children: [
-                      status2Logo(e.$2, index: e.$1),
-                      Text(e.$2.name)
-                    ]),
-                    subtitle: Text(vmOs(e.$2) +
-                        " / ${e.$2.version}" +
-                        (ip.isEmpty ? "" : " / $ip")),
-                    trailing: svc.isEmpty
-                        ? null
-                        : Container(
-                            padding: const EdgeInsets.only(
-                                left: 5, right: 5, bottom: 3, top: 1),
-                            decoration: BoxDecoration(
-                              color: Colors.blueGrey.shade200,
-                              borderRadius: BorderRadius.circular(5),
-                            ),
-                            child: Text("服务 ${svc.length}",
-                                style: const TextStyle(color: Colors.white))),
-                    dense: true),
-              );
-            }).toList(),
+            ...d.vms.indexed
+                .map((e) {
+                  final vm = e.$2;
+                  final svc = setting.services[e.$2.vmid]?.toList() ?? [];
+                  final ip = setting.ips[e.$2.vmid] ?? "";
+                  return Dismissible(
+                      key: ValueKey(e),
+                      confirmDismiss: (direction) async {
+                        final res = await ref
+                            .read(esxiInfosProvider.notifier)
+                            .changeState(
+                                vm,
+                                direction == DismissDirection.endToStart
+                                    ? VmPower.suspended
+                                    : VmPower.on);
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text(res),
+                            duration: const Duration(milliseconds: 500)));
+                        return false;
+                      },
+                      secondaryBackground: Container(
+                          color: Colors.yellow,
+                          child: const Align(
+                              alignment: Alignment.centerRight,
+                              child: Padding(
+                                  padding: EdgeInsets.only(right: 20),
+                                  child: Text("休眠",
+                                      style: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 15))))),
+                      background: Container(
+                          color: Colors.green,
+                          child: const Align(
+                              alignment: Alignment.centerLeft,
+                              child: Padding(
+                                  padding: EdgeInsets.only(left: 20),
+                                  child: Text("启动",
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 15))))),
+                      child: ListTile(
+                          onTap: () => showModalBottomSheet(
+                              context: context,
+                              builder: (context) =>
+                                  ESXiVmDeatilView(e.$2.vmid)),
+                          title: Row(children: [
+                            status2Logo(e.$2, index: e.$1),
+                            Text(e.$2.name)
+                          ]),
+                          subtitle: Text(vmOs(e.$2) +
+                              " / ${e.$2.version}" +
+                              (ip.isEmpty ? "" : " / $ip")),
+                          trailing: svc.isEmpty
+                              ? null
+                              : Container(
+                                      padding: const EdgeInsets.only(
+                                          left: 5, right: 5, bottom: 3, top: 1),
+                                      decoration: BoxDecoration(
+                                        color: Colors.blueGrey.shade200,
+                                        borderRadius: BorderRadius.circular(5),
+                                      ),
+                                      child: Text("服务 ${svc.length}",
+                                          style: const TextStyle(
+                                              color: Colors.white)))
+                                  .animate()
+                                  .shake(),
+                          dense: true));
+                })
+                .toList()
+                .animate()
+                .fadeIn()
+                .moveY(begin: 10, end: 0),
             const SizedBox(height: 100),
             Row(mainAxisAlignment: MainAxisAlignment.center, children: [
               Text(d.version,
@@ -203,14 +220,16 @@ class _EsxiViewState extends ConsumerState<EsxiView> {
           await ref.read(esxiInfosProvider.notifier).changeState(vm, power);
       await showDialog(
           context: context,
-          builder: (context) => AlertDialog(
+          builder: (context) => Theme(
+              data: appThemeData,
+              child: AlertDialog(
                   title: const Text("结果"),
                   content: Text(res),
                   actions: [
                     TextButton(
                         onPressed: () => Navigator.of(context).pop(),
                         child: const Text("确定"))
-                  ]));
+                  ])));
     }
 
     await showDialog(
@@ -275,19 +294,21 @@ class _ESXiVmDeatilViewState extends ConsumerState<ESXiVmDeatilView> {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       const SizedBox(height: 20),
       Padding(
-          padding: const EdgeInsets.only(left: 10, right: 10),
-          child: Row(children: [
-            Text(vm.name.toUpperCase()),
-            const Spacer(),
-            status2Logo(vm),
-            Text("may ${vm.power}", style: const TextStyle(fontSize: 12))
-          ])),
+              padding: const EdgeInsets.only(left: 11),
+              child: Text(vm.name,
+                  style: TextStyle(
+                      fontSize: 24,
+                      decoration: TextDecoration.underline,
+                      decorationStyle: TextDecorationStyle.solid,
+                      decorationThickness: 1.5,
+                      decorationColor: status2Color(vm))))
+          .animate()
+          .flipV(delay: 100.milliseconds),
       Padding(
-        padding: const EdgeInsets.only(left: 10, right: 10),
-        child: Text(
-            "id: ${vm.vmid}\nip: ${ip.isEmpty ? "Unknown" : ip}\nfile: ${vm.guest}\nos: ${vm.os}\nversion: ${vm.version}",
-            style: const TextStyle(fontSize: 12)),
-      ),
+          padding: const EdgeInsets.only(left: 10, right: 10),
+          child: Text(
+              "id: ${vm.vmid}\nip: ${ip.isEmpty ? "Unknown" : ip}\nfile: ${vm.guest}\nos: ${vm.os}\nversion: ${vm.version}",
+              style: const TextStyle(fontSize: 12))),
       const SizedBox(height: 10),
       Expanded(
           child: ListView.builder(
@@ -309,6 +330,7 @@ class _ESXiVmDeatilViewState extends ConsumerState<ESXiVmDeatilView> {
                         addOrEditSvc(service);
                         return false;
                       }
+                      return null;
                     },
                     secondaryBackground: Container(
                         color: Colors.red,
@@ -375,99 +397,116 @@ class _ESXiVmDeatilViewState extends ConsumerState<ESXiVmDeatilView> {
     final note = TextEditingController(text: svc?.note ?? "");
     await showDialog(
         context: context,
-        builder: (context) => AlertDialog.adaptive(
-                title: Text(svc == null ? "添加服务" : "修改服务"),
-                content: Column(mainAxisSize: MainAxisSize.min, children: [
-                  TextField(
-                      autofocus: true,
-                      controller: name,
-                      decoration: const InputDecoration(labelText: "服务名*")),
-                  TextField(
-                      controller: port,
-                      decoration: const InputDecoration(labelText: "端口*"),
-                      keyboardType: TextInputType.number),
-                  TextField(
-                      controller: note,
-                      decoration: const InputDecoration(labelText: "备注"))
-                ]),
-                actions: [
-                  TextButton(
-                      onPressed: () {
-                        //服务名和端口不能为空
-                        if (name.text.isEmpty || port.text.isEmpty) {
-                          showSimpleMessage(context, content: "服务名和端口不能为空");
-                          return;
-                        }
-                        //端口必须为数字
-                        if (!RegExp(r"^\d+$").hasMatch(port.text)) {
-                          showSimpleMessage(context, content: "端口必须为数字");
-                          return;
-                        }
-                        //添加服务
-                        ref
-                            .read(eSXiSettingsProvider.notifier)
-                            .addService(
-                                widget.vmId,
-                                ESXiService(
-                                    name: name.text,
-                                    port: int.parse(port.text),
-                                    note: note.text),
-                                svc != null)
-                            .then((value) {
-                          if (value.isEmpty) {
-                            Navigator.of(context).pop();
-                          } else {
-                            Navigator.of(context).pop();
-                            showSimpleMessage(context, content: value);
+        builder: (context) => Theme(
+              data: appThemeData,
+              child: AlertDialog(
+                  title: Text(svc == null ? "添加服务" : "修改服务"),
+                  content: Column(mainAxisSize: MainAxisSize.min, children: [
+                    TextField(
+                        autofocus: true,
+                        controller: name,
+                        decoration: const InputDecoration(labelText: "服务名*")),
+                    TextField(
+                        controller: port,
+                        decoration: const InputDecoration(labelText: "端口*"),
+                        keyboardType: TextInputType.number),
+                    TextField(
+                        controller: note,
+                        decoration: const InputDecoration(labelText: "备注"))
+                  ]),
+                  actions: [
+                    TextButton(
+                        onPressed: () {
+                          //服务名和端口不能为空
+                          if (name.text.isEmpty || port.text.isEmpty) {
+                            showSimpleMessage(context, content: "服务名和端口不能为空");
+                            return;
                           }
-                        });
-                      },
-                      child: const Text("确定"))
-                ]));
+                          //端口必须为数字
+                          if (!RegExp(r"^\d+$").hasMatch(port.text)) {
+                            showSimpleMessage(context, content: "端口必须为数字");
+                            return;
+                          }
+                          //添加服务
+                          ref
+                              .read(eSXiSettingsProvider.notifier)
+                              .addService(
+                                  widget.vmId,
+                                  ESXiService(
+                                      name: name.text,
+                                      port: int.parse(port.text),
+                                      note: note.text),
+                                  svc != null)
+                              .then((value) {
+                            if (value.isEmpty) {
+                              Navigator.of(context).pop();
+                            } else {
+                              Navigator.of(context).pop();
+                              showSimpleMessage(context, content: value);
+                            }
+                          });
+                        },
+                        child: const Text("确定"))
+                  ]),
+            ));
   }
 
   changeIp(ESXiSetting setting) async {
     final ip = TextEditingController(text: setting.ips[widget.vmId] ?? "");
     await showDialog(
         context: context,
-        builder: ((context) => AlertDialog.adaptive(
-                title: const Text("修改IP"),
-                content: Column(mainAxisSize: MainAxisSize.min, children: [
-                  TextField(
-                      autofocus: true,
-                      controller: ip,
-                      decoration: const InputDecoration(labelText: "IP*")),
-                ]),
-                actions: [
-                  TextButton(
-                      onPressed: () {
-                        //IP不能为空
-                        if (ip.text.isEmpty) {
-                          showSimpleMessage(context, content: "IP不能为空");
-                          return;
-                        }
-                        //添加IP
-                        ref
-                            .read(eSXiSettingsProvider.notifier)
-                            .addIp(
-                              widget.vmId,
-                              ip.text,
-                            )
-                            .then((value) {
-                          if (value.isEmpty) {
-                            Navigator.of(context).pop();
-                          } else {
-                            Navigator.of(context).pop();
-                            showSimpleMessage(context, content: value);
+        builder: ((context) => Theme(
+              data: appThemeData,
+              child: AlertDialog(
+                  title: const Text("修改IP"),
+                  content: Column(mainAxisSize: MainAxisSize.min, children: [
+                    TextField(
+                        autofocus: true,
+                        controller: ip,
+                        decoration: const InputDecoration(labelText: "IP*")),
+                  ]),
+                  actions: [
+                    TextButton(
+                        onPressed: () {
+                          //IP不能为空
+                          if (ip.text.isEmpty) {
+                            showSimpleMessage(context, content: "IP不能为空");
+                            return;
                           }
-                        });
-                      },
-                      child: const Text("确定"))
-                ])));
+                          //添加IP
+                          ref
+                              .read(eSXiSettingsProvider.notifier)
+                              .addIp(
+                                widget.vmId,
+                                ip.text,
+                              )
+                              .then((value) {
+                            if (value.isEmpty) {
+                              Navigator.of(context).pop();
+                            } else {
+                              Navigator.of(context).pop();
+                              showSimpleMessage(context, content: value);
+                            }
+                          });
+                        },
+                        child: const Text("确定"))
+                  ]),
+            )));
   }
 }
 
-Widget status2Logo(EsxiVm e, {int index = 0}) {
+Color status2Color(EsxiVm e) {
+  return e.powerEnum == VmPower.on
+      ? Colors.green
+      : e.powerEnum == VmPower.off
+          ? Colors.red
+          : e.powerEnum == VmPower.suspended
+              ? Colors.yellow
+              : Colors.grey;
+}
+
+Widget status2Logo(EsxiVm e,
+    {int index = 0, double height = 10, double width = 30}) {
   return TweenAnimationBuilder(
       key: ValueKey(e.power),
       //key: UniqueKey(),
@@ -477,14 +516,6 @@ Widget status2Logo(EsxiVm e, {int index = 0}) {
       builder: (context, value, child) {
         return CustomPaint(
             painter: StatusPainter(
-                e.powerEnum == VmPower.on
-                    ? Colors.green
-                    : e.powerEnum == VmPower.off
-                        ? Colors.red
-                        : e.powerEnum == VmPower.suspended
-                            ? Colors.yellow
-                            : Colors.grey,
-                30 * value * 0.01,
-                10 * value * 0.01));
+                status2Color(e), width * value * 0.01, height * value * 0.01));
       });
 }

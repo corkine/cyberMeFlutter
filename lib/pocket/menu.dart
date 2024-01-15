@@ -46,6 +46,8 @@ class _MenuViewState extends State<MenuView> {
           child: const Text("退出 Flutter")),
       TextButton(onPressed: () => exit(0), child: const Text("退出 App"))
     ]);
+    final now = DateTime.now();
+    final today = "${now.year}-${now.month}-${now.day}";
     return Scaffold(
         backgroundColor: Colors.white,
         body: CustomScrollView(slivers: [
@@ -54,11 +56,12 @@ class _MenuViewState extends State<MenuView> {
               title: const Text("Cyber Apps",
                   style: TextStyle(color: Colors.white)),
               flexibleSpace: Container(
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                       image: DecorationImage(
                           image: //AssetImage("images/app_bg.jpg"),
                               CachedNetworkImageProvider(
-                                  "https://go.mazhangjing.com/bing-today-image?normal=true"),
+                                  "https://go.mazhangjing.com/bing-today-image?normal=true",
+                                  cacheKey: "bing-today-image-$today"),
                           fit: BoxFit.cover)))),
           SliverGrid.builder(
               gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(

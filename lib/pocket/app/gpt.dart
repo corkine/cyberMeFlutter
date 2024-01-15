@@ -1,10 +1,10 @@
-import 'dart:ffi';
-
+import 'package:flutter/animation.dart';
 import 'package:cyberme_flutter/api/gpt.dart';
 import 'package:cyberme_flutter/main.dart';
 import 'package:cyberme_flutter/pocket/app/util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class GPTView extends ConsumerStatefulWidget {
@@ -66,14 +66,18 @@ class _GPTViewState extends ConsumerState<GPTView> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   mainAxisSize: MainAxisSize.max,
                                   children: [
-                                    const Padding(
-                                        padding: EdgeInsets.only(
+                                    Padding(
+                                        padding: const EdgeInsets.only(
                                             left: 10, bottom: 5, top: 5),
                                         child: Row(children: [
-                                          Icon(Icons.android),
-                                          SizedBox(width: 10),
-                                          Text("Gemini")
-                                        ])),
+                                          const Icon(Icons.android)
+                                              .animate()
+                                              .shake(delay: 1.seconds, hz: 3),
+                                          const SizedBox(width: 10),
+                                          const Text("Gemini")
+                                        ])
+                                            .animate()
+                                            .fadeIn(delay: 0.5.seconds)),
                                     Expanded(
                                         child: GestureDetector(
                                             onTap: () {
