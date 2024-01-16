@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 import '../../api/statistics.dart';
@@ -351,8 +352,12 @@ class _TrackDetailViewState extends ConsumerState<TrackDetailView> {
     final appBar = AppBar(title: Text(widget.url.split("/").last), actions: [
       IconButton(
           onPressed: handleAddTrack,
-          icon:
-              Icon(isTrack ? Icons.visibility : Icons.visibility_off_outlined)),
+          icon: isTrack
+              ? const Icon(Icons.visibility,
+                      color: Color.fromARGB(255, 255, 120, 111))
+                  .animate()
+                  .shake(delay: 1.seconds, rotation: 0.4)
+              : const Icon(Icons.visibility_off_outlined)),
       IconButton(
           onPressed: () async {
             await showAddShortLinkDialog();
@@ -366,7 +371,9 @@ class _TrackDetailViewState extends ConsumerState<TrackDetailView> {
               builder: (context) => TrackDetailFilterView(logs)),
           icon: logsFiltered.length == logs.length
               ? const Icon(Icons.filter_alt_off)
-              : const Icon(Icons.filter_alt, color: Colors.green))
+              : const Icon(Icons.filter_alt, color: Colors.green)
+                  .animate()
+                  .shake(delay: 1.seconds))
     ]);
 
     final items = ListView.builder(
@@ -685,35 +692,39 @@ class ServiceView extends ConsumerWidget {
       content = const Center(child: CupertinoActivityIndicator());
     } else {
       final items = ListView.builder(
-          itemBuilder: (c, i) {
-            final item = s[i];
-            handleShowDetail() {
-              if (useSheet) {
-                showModalBottomSheet(
-                    context: context,
-                    builder: (context) => ServiceDetails(item));
-              } else {
-                Navigator.of(context).push(
-                    MaterialPageRoute(builder: (c) => ServiceDetails(item)));
-              }
-            }
+              itemBuilder: (c, i) {
+                final item = s[i];
+                handleShowDetail() {
+                  if (useSheet) {
+                    showModalBottomSheet(
+                        context: context,
+                        builder: (context) => ServiceDetails(item));
+                  } else {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (c) => ServiceDetails(item)));
+                  }
+                }
 
-            return Card(
-                elevation: 1,
-                child: ListTile(
-                    onTap: handleShowDetail,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        side: BorderSide(
-                            color:
-                                item.endOfSupport ? Colors.red : Colors.green,
-                            width: 1)),
-                    title: Text(item.serviceName ?? "未知服务"),
-                    subtitle: Text(
-                        "当前版本 ${item.version}，建议版本 ${item.suggestVersion}"),
-                    trailing: Text(item.endOfSupport ? "已停止" : "运行中")));
-          },
-          itemCount: s.length);
+                return Card(
+                    elevation: 1,
+                    child: ListTile(
+                        onTap: handleShowDetail,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            side: BorderSide(
+                                color: item.endOfSupport
+                                    ? Colors.red
+                                    : Colors.green,
+                                width: 1)),
+                        title: Text(item.serviceName ?? "未知服务"),
+                        subtitle: Text(
+                            "当前版本 ${item.version}，建议版本 ${item.suggestVersion}"),
+                        trailing: Text(item.endOfSupport ? "已停止" : "运行中")));
+              },
+              itemCount: s.length)
+          .animate()
+          .fadeIn()
+          .moveY(begin: 30, end: 0);
       content = Padding(
           padding: const EdgeInsets.all(8.0),
           child: RefreshIndicator(
@@ -841,14 +852,15 @@ class StatisticsView extends ConsumerWidget {
                 : SingleChildScrollView(
                     child: Padding(
                         padding: const EdgeInsets.all(8.0),
-                        child: Column(children: [
+                        child: Column(
+                            children: [
                           buildOf("Web 主页接口", s.dashboard),
                           buildOf("客户端接口", s.client),
                           buildOf("短链接系统", s.go),
                           buildOf("故事系统", s.story),
                           buildOf("任务系统", s.task),
                           buildOf("问卷系统", s.psych)
-                        ])))));
+                        ].animate().fadeIn().moveY(begin: 30, end: 0))))));
   }
 
   Widget buildOf(String item, count) {

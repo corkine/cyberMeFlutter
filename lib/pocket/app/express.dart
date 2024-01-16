@@ -1,9 +1,11 @@
 import 'dart:convert';
 
 import 'package:clipboard/clipboard.dart';
+import 'package:cyberme_flutter/api/express.dart';
 import 'package:cyberme_flutter/main.dart';
-import 'package:cyberme_flutter/pocket/models/day.dart';
+import 'package:cyberme_flutter/pocket/app/util.dart';
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart';
 
 import '../config.dart';
@@ -23,54 +25,39 @@ class StatusCircle extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-class ExpressView extends StatefulWidget {
+class ExpressView extends ConsumerStatefulWidget {
   const ExpressView({super.key});
 
   @override
-  State<ExpressView> createState() => _ExpressViewState();
+  ConsumerState<ExpressView> createState() => _ExpressViewState();
 }
 
-class _ExpressViewState extends State<ExpressView> {
-  @override
-  void didChangeDependencies() {
-    if (dashboard == null) {
-      loadData();
-    }
-    super.didChangeDependencies();
-  }
-
-  Dashboard? dashboard;
-
-  loadData() async {
-    dashboard = await Dashboard.loadFromApi(config!);
-    if (dashboard?.express.isEmpty ?? false) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: const Text("没有正在追踪的快递"),
-        action: SnackBarAction(label: "确定", onPressed: () {}),
-      ));
-    }
-    setState(() {});
-  }
-
+class _ExpressViewState extends ConsumerState<ExpressView> {
   @override
   Widget build(BuildContext context) {
+    final express = ref.watch(expressesProvider).value;
     return Theme(
         data: appThemeData,
         child: Scaffold(
             appBar: AppBar(title: const Text("Express!Me"), centerTitle: true),
             body: Column(children: [
               Expanded(
-                  child: RefreshIndicator(
-                      onRefresh: () async => loadData(),
-                      child: ListView(
-                          children: ((dashboard?.express) ?? [])
-                              .map((e) => buildExpressTile(e, context))
-                              .toList(growable: false)))),
+                  child: express?.isEmpty ?? false
+                      ? const Center(child: Text("暂无快递信息"))
+                      : RefreshIndicator(
+                          onRefresh: () async =>
+                              await ref.refresh(expressesProvider.future),
+                          child: ListView(
+                              children: (express ?? [])
+                                  .map((e) => buildExpressTile(e, context))
+                                  .toList(growable: false)))),
               SafeArea(
                   child:
                       ButtonBar(alignment: MainAxisAlignment.center, children: [
                 TextButton(
-                    onPressed: () async => loadData(), child: const Text("刷新")),
+                    onPressed: () async =>
+                        await ref.refresh(expressesProvider.future),
+                    child: const Text("刷新")),
                 TextButton(
                     onPressed: () => showModalBottomSheet(
                         context: context,
@@ -82,7 +69,7 @@ class _ExpressViewState extends State<ExpressView> {
             ])));
   }
 
-  ListTile buildExpressTile(Express e, BuildContext context) {
+  ListTile buildExpressTile(ExpressItem e, BuildContext context) {
     final itemCount = e.extra.length;
     return ListTile(
         onTap: () {
@@ -110,7 +97,9 @@ class _ExpressViewState extends State<ExpressView> {
                                   SnackBar(
                                       content: const Text("已拷贝快递单号到剪贴板。"),
                                       action: SnackBarAction(
-                                          label: "OK", onPressed: () {})));
+                                          label: "OK", onPressed: () {}),
+                                      duration:
+                                          const Duration(milliseconds: 400)));
                               Navigator.of(context).pop();
                             },
                             child: const Text("复制单号")),
@@ -118,8 +107,7 @@ class _ExpressViewState extends State<ExpressView> {
                             onPressed: () async {
                               Navigator.of(context).pop();
                               await handleDeleteExpress(e.id);
-                              dashboard = await Dashboard.loadFromApi(config);
-                              setState(() {});
+                              ref.invalidate(expressesProvider);
                             },
                             child: const Text("删除"))
                       ])));
@@ -154,30 +142,31 @@ class _ExpressViewState extends State<ExpressView> {
                                 ? FontWeight.bold
                                 : FontWeight.normal),
                         child: TweenAnimationBuilder(
-                          duration: const Duration(milliseconds: 300),
-                          tween: Tween(
-                              begin: (itemCount - e.$1) * 0.001, end: 1.0),
-                          builder: (context, value, child) {
-                            return Opacity(opacity: value, child: child);
-                          },
-                          child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(children: [
-                                  CustomPaint(
-                                      painter: StatusCircle(isLast: e.$1 == 0)),
-                                  Text(e.$2.$1,
-                                      softWrap: true,
-                                      style: const TextStyle(
-                                          decoration: TextDecoration.underline,
-                                          fontFamily: "consolas"))
-                                ]),
-                                const SizedBox(height: 5),
-                                Text(e.$2.$2, softWrap: true),
-                                const SizedBox(height: 5)
-                              ]),
-                        ))))
+                            duration: const Duration(milliseconds: 300),
+                            tween: Tween(
+                                begin: (itemCount - e.$1) * 0.001, end: 1.0),
+                            builder: (context, value, child) {
+                              return Opacity(opacity: value, child: child);
+                            },
+                            child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(children: [
+                                    CustomPaint(
+                                        painter:
+                                            StatusCircle(isLast: e.$1 == 0)),
+                                    Text(e.$2.timeReadable,
+                                        softWrap: true,
+                                        style: const TextStyle(
+                                            decoration:
+                                                TextDecoration.underline,
+                                            fontFamily: "consolas"))
+                                  ]),
+                                  const SizedBox(height: 5),
+                                  Text(e.$2.status, softWrap: true),
+                                  const SizedBox(height: 5)
+                                ])))))
               ])
         ]));
   }
@@ -191,14 +180,14 @@ class _ExpressViewState extends State<ExpressView> {
   }
 }
 
-class ExpressAddView extends StatefulWidget {
+class ExpressAddView extends ConsumerStatefulWidget {
   const ExpressAddView({super.key});
 
   @override
-  State<ExpressAddView> createState() => _ExpressAddViewState();
+  ConsumerState<ExpressAddView> createState() => _ExpressAddViewState();
 }
 
-class _ExpressAddViewState extends State<ExpressAddView> {
+class _ExpressAddViewState extends ConsumerState<ExpressAddView> {
   final formKey = GlobalKey<FormState>();
   var rewrite = false;
   var wait = true;
@@ -299,7 +288,7 @@ class _ExpressAddViewState extends State<ExpressAddView> {
         Uri.parse(Config.expressAddUrl(note, rewrite, wait, no)),
         headers: config.cyberBase64Header);
     final d = jsonDecode(r.body);
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(d["message"])));
+    ref.invalidate(expressesProvider);
+    await showSimpleMessage(context, content: d["message"], withPopFirst: true);
   }
 }
