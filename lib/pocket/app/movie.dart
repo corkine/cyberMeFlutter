@@ -9,6 +9,7 @@ import 'package:cyberme_flutter/pocket/app/util.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'dart:ui' as ui;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart';
@@ -297,42 +298,137 @@ class _MovieDetailViewState extends ConsumerState<MovieDetailView> {
         ref.watch(fetchMovieDetailProvider.call(widget.movie.url!, true)).value;
     final setting = ref.watch(movieSettingsProvider).value;
     final isWanted = setting?.wantItems.contains(widget.movie.url!) ?? false;
-    final x = data?.img == null ? 0.0 : 1.0;
+    final ready = data != null;
     return Scaffold(
-        body: CustomScrollView(slivers: [
+        body:
+            Stack(alignment: Alignment.center, fit: StackFit.expand, children: [
+      ImageFiltered(
+          imageFilter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: CachedNetworkImage(
+            imageUrl: widget.movie.img!,
+            fit: BoxFit.fitWidth,
+            repeat: ImageRepeat.repeat,
+          )),
+      Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: SafeArea(
+              child: Container(
+                  alignment: Alignment.centerLeft,
+                  padding: const EdgeInsets.only(left: 10),
+                  child: IconButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(Icons.arrow_back))))),
+      Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: SafeArea(
+              child: Container(
+                  alignment: Alignment.centerRight,
+                  padding: const EdgeInsets.only(right: 10),
+                  child: IconButton(
+                      onPressed: () => launchUrlString(widget.movie.url!),
+                      icon: const Icon(Icons.open_in_browser))))),
+      Positioned(
+          top: 0,
+          child: SafeArea(
+              child: Container(
+                  height: 200,
+                  alignment: Alignment.center,
+                  padding: const EdgeInsets.only(top: 10, bottom: 10),
+                  child: Hero(
+                      tag: widget.movie.url!,
+                      child: CachedNetworkImage(
+                          imageUrl: widget.movie.img!,
+                          fit: BoxFit.fitHeight))))),
+      Positioned(
+              top: 200,
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                margin: const EdgeInsets.only(left: 10, right: 10),
+                decoration: const BoxDecoration(
+                    color: Colors.white70,
+                    borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(15),
+                        topRight: Radius.circular(15))),
+                child: Column(
+                  children: [
+                    Expanded(
+                        child:
+                            SingleChildScrollView(child: buildContent(data))),
+                    ButtonBar(alignment: MainAxisAlignment.center, children: [
+                      TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text("返回")),
+                      TextButton(
+                          onPressed: () => launchUrlString(widget.movie.url!),
+                          child: const Text("查看资源...")),
+                      TextButton(
+                          onPressed: () => ref
+                              .read(movieSettingsProvider.notifier)
+                              .makeWanted(widget.movie.url!, reverse: isWanted),
+                          child: Row(children: [
+                            Icon(
+                              isWanted
+                                  ? Icons.star
+                                  : Icons.star_border_outlined,
+                              color: Colors.yellow,
+                            ),
+                            const SizedBox(width: 3),
+                            Text(isWanted ? "取消想看" : "想看")
+                          ]))
+                    ])
+                  ],
+                ),
+              ))
+          .animate(target: ready ? 1 : 0)
+          .moveY(begin: 200, end: 0, delay: 300.milliseconds)
+    ]));
+  }
+
+  CustomScrollView buildView(
+      MovieDetail? data, BuildContext context, bool isWanted) {
+    return CustomScrollView(slivers: [
       buildAppBar(),
       SliverToBoxAdapter(
           child: data == null
               ? const Padding(
                   padding: EdgeInsets.only(top: 60),
                   child: CupertinoActivityIndicator())
-              : buildContent(x, data)),
+              : buildContent(data)),
       SliverFillRemaining(
-          hasScrollBody: false,
-          child: Column(children: [
-            const Spacer(),
-            ButtonBar(alignment: MainAxisAlignment.center, children: [
-              TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text("返回")),
-              TextButton(
-                  onPressed: () => launchUrlString(widget.movie.url!),
-                  child: const Text("查看资源...")),
-              TextButton(
-                  onPressed: () => ref
-                      .read(movieSettingsProvider.notifier)
-                      .makeWanted(widget.movie.url!, reverse: isWanted),
-                  child: Row(children: [
-                    Icon(
-                      isWanted ? Icons.star : Icons.star_border_outlined,
-                      color: Colors.yellow,
-                    ),
-                    const SizedBox(width: 3),
-                    Text(isWanted ? "取消想看" : "想看")
-                  ]))
-            ])
-          ]))
-    ]));
+          hasScrollBody: false, child: buildActions(context, isWanted))
+    ]);
+  }
+
+  Column buildActions(BuildContext context, bool isWanted) {
+    return Column(children: [
+      const Spacer(),
+      ButtonBar(alignment: MainAxisAlignment.center, children: [
+        TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text("返回")),
+        TextButton(
+            onPressed: () => launchUrlString(widget.movie.url!),
+            child: const Text("查看资源...")),
+        TextButton(
+            onPressed: () => ref
+                .read(movieSettingsProvider.notifier)
+                .makeWanted(widget.movie.url!, reverse: isWanted),
+            child: Row(children: [
+              Icon(
+                isWanted ? Icons.star : Icons.star_border_outlined,
+                color: Colors.yellow,
+              ),
+              const SizedBox(width: 3),
+              Text(isWanted ? "取消想看" : "想看")
+            ]))
+      ])
+    ]);
   }
 
   SliverAppBar buildAppBar() {
@@ -372,7 +468,7 @@ class _MovieDetailViewState extends ConsumerState<MovieDetailView> {
         ])));
   }
 
-  Widget buildContent(x, data) {
+  Widget buildContent(data) {
     return Padding(
         padding: const EdgeInsets.only(left: 10, right: 10, top: 5),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
