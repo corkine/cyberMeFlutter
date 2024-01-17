@@ -55,9 +55,13 @@ class _ExpressViewState extends ConsumerState<ExpressView> {
                   child:
                       ButtonBar(alignment: MainAxisAlignment.center, children: [
                 TextButton(
-                    onPressed: () async =>
-                        await ref.refresh(expressesProvider.future),
-                    child: const Text("刷新")),
+                    onPressed: () async {
+                      final res = await ref
+                          .read(expressesProvider.notifier)
+                          .forceUpdate();
+                      await showSimpleMessage(context, content: res);
+                    },
+                    child: const Text("同步")),
                 TextButton(
                     onPressed: () => showModalBottomSheet(
                         context: context,

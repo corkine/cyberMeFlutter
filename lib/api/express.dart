@@ -67,4 +67,14 @@ class Expresses extends _$Expresses {
     }
     return res ?? [];
   }
+
+  Future<String> forceUpdate() async {
+    final (res, ok) = await requestFromList("/cyber/express/recent?force=true",
+        (d) => d.map((e) => ExpressItem.fromJson(e)).toList(growable: false));
+    if (ok.isNotEmpty) {
+      debugPrint(ok);
+    }
+    state = AsyncData(res ?? []);
+    return "强制同步远端数据成功";
+  }
 }
