@@ -97,6 +97,17 @@ class EsxiInfos extends _$EsxiInfos {
     }
   }
 
+  Future<String> powerOff({bool reboot = false}) async {
+    try {
+      final (_, res) = await postFrom(
+          "/cyber/service/esxi/system-power", {"reboot": reboot});
+      return res;
+    } catch (e, st) {
+      debugPrintStack(stackTrace: st);
+      return "发送请求出错：$e";
+    }
+  }
+
   Future<String> changeState(EsxiVm vm, VmPower power) async {
     final (ok, res) = await postFrom(
         "/cyber/service/esxi/power", {"vm": vm.vmid, "power": power.name});
@@ -146,10 +157,15 @@ class ESXiSetting with _$ESXiSetting {
 class ESXiSettings extends _$ESXiSettings {
   @override
   FutureOr<ESXiSetting> build() async {
-    final (res, ok) =
-        await requestFrom("/cyber/service/esxi/setting", ESXiSetting.fromJson);
-    if (ok.isNotEmpty) throw Exception(ok);
-    return res!;
+    try {
+      final (res, ok) = await requestFrom(
+          "/cyber/service/esxi/setting", ESXiSetting.fromJson);
+      if (ok.isNotEmpty) throw Exception(ok);
+      return res!;
+    } catch (_, st) {
+      debugPrintStack(stackTrace: st);
+      return const ESXiSetting();
+    }
   }
 
   Future<String> upload(ESXiSetting setting) async {

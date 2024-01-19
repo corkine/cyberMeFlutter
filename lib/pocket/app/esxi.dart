@@ -169,6 +169,18 @@ class _EsxiViewState extends ConsumerState<EsxiView> {
               const Text("Pocket ESXi", style: TextStyle(color: Colors.white)),
           actions: [
             IconButton(
+                onPressed: () async {
+                  final answer = await showSimpleMessage(context,
+                      content: "将会关闭服务器，确定执行此操作吗?");
+                  if (answer) {
+                    final res = await ref
+                        .read(esxiInfosProvider.notifier)
+                        .powerOff(reboot: false);
+                    await showSimpleMessage(context, content: res);
+                  }
+                },
+                icon: const Icon(Icons.power_settings_new)),
+            IconButton(
                 onPressed: () {
                   ScaffoldMessenger.of(context).showMaterialBanner(
                       MaterialBanner(
