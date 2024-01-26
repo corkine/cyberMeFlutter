@@ -298,7 +298,12 @@ class _MovieDetailViewState extends ConsumerState<MovieDetailView> {
         ref.watch(fetchMovieDetailProvider.call(widget.movie.url!, true)).value;
     final setting = ref.watch(movieSettingsProvider).value;
     final isWanted = setting?.wantItems.contains(widget.movie.url!) ?? false;
-    final ready = data != null;
+    //final ready = data != null;
+    return Scaffold(body: buildV1(data, context, isWanted));
+  }
+
+  Scaffold buildV2(
+      BuildContext context, MovieDetail? data, bool isWanted, bool ready) {
     return Scaffold(
         body:
             Stack(alignment: Alignment.center, fit: StackFit.expand, children: [
@@ -390,7 +395,7 @@ class _MovieDetailViewState extends ConsumerState<MovieDetailView> {
     ]));
   }
 
-  CustomScrollView buildView(
+  CustomScrollView buildV1(
       MovieDetail? data, BuildContext context, bool isWanted) {
     return CustomScrollView(slivers: [
       buildAppBar(),
