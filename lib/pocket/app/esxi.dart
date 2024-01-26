@@ -196,13 +196,12 @@ class _EsxiViewState extends ConsumerState<EsxiView> {
                 },
                 icon: const Icon(Icons.sync))
           ],
-          expandedHeight: 220,
           pinned: true,
           stretch: true,
           flexibleSpace: Container(
               decoration: const BoxDecoration(
                   image: DecorationImage(
-                      image: AssetImage("images/server.png"),
+                      image: AssetImage("images/server.jpg"),
                       fit: BoxFit.cover)))),
       SliverToBoxAdapter(child: content)
     ]));
