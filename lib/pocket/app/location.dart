@@ -61,16 +61,13 @@ class _LocationViewState extends ConsumerState<LocationView> {
                 ])),
         Expanded(
             flex: 2,
-            child: SafeArea(
-              top: false,
-              child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemBuilder: (context, index) {
-                    final dd = d[index];
-                    return buildTrackItems(dd.key, dd.value);
-                  },
-                  itemCount: d.length),
-            ))
+            child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemBuilder: (context, index) {
+                  final dd = d[index];
+                  return buildTrackItems(dd.key, dd.value);
+                },
+                itemCount: d.length))
       ]),
       const Positioned(left: 5, top: 5, child: SafeArea(child: BackButton()))
     ]));
@@ -92,34 +89,33 @@ class _LocationViewState extends ConsumerState<LocationView> {
                           fontWeight: FontWeight.bold))),
               Expanded(
                   child: ListView.builder(
+                      padding: EdgeInsets.zero,
                       itemBuilder: (context, index) {
                         final e = data[index];
-                        return InkWell(
-                            onLongPress: () => showDebugBar(context, e),
-                            onTap: () {
-                              controller.move(
-                                  e.gcLatLng, controller.camera.zoom);
-                            },
-                            child: Padding(
-                                padding:
-                                    const EdgeInsets.only(left: 8, bottom: 3),
-                                child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(e.updateTime.split(".").first,
-                                          style: const TextStyle(
-                                              color: Colors.grey,
-                                              fontSize: 13)),
-                                      Text(e.note1,
-                                          softWrap: false,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(
-                                              color: Colors.black,
-                                              fontSize: 11))
-                                    ])));
+                        return buildLocationRow(context, e);
                       },
                       itemCount: data.length))
             ]));
+  }
+
+  InkWell buildLocationRow(BuildContext context, LocationInfo e) {
+    return InkWell(
+        onLongPress: () => showDebugBar(context, e),
+        onTap: () {
+          controller.move(e.gcLatLng, controller.camera.zoom);
+        },
+        child: Padding(
+            padding: const EdgeInsets.only(left: 8, bottom: 3),
+            child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  Text(e.updateTime.split(".").first,
+                      style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                  Text(e.note1,
+                      softWrap: false,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: Colors.black, fontSize: 11))
+                ])));
   }
 }
