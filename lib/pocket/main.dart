@@ -5,6 +5,7 @@ import 'package:cyberme_flutter/learn/snh.dart';
 import 'package:cyberme_flutter/pocket/app/body_mass.dart';
 import 'package:cyberme_flutter/pocket/app/esxi.dart';
 import 'package:cyberme_flutter/pocket/app/gitea.dart';
+import 'package:cyberme_flutter/pocket/app/location.dart';
 import 'package:cyberme_flutter/pocket/app/story.dart';
 import 'app/blog.dart';
 import 'app/blue.dart';
@@ -119,6 +120,12 @@ final apps = {
     "view": (c) => const GPTView(),
     "addToMenu": true,
     "icon": Icons.android
+  },
+  "location": {
+    "name": "位置管理",
+    "view": (c) => const LocationView(),
+    "addToMenu": true,
+    "icon": Icons.map
   },
   "cloth": {
     "name": "衣物管理",

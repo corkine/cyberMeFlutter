@@ -1,8 +1,6 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:rive/rive.dart';
 
 class LearnAnimation extends StatelessWidget {
   const LearnAnimation({Key? key}) : super(key: key);
@@ -29,16 +27,15 @@ class _HelloRiveState extends State<HelloRive> {
     return Scaffold(
       body: Container(
         color: Colors.white,
-        child: const Center(
-          child: RiveAnimation.asset("images/bird.riv",
-          animations: ['idle'],
-          ),
-        ),
+        // child: const Center(
+        //   child: RiveAnimation.asset("images/bird.riv",
+        //   animations: ['idle'],
+        //   ),
+        // ),
       ),
     );
   }
 }
-
 
 class HelloTicker extends StatefulWidget {
   const HelloTicker({Key? key}) : super(key: key);
@@ -212,9 +209,9 @@ class _MyAniState extends State<MyAni> with TickerProviderStateMixin {
                         gradient: RadialGradient(colors: [
                           Colors.blue[600]!,
                           Colors.blue[100]!
-                        ], stops: *//*controller.value <= 0.2
+                        ], stops: */ /*controller.value <= 0.2
                                 ? [a1.value, a1.value + 0.1]
-                                : [a3.value, a3.value + 0.1]*//*
+                                : [a3.value, a3.value + 0.1]*/ /*
                             [
                           controller.value,
                           controller.value + 0.1
