@@ -1,3 +1,5 @@
+// ignore_for_file: curly_braces_in_flow_control_structures
+
 import 'package:cyberme_flutter/api/location.dart';
 import 'package:cyberme_flutter/pocket/app/util.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +16,8 @@ class LocationView extends ConsumerStatefulWidget {
 
 class _LocationViewState extends ConsumerState<LocationView> {
   MapController controller = MapController();
+  LatLng? choosed;
+
   @override
   void dispose() {
     controller.dispose();
@@ -32,6 +36,15 @@ class _LocationViewState extends ConsumerState<LocationView> {
     final d = (ref.watch(getTrackSummaryProvider).value ?? {})
         .entries
         .toList(growable: false);
+    final u = d.expand((element) => element.value).toList(growable: false)
+      ..sort((a, b) {
+        if (a.gcLatLng == choosed)
+          return 100;
+        else if (b.gcLatLng == choosed)
+          return -100;
+        else
+          return a.updateTime.compareTo(b.updateTime);
+      });
     return Scaffold(
         body: Stack(children: [
       Column(children: [
@@ -40,7 +53,10 @@ class _LocationViewState extends ConsumerState<LocationView> {
             child: FlutterMap(
                 mapController: controller,
                 options: const MapOptions(
-                    initialZoom: 13, initialCenter: LatLng(30, 114)),
+                    interactionOptions:
+                        InteractionOptions(enableMultiFingerGestureRace: true),
+                    initialZoom: 13,
+                    initialCenter: LatLng(30, 114)),
                 children: [
                   TileLayer(
                       urlTemplate:
@@ -49,15 +65,14 @@ class _LocationViewState extends ConsumerState<LocationView> {
                           'http://webrd01.is.autonavi.com/appmaptile?x={x}&y={y}&z={z}&lang=zh_cn&size=1&scale=1&style=8'
                           ''),
                   MarkerLayer(
-                      markers: d
-                          .expand((u) => u.value.map((e) {
-                                //final name = u.key;
-                                return Marker(
-                                    point: e.gcLatLng,
-                                    child: const Icon(Icons.place,
-                                        color: Colors.deepOrange));
-                              }).toList(growable: false))
-                          .toList(growable: false))
+                      markers: u.map((e) {
+                    //final name = u.key;
+                    final g = e.gcLatLng;
+                    return Marker(
+                        point: g,
+                        child: Icon(Icons.place,
+                            color: choosed == g ? Colors.red : Colors.orange));
+                  }).toList(growable: false))
                 ])),
         Expanded(
             flex: 2,
@@ -99,10 +114,13 @@ class _LocationViewState extends ConsumerState<LocationView> {
   }
 
   InkWell buildLocationRow(BuildContext context, LocationInfo e) {
+    final g = e.gcLatLng;
+    final isChoosed = choosed == g;
     return InkWell(
         onLongPress: () => showDebugBar(context, e),
         onTap: () {
-          controller.move(e.gcLatLng, controller.camera.zoom);
+          setState(() => choosed = g);
+          controller.move(g, controller.camera.zoom);
         },
         child: Padding(
             padding: const EdgeInsets.only(left: 8, bottom: 3),
@@ -111,11 +129,20 @@ class _LocationViewState extends ConsumerState<LocationView> {
                 mainAxisSize: MainAxisSize.max,
                 children: [
                   Text(e.updateTime.split(".").first,
-                      style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                      style: isChoosed
+                          ? const TextStyle(
+                              color: Colors.black,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold)
+                          : const TextStyle(color: Colors.grey, fontSize: 12)),
                   Text(e.note1,
                       softWrap: false,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(color: Colors.black, fontSize: 11))
+                      style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 11,
+                          fontWeight:
+                              isChoosed ? FontWeight.bold : FontWeight.normal))
                 ])));
   }
 }

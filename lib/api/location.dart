@@ -14,6 +14,7 @@ class LocationInfo with _$LocationInfo {
       @Default(0.0) double longitude,
       @Default(0.0) double latitude,
       @Default(0.0) double altitude,
+      @Default(LatLng(0, 0)) LatLng gcLatLng,
       @Default(0) int id,
       @Default("") String note1,
       @Default("") String note2,
@@ -24,12 +25,6 @@ class LocationInfo with _$LocationInfo {
       _$LocationInfoFromJson(json);
 }
 
-extension LocationExtend on LocationInfo {
-  LatLng get latlng => LatLng(latitude, longitude);
-  LatLng get gcLatLng =>
-      LatLngConvert(latlng, LatLngType.WGS84, LatLngType.GCJ02);
-}
-
 @riverpod
 FutureOr<Map<String, List<LocationInfo>>> getTrackSummary(
     GetTrackSummaryRef ref) async {
@@ -37,9 +32,12 @@ FutureOr<Map<String, List<LocationInfo>>> getTrackSummary(
       "/cyber/location/summary?count=30",
       (m) => m.map((key, value) => MapEntry(
           key,
-          (value as List? ?? [])
-              .map((e) => LocationInfo.fromJson(e))
-              .toList(growable: false))));
+          (value as List? ?? []).map((e) {
+            final l = LocationInfo.fromJson(e);
+            return l.copyWith(
+                gcLatLng: LatLngConvert(LatLng(l.latitude, l.longitude),
+                    LatLngType.WGS84, LatLngType.GCJ02));
+          }).toList(growable: false))));
   if (ok.isNotEmpty) {
     debugPrint(ok);
   }
