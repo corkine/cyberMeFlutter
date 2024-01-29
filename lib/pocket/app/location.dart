@@ -1,7 +1,6 @@
 import 'package:cyberme_flutter/api/location.dart';
 import 'package:cyberme_flutter/pocket/app/util.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -62,15 +61,18 @@ class _LocationViewState extends ConsumerState<LocationView> {
                 ])),
         Expanded(
             flex: 2,
-            child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemBuilder: (context, index) {
-                  final dd = d[index];
-                  return buildTrackItems(dd.key, dd.value);
-                },
-                itemCount: d.length))
+            child: SafeArea(
+              top: false,
+              child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemBuilder: (context, index) {
+                    final dd = d[index];
+                    return buildTrackItems(dd.key, dd.value);
+                  },
+                  itemCount: d.length),
+            ))
       ]),
-      const Positioned(left: 5, top: 5, child: BackButton())
+      const Positioned(left: 5, top: 5, child: SafeArea(child: BackButton()))
     ]));
   }
 
@@ -79,14 +81,15 @@ class _LocationViewState extends ConsumerState<LocationView> {
         width: 200,
         child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
               Padding(
-                padding: const EdgeInsets.only(left: 8, top: 8),
-                child: Text(name,
-                    style: const TextStyle(
-                        fontSize: 15, height: 2, fontWeight: FontWeight.bold)),
-              ),
+                  padding: const EdgeInsets.only(left: 8, top: 8),
+                  child: Text(name,
+                      style: const TextStyle(
+                          fontSize: 15,
+                          height: 2,
+                          fontWeight: FontWeight.bold))),
               Expanded(
                   child: ListView.builder(
                       itemBuilder: (context, index) {
