@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "hello_flutter" "\0"
+            VALUE "CompanyName", "com.mazhangjing" "\0"
+            VALUE "FileDescription", "CyberMe" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "hello_flutter" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2022 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "hello_flutter.exe" "\0"
-            VALUE "ProductName", "hello_flutter" "\0"
+            VALUE "InternalName", "CyberMe" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2022 Marvin Studio. All rights reserved." "\0"
+            VALUE "OriginalFilename", "CyberMe.exe" "\0"
+            VALUE "ProductName", "CyberMe" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

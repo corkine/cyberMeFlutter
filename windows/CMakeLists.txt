@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.14)
 project(hello_flutter LANGUAGES CXX)
 
-set(BINARY_NAME "hello_flutter")
+set(BINARY_NAME "CyberMe")
 
 cmake_policy(SET CMP0063 NEW)
 

@@ -34,6 +34,8 @@ dependencies:
   freezed_annotation: ^2.4.1
   table_calendar: ^3.0.9
   window_manager: ^0.3.7
+  system_tray: ^2.0.2
+  pasteboard: ^0.2.0
   flutter_animate: ^4.4.0
   flutter_map: ^6.1.0
 dev_dependencies:
@@ -53,6 +55,7 @@ flutter:
     - images/
     - images/dash/
     - images/health/
+    - images/tray/
   module:
 #    androidX: true
 #    androidPackage: com.mazhangjing.cyberme-flutter
