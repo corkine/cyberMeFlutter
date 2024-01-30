@@ -10,6 +10,8 @@ import 'package:intl/intl.dart';
 /// due_at : "2023-09-16T00:00:00"
 /// create_at : "2023-09-17T18:56:00.708762"
 /// importance : "normal"
+/// id: '',
+/// list_id: ""
 
 class Todo {
   Todo({
@@ -23,6 +25,8 @@ class Todo {
     String? dueAt,
     String? createAt,
     String? importance,
+    String? id,
+    String? listId,
   }) {
     _modifiedAt = modifiedAt;
     _checklistitems = checklistitems;
@@ -34,12 +38,14 @@ class Todo {
     _dueAt = dueAt;
     _createAt = createAt;
     _importance = importance;
+    _id = id;
+    _listId = listId;
     date = _time != null ? DateFormat("yyyy-MM-dd").parse(_time!) : null;
   }
 
   @override
   String toString() {
-    return 'Todo{_modifiedAt: $_modifiedAt, _checklistitems: $_checklistitems, _time: $_time, _finishAt: $_finishAt, _title: $_title, _list: $_list, _status: $_status, _dueAt: $_dueAt, _createAt: $_createAt, _importance: $_importance}';
+    return 'Todo{_id: $_id, _listId: $_listId, _modifiedAt: $_modifiedAt, _checklistitems: $_checklistitems, _time: $_time, _finishAt: $_finishAt, _title: $_title, _list: $_list, _status: $_status, _dueAt: $_dueAt, _createAt: $_createAt, _importance: $_importance}';
   }
 
   Todo.fromJson(dynamic json) {
@@ -53,6 +59,8 @@ class Todo {
     _dueAt = json['due_at'];
     _createAt = json['create_at'];
     _importance = json['importance'];
+    _id = json['id'] ?? "";
+    _listId = json['list_id'] ?? "";
     date = _time != null ? DateFormat("yyyy-MM-dd").parse(_time!) : null;
   }
 
@@ -67,31 +75,35 @@ class Todo {
   String? _createAt;
   String? _importance;
   DateTime? date;
+  String? _id;
+  String? _listId;
 
-  Todo copyWith({
-    String? modifiedAt,
-    dynamic checklistitems,
-    String? time,
-    String? finishAt,
-    String? title,
-    String? list,
-    String? status,
-    String? dueAt,
-    String? createAt,
-    String? importance,
-  }) =>
+  Todo copyWith(
+          {String? modifiedAt,
+          dynamic checklistitems,
+          String? time,
+          String? finishAt,
+          String? title,
+          String? list,
+          String? status,
+          String? dueAt,
+          String? createAt,
+          String? importance,
+          String? id,
+          String? listId}) =>
       Todo(
-        modifiedAt: modifiedAt ?? _modifiedAt,
-        checklistitems: checklistitems ?? _checklistitems,
-        time: time ?? _time,
-        finishAt: finishAt ?? _finishAt,
-        title: title ?? _title,
-        list: list ?? _list,
-        status: status ?? _status,
-        dueAt: dueAt ?? _dueAt,
-        createAt: createAt ?? _createAt,
-        importance: importance ?? _importance,
-      );
+          modifiedAt: modifiedAt ?? _modifiedAt,
+          checklistitems: checklistitems ?? _checklistitems,
+          time: time ?? _time,
+          finishAt: finishAt ?? _finishAt,
+          title: title ?? _title,
+          list: list ?? _list,
+          status: status ?? _status,
+          dueAt: dueAt ?? _dueAt,
+          createAt: createAt ?? _createAt,
+          importance: importance ?? _importance,
+          id: id ?? _id,
+          listId: listId ?? _listId);
 
   String? get modifiedAt => _modifiedAt;
 
@@ -113,6 +125,10 @@ class Todo {
 
   String? get importance => _importance;
 
+  String? get id => _id;
+
+  String? get listId => _listId;
+
   Map<String, dynamic> toJson() {
     final map = <String, dynamic>{};
     map['modified_at'] = _modifiedAt;
@@ -125,6 +141,8 @@ class Todo {
     map['due_at'] = _dueAt;
     map['create_at'] = _createAt;
     map['importance'] = _importance;
+    map['id'] = _id;
+    map['list_id'] = _listId;
     return map;
   }
 }

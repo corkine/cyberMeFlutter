@@ -1,21 +1,25 @@
 import 'dart:convert';
 
+import 'package:cyberme_flutter/api/todo.dart';
+import 'package:cyberme_flutter/main.dart';
 import 'package:cyberme_flutter/pocket/app/util.dart';
 import 'package:cyberme_flutter/pocket/models/todo.dart';
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart';
 import 'package:intl/intl.dart';
 
 import '../config.dart';
 
-class TodoView extends StatefulWidget {
+class TodoView extends ConsumerStatefulWidget {
   const TodoView({super.key});
 
   @override
-  State<TodoView> createState() => _TodoViewState();
+  ConsumerState<TodoView> createState() => _TodoViewState();
 }
 
-class _TodoViewState extends State<TodoView> with TickerProviderStateMixin {
+class _TodoViewState extends ConsumerState<TodoView>
+    with TickerProviderStateMixin {
   int step = 60;
   int indent = 0;
   late DateTime weekDayOne;
@@ -129,21 +133,57 @@ class _TodoViewState extends State<TodoView> with TickerProviderStateMixin {
                                     Text(reachedLimit ? "没有更多数据" : "正在加载...")));
                       }
                       final t = tl[i];
-                      return ListTile(
-                          visualDensity: VisualDensity.compact,
-                          title: Text(t.title ?? "",
-                              style: const TextStyle(
-                                  fontSize: 15, color: Colors.black)),
-                          subtitle: Padding(
-                              padding: const EdgeInsets.only(top: 5),
-                              child: DefaultTextStyle(
-                                  style: const TextStyle(
-                                      fontSize: 12, color: Colors.black),
-                                  child: Row(children: [
-                                    Text(t.list ?? ""),
-                                    const Spacer(),
-                                    dateRich(t.date)
-                                  ]))));
+                      return Dismissible(
+                        key: ValueKey(t),
+                        confirmDismiss: (direction) async {
+                          if (direction == DismissDirection.endToStart) {
+                            final res = await ref
+                                .read(todosProvider.notifier)
+                                .deleteTodo(
+                                    listId: t.listId ?? "", taskId: t.id ?? "");
+                            await showSimpleMessage(context,
+                                content: res, useSnackBar: true);
+                            fetchTodo().then((value) => setState(() {}));
+                          }
+                          return false;
+                        },
+                        secondaryBackground: Container(
+                            color: Colors.red,
+                            child: const Align(
+                                alignment: Alignment.centerRight,
+                                child: Padding(
+                                    padding: EdgeInsets.only(right: 20),
+                                    child: Text("删除",
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 15))))),
+                        background: Container(
+                            color: Colors.blue,
+                            child: const Align(
+                                alignment: Alignment.centerLeft,
+                                child: Padding(
+                                    padding: EdgeInsets.only(left: 20),
+                                    child: Text("TODO",
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 15))))),
+                        child: ListTile(
+                            onLongPress: () => showDebugBar(context, t),
+                            visualDensity: VisualDensity.compact,
+                            title: Text(t.title ?? "",
+                                style: const TextStyle(
+                                    fontSize: 15, color: Colors.black)),
+                            subtitle: Padding(
+                                padding: const EdgeInsets.only(top: 5),
+                                child: DefaultTextStyle(
+                                    style: const TextStyle(
+                                        fontSize: 12, color: Colors.black),
+                                    child: Row(children: [
+                                      Text(t.list ?? ""),
+                                      const Spacer(),
+                                      dateRich(t.date)
+                                    ])))),
+                      );
                     },
                     itemCount: tl.length + 1);
               }).toList(growable: false),
@@ -198,12 +238,15 @@ class _TodoViewState extends State<TodoView> with TickerProviderStateMixin {
             : const Icon(Icons.format_list_bulleted));
     final reload =
         IconButton(onPressed: syncTodo, icon: const Icon(Icons.sync));
+    final addTask =
+        IconButton(onPressed: addNewTask, icon: const Icon(Icons.add));
     return AppBar(
-        title: const Text("待办事项"),
-        centerTitle: true,
+        title: const Text("TODO"),
+        centerTitle: false,
         actions: useTab
-            ? [reload, viewBtn]
+            ? [addTask, reload, viewBtn]
             : [
+                addTask,
                 reload,
                 viewBtn,
                 PopupMenuButton(
@@ -289,6 +332,95 @@ class _TodoViewState extends State<TodoView> with TickerProviderStateMixin {
     fetchTodo().then((value) => setState(() {}));
   }
 
+  addNewTask() async {
+    final title = TextEditingController();
+    var selectList = lists.firstOrNull ?? "";
+    var markFinished = true;
+    var date = DateTime.now();
+    handleAdd() async {
+      if (title.text.isEmpty || selectList.isEmpty) {
+        return await showSimpleMessage(context, content: "标题和列表不能为空");
+      }
+      final res = await ref.read(todosProvider.notifier).addTodo(
+          due: DateFormat("yyyy-MM-dd").format(date),
+          title: title.text,
+          finished: markFinished,
+          listName: selectList,
+          listId: listName2Id[selectList] ?? "");
+      await showSimpleMessage(context,
+          content: res, useSnackBar: true, withPopFirst: true);
+      fetchTodo().then((value) => setState(() {}));
+    }
+
+    await showDialog(
+        context: context,
+        builder: (context) {
+          return StatefulBuilder(builder: (context, setState) {
+            return Theme(
+                data: appThemeData,
+                child: AlertDialog(
+                    title: const Text("添加待办事项"),
+                    content: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          TextField(
+                            autofocus: true,
+                            decoration: const InputDecoration(
+                                border: UnderlineInputBorder(), hintText: "标题"),
+                            controller: title,
+                          ),
+                          const SizedBox(height: 10),
+                          PopupMenuButton(
+                              initialValue: selectList,
+                              tooltip: "",
+                              child: Text("添加到 $selectList"),
+                              itemBuilder: (context) => lists
+                                  .map((e) =>
+                                      PopupMenuItem(child: Text(e), value: e))
+                                  .toList(),
+                              onSelected: (v) {
+                                setState(() {
+                                  selectList = v;
+                                });
+                              }),
+                          const SizedBox(height: 5),
+                          InkWell(
+                              onTap: () async {
+                                final selectedDate = await showDatePicker(
+                                    context: context,
+                                    firstDate:
+                                        date.add(const Duration(days: -3)),
+                                    lastDate:
+                                        date.add(const Duration(days: 3)));
+                                if (selectedDate != null) {
+                                  setState(() => date = selectedDate);
+                                }
+                              },
+                              child: Text(
+                                  "截止于 ${DateFormat("yyyy-MM-dd").format(date)}")),
+                          const SizedBox(height: 3),
+                          Transform.translate(
+                              offset: const Offset(-8, 0),
+                              child: Row(children: [
+                                Checkbox(
+                                    value: markFinished,
+                                    onChanged: (v) =>
+                                        setState(() => markFinished = v!)),
+                                const Text("标记为已完成")
+                              ]))
+                        ]),
+                    actions: [
+                      TextButton(
+                          onPressed: () => Navigator.of(context).pop(false),
+                          child: const Text("取消")),
+                      TextButton(onPressed: handleAdd, child: const Text("确定"))
+                    ]));
+          });
+        });
+  }
+
   Future fetchTodo() async {
     final url = Uri.parse(Config.todoUrl(indent, indent + step));
     debugPrint("req for $url");
@@ -319,6 +451,8 @@ class _TodoViewState extends State<TodoView> with TickerProviderStateMixin {
     }
   }
 
+  Map<String, String> listName2Id = {};
+
   prepareData(bool firstTime) {
     todo = [];
     todoMap = {};
@@ -327,6 +461,7 @@ class _TodoViewState extends State<TodoView> with TickerProviderStateMixin {
       for (final tt in t) {
         if (!lists.contains(tt.list) && tt.list != null) {
           lists.add(tt.list!);
+          listName2Id[tt.list!] = tt.listId ?? "";
         }
         //添加到 map
         final origin = todoMap[tt.list!];

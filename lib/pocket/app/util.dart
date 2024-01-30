@@ -36,26 +36,35 @@ showWaitingBar(BuildContext context,
 }
 
 Future<bool> showSimpleMessage(BuildContext context,
-    {String? title, required String content, bool withPopFirst = false}) async {
+    {String? title,
+    required String content,
+    bool withPopFirst = false,
+    bool useSnackBar = false}) async {
   if (withPopFirst) {
     Navigator.of(context).pop();
   }
-  return await showDialog<bool>(
-          context: context,
-          builder: (context) => Theme(
-                data: appThemeData,
-                child: AlertDialog(
-                  title: Text(title ?? "提示"),
-                  content: Text(content),
-                  actions: [
-                    TextButton(
-                        onPressed: () => Navigator.of(context).pop(false),
-                        child: const Text("取消")),
-                    TextButton(
-                        onPressed: () => Navigator.of(context).pop(true),
-                        child: const Text("确定"))
-                  ],
-                ),
-              )) ??
-      false;
+  if (useSnackBar) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(content)));
+    return true;
+  } else {
+    return await showDialog<bool>(
+            context: context,
+            builder: (context) => Theme(
+                  data: appThemeData,
+                  child: AlertDialog(
+                    title: Text(title ?? "提示"),
+                    content: Text(content),
+                    actions: [
+                      TextButton(
+                          onPressed: () => Navigator.of(context).pop(false),
+                          child: const Text("取消")),
+                      TextButton(
+                          onPressed: () => Navigator.of(context).pop(true),
+                          child: const Text("确定"))
+                    ],
+                  ),
+                )) ??
+        false;
+  }
 }
