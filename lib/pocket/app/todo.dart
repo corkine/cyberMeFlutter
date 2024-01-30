@@ -171,8 +171,12 @@ class _TodoViewState extends ConsumerState<TodoView>
                             onLongPress: () => showDebugBar(context, t),
                             visualDensity: VisualDensity.compact,
                             title: Text(t.title ?? "",
-                                style: const TextStyle(
-                                    fontSize: 15, color: Colors.black)),
+                                style: TextStyle(
+                                    fontSize: 15,
+                                    color: Colors.black,
+                                    decoration: t.status == "completed"
+                                        ? TextDecoration.lineThrough
+                                        : null)),
                             subtitle: Padding(
                                 padding: const EdgeInsets.only(top: 5),
                                 child: DefaultTextStyle(
@@ -212,7 +216,12 @@ class _TodoViewState extends ConsumerState<TodoView>
           final t = tl[i];
           return ListTile(
               title: Text(t.title ?? "",
-                  style: const TextStyle(fontSize: 15, color: Colors.black)),
+                  style: TextStyle(
+                      fontSize: 15,
+                      color: Colors.black,
+                      decoration: t.status == "completed"
+                          ? TextDecoration.lineThrough
+                          : null)),
               subtitle: Padding(
                   padding: const EdgeInsets.only(top: 5),
                   child: DefaultTextStyle(
@@ -361,68 +370,64 @@ class _TodoViewState extends ConsumerState<TodoView>
         context: context,
         builder: (context) {
           return StatefulBuilder(builder: (context, setState) {
-            return Theme(
-                data: appThemeData,
-                child: AlertDialog(
-                    title: const Text("添加待办事项"),
-                    content: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          TextField(
-                            onSubmitted: (_) => handleAdd(),
-                            autofocus: true,
-                            decoration: const InputDecoration(
-                                border: UnderlineInputBorder(), hintText: "标题"),
-                            controller: title,
-                          ),
-                          const SizedBox(height: 10),
-                          PopupMenuButton(
-                              initialValue: selectList,
-                              tooltip: "",
-                              child: Text("添加到 $selectList"),
-                              itemBuilder: (context) => lists
-                                  .map((e) =>
-                                      PopupMenuItem(child: Text(e), value: e))
-                                  .toList(),
-                              onSelected: (v) {
-                                setState(() {
-                                  selectList = v;
-                                });
-                              }),
-                          const SizedBox(height: 5),
-                          InkWell(
-                              onTap: () async {
-                                final selectedDate = await showDatePicker(
-                                    context: context,
-                                    firstDate:
-                                        date.add(const Duration(days: -3)),
-                                    lastDate:
-                                        date.add(const Duration(days: 3)));
-                                if (selectedDate != null) {
-                                  setState(() => date = selectedDate);
-                                }
-                              },
-                              child: Text(
-                                  "截止于 ${DateFormat("yyyy-MM-dd").format(date)}")),
-                          const SizedBox(height: 3),
-                          Transform.translate(
-                              offset: const Offset(-8, 0),
-                              child: Row(children: [
-                                Checkbox(
-                                    value: markFinished,
-                                    onChanged: (v) =>
-                                        setState(() => markFinished = v!)),
-                                const Text("标记为已完成")
-                              ]))
-                        ]),
-                    actions: [
-                      TextButton(
-                          onPressed: () => Navigator.of(context).pop(false),
-                          child: const Text("取消")),
-                      TextButton(onPressed: handleAdd, child: const Text("确定"))
-                    ]));
+            return AlertDialog(
+                title: const Text("添加待办事项"),
+                content: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextField(
+                        onSubmitted: (_) => handleAdd(),
+                        autofocus: true,
+                        decoration: const InputDecoration(
+                            border: UnderlineInputBorder(), hintText: "标题"),
+                        controller: title,
+                      ),
+                      const SizedBox(height: 10),
+                      PopupMenuButton(
+                          initialValue: selectList,
+                          tooltip: "",
+                          child: Text("添加到 $selectList"),
+                          itemBuilder: (context) => lists
+                              .map((e) =>
+                                  PopupMenuItem(child: Text(e), value: e))
+                              .toList(),
+                          onSelected: (v) {
+                            setState(() {
+                              selectList = v;
+                            });
+                          }),
+                      const SizedBox(height: 5),
+                      InkWell(
+                          onTap: () async {
+                            final selectedDate = await showDatePicker(
+                                context: context,
+                                firstDate: date.add(const Duration(days: -3)),
+                                lastDate: date.add(const Duration(days: 3)));
+                            if (selectedDate != null) {
+                              setState(() => date = selectedDate);
+                            }
+                          },
+                          child: Text(
+                              "截止于 ${DateFormat("yyyy-MM-dd").format(date)}")),
+                      const SizedBox(height: 3),
+                      Transform.translate(
+                          offset: const Offset(-8, 0),
+                          child: Row(children: [
+                            Checkbox(
+                                value: markFinished,
+                                onChanged: (v) =>
+                                    setState(() => markFinished = v!)),
+                            const Text("标记为已完成")
+                          ]))
+                    ]),
+                actions: [
+                  TextButton(
+                      onPressed: () => Navigator.of(context).pop(false),
+                      child: const Text("取消")),
+                  TextButton(onPressed: handleAdd, child: const Text("确定"))
+                ]);
           });
         });
   }

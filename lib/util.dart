@@ -148,7 +148,7 @@ Future<void> initSystemTray() async {
           size: dockedOnWindows ? const Size(350, 600) : const Size(400, 700)),
       () async {
     if (dockedOnWindows) {
-      await windowManager.setAsFrameless();
+      //await windowManager.setAsFrameless();
       await windowManager.setAlignment(Alignment.bottomRight);
     }
     await windowManager.show();
