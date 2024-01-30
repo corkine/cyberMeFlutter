@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:cyberme_flutter/learn/game.dart';
@@ -7,6 +8,7 @@ import 'package:cyberme_flutter/pocket/app/esxi.dart';
 import 'package:cyberme_flutter/pocket/app/gitea.dart';
 import 'package:cyberme_flutter/pocket/app/location.dart';
 import 'package:cyberme_flutter/pocket/app/story.dart';
+import 'package:cyberme_flutter/util.dart';
 import 'app/blog.dart';
 import 'app/blue.dart';
 import 'app/cloth.dart';
@@ -35,12 +37,14 @@ final apps = {
     "view": (c) => const PocketHome(),
     "addToMenu": true,
     "replace": true,
+    "addToContext": false,
     "icon": Icons.calendar_month
   },
   "bigDashboard": {
     "name": "大屏",
     "view": (c) => const dash.DashHome(),
     "addToMenu": true,
+    "addToContext": false,
     "replace": false
   },
   "ticket": {
@@ -71,12 +75,14 @@ final apps = {
     "name": "积分系统",
     "view": (c) => const ScoreView(),
     "addToMenu": true,
+    "addToContext": false,
     "icon": Icons.margin
   },
   "bodyMass": {
     "name": "体重记录",
     "view": (c) => const BodyMassView(),
     "addToMenu": true,
+    "addToContext": false,
     "icon": Icons.fit_screen
   },
   "show": {
@@ -89,6 +95,7 @@ final apps = {
     "name": "喷嚏图卦",
     "view": (c) => const TuguaView(),
     "addToMenu": true,
+    "addToContext": false,
     "icon": Icons.newspaper
   },
   "story": {
@@ -131,24 +138,28 @@ final apps = {
     "name": "衣物管理",
     "view": (c) => const ClothView(),
     "addToMenu": true,
+    "addToContext": false,
     "icon": Icons.ice_skating_outlined
   },
   "medic": {
     "name": "药物管理",
     "view": (c) => const MedicView(),
     "addToMenu": true,
+    "addToContext": false,
     "icon": Icons.medical_services_sharp
   },
   "game": {
     "name": "健康游戏",
     "view": (c) => const Game(info: null),
     "addToMenu": true,
+    "addToContext": false,
     "icon": Icons.gamepad
   },
   "snh48": {
     "name": "SNH Pocket",
     "view": (c) => const SNHApp(),
     "addToMenu": true,
+    "addToContext": false,
     "icon": Icons.heart_broken_rounded
   },
 };

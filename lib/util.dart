@@ -1,13 +1,18 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:clipboard/clipboard.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:sprintf/sprintf.dart';
 import 'package:system_tray/system_tray.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:http/http.dart' as http;
 import 'package:pasteboard/pasteboard.dart' as pb;
+import 'package:window_manager/window_manager.dart';
+
+import 'pocket/main.dart';
 
 class Util {
   /// 返回常用的时间信息
@@ -65,6 +70,9 @@ class Util {
 }
 
 late AppWindow appWindow;
+bool appHide = false;
+bool dockedOnWindows = true;
+StreamController<String>? routeStream;
 
 Future<void> initSystemTray() async {
   String path = Platform.isWindows
@@ -78,9 +86,22 @@ Future<void> initSystemTray() async {
 
   final Menu menu = Menu();
   await menu.buildFrom([
-    SubMenu(
-        label: "关于此应用",
-        children: [MenuItemLabel(label: '关于应用', onClicked: (a) {})]),
+    ...apps.entries
+        .where((element) => (element.value["addToContext"] as bool?) ?? true)
+        .map((e) {
+      final url = "/app/${e.key}";
+      final name = e.value["name"] as String;
+      return MenuItemLabel(
+          label: name,
+          onClicked: (_) {
+            if (appHide) {
+              appHide = false;
+              appWindow.show();
+            }
+            routeStream?.sink.add(url);
+          });
+    }),
+    MenuSeparator(),
     MenuItemLabel(
         label: '剪贴板图片上传',
         onClicked: (menuItem) => readClipboardAndUploadImage()),
@@ -88,9 +109,19 @@ Future<void> initSystemTray() async {
         label: 'Web 版本',
         onClicked: (a) => launchUrlString("https://cyber.mazhangjing.com")),
     MenuSeparator(),
-    MenuItemLabel(label: '显示', onClicked: (_) => appWindow.show()),
-    MenuItemLabel(label: '隐藏', onClicked: (_) => appWindow.hide()),
-    MenuItemLabel(label: '退出', onClicked: (_) => exit(0))
+    MenuItemLabel(
+        label: '显示',
+        onClicked: (_) {
+          appHide = false;
+          appWindow.show();
+        }),
+    MenuItemLabel(
+        label: '隐藏',
+        onClicked: (_) {
+          appHide = true;
+          appWindow.hide();
+        }),
+    MenuItemLabel(label: '退出', onClicked: (_) => windowManager.close())
   ]);
 
   // set context menu
@@ -99,10 +130,30 @@ Future<void> initSystemTray() async {
   // handle system tray event
   systemTray.registerSystemTrayEventHandler((eventName) {
     if (eventName == kSystemTrayEventClick) {
-      appWindow.show();
+      if (appHide) {
+        appHide = false;
+        appWindow.show();
+      } else {
+        appHide = true;
+        appWindow.hide();
+      }
     } else if (eventName == kSystemTrayEventRightClick) {
       systemTray.popUpContextMenu();
     }
+  });
+
+  await windowManager.ensureInitialized();
+  await windowManager.waitUntilReadyToShow(
+      WindowOptions(
+          size: dockedOnWindows ? const Size(350, 600) : const Size(400, 700)),
+      () async {
+    if (dockedOnWindows) {
+      await windowManager.setAsFrameless();
+      await windowManager.setAlignment(Alignment.bottomRight);
+    }
+    await windowManager.show();
+    await windowManager.focus();
+    windowManager.addListener(MinListener());
   });
 }
 
@@ -125,5 +176,34 @@ void readClipboardAndUploadImage() async {
     debugPrint(body.toString());
     var url = body["data"] as String;
     FlutterClipboard.copy(url);
+  }
+}
+
+class MinListener extends WindowListener {
+  @override
+  void onWindowMinimize() {
+    appHide = true;
+    appWindow.hide();
+  }
+}
+
+void installWindowsRouteStream(BuildContext context) {
+  if (!kIsWeb && Platform.isWindows) {
+    if (routeStream == null) {
+      routeStream = StreamController();
+      routeStream?.stream.listen((event) {
+        debugPrint("Go to $event");
+        Navigator.of(context).popUntil(ModalRoute.withName('/menu'));
+        Navigator.of(context).pushNamed(event);
+      });
+    }
+  }
+}
+
+void distoryWindowsRouteStream() {
+  if (!kIsWeb && Platform.isWindows) {
+    debugPrint("Disposing Windows routeStream");
+    routeStream?.close();
+    routeStream = null;
   }
 }

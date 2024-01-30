@@ -6,6 +6,7 @@ import 'package:cyberme_flutter/pocket/channel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../util.dart';
 import 'main.dart';
 
 class MenuView extends StatefulWidget {
@@ -95,5 +96,17 @@ class _MenuViewState extends State<MenuView> {
           SliverToBoxAdapter(child: actionBar),
           const SliverPadding(padding: EdgeInsets.only(bottom: 30))
         ]));
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    installWindowsRouteStream(context);
+  }
+
+  @override
+  void dispose() {
+    distoryWindowsRouteStream();
+    super.dispose();
   }
 }
