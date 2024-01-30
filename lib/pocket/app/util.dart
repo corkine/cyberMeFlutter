@@ -44,8 +44,8 @@ Future<bool> showSimpleMessage(BuildContext context,
     Navigator.of(context).pop();
   }
   if (useSnackBar) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(content)));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(content), duration: const Duration(milliseconds: 200)));
     return true;
   } else {
     return await showDialog<bool>(

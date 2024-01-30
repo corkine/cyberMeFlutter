@@ -334,7 +334,12 @@ class _TodoViewState extends ConsumerState<TodoView>
 
   addNewTask() async {
     final title = TextEditingController();
-    var selectList = lists.firstOrNull ?? "";
+    var selectList = lists.indexed
+            .where((element) => element.$1 == tc?.index)
+            .map((e) => e.$2)
+            .firstOrNull ??
+        lists.firstOrNull ??
+        "";
     var markFinished = true;
     var date = DateTime.now();
     handleAdd() async {
@@ -366,6 +371,7 @@ class _TodoViewState extends ConsumerState<TodoView>
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           TextField(
+                            onSubmitted: (_) => handleAdd(),
                             autofocus: true,
                             decoration: const InputDecoration(
                                 border: UnderlineInputBorder(), hintText: "标题"),
