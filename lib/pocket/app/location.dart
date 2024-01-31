@@ -84,7 +84,18 @@ class _LocationViewState extends ConsumerState<LocationView> {
                 },
                 itemCount: d.length))
       ]),
-      const Positioned(left: 5, top: 5, child: SafeArea(child: BackButton()))
+      const Positioned(left: 5, top: 5, child: SafeArea(child: BackButton())),
+      Positioned(
+          right: 5,
+          top: 5,
+          child: SafeArea(
+              child: IconButton(
+                  onPressed: () async {
+                    final _ = await ref.refresh(getTrackSummaryProvider.future);
+                    await showSimpleMessage(context,
+                        content: "已拉取最新数据", useSnackBar: true);
+                  },
+                  icon: const Icon(Icons.refresh))))
     ]));
   }
 
