@@ -17,6 +17,7 @@ class LocationView extends ConsumerStatefulWidget {
 class _LocationViewState extends ConsumerState<LocationView> {
   MapController controller = MapController();
   LatLng? choosed;
+  Set<String> hideDeivce = {};
 
   @override
   void dispose() {
@@ -36,7 +37,10 @@ class _LocationViewState extends ConsumerState<LocationView> {
     final d = (ref.watch(getTrackSummaryProvider).value ?? {})
         .entries
         .toList(growable: false);
-    final u = d.expand((element) => element.value).toList(growable: false)
+    final u = d
+        .expand((element) => element.value)
+        .where((element) => !hideDeivce.contains(element.by))
+        .toList(growable: false)
       ..sort((a, b) {
         if (a.gcLatLng == choosed)
           return 100;
@@ -100,19 +104,32 @@ class _LocationViewState extends ConsumerState<LocationView> {
   }
 
   Widget buildTrackItems(String name, List<LocationInfo> data) {
+    bool isHide = hideDeivce.contains(name);
     return SizedBox(
         width: 200,
         child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Padding(
-                  padding: const EdgeInsets.only(left: 8, top: 8),
-                  child: Text(name,
-                      style: const TextStyle(
-                          fontSize: 15,
-                          height: 2,
-                          fontWeight: FontWeight.bold))),
+              InkWell(
+                onTap: () {
+                  if (isHide) {
+                    hideDeivce.remove(name);
+                  } else {
+                    hideDeivce.add(name);
+                  }
+                  setState(() {});
+                },
+                child: Container(
+                    width: 200,
+                    padding: const EdgeInsets.only(left: 8, top: 8),
+                    child: Text(name,
+                        style: TextStyle(
+                            fontSize: 15,
+                            height: 2,
+                            color: isHide ? Colors.grey : Colors.black,
+                            fontWeight: FontWeight.bold))),
+              ),
               Expanded(
                   child: ListView.builder(
                       padding: EdgeInsets.zero,
