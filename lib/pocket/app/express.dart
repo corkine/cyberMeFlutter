@@ -10,21 +10,6 @@ import 'package:http/http.dart';
 
 import '../config.dart';
 
-class StatusCircle extends CustomPainter {
-  final bool isLast;
-
-  StatusCircle({super.repaint, required this.isLast});
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = isLast ? Colors.green : const Color.fromARGB(255, 86, 86, 86);
-    canvas.drawCircle(const Offset(-15.9, 0), 6, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
 class ExpressView extends ConsumerStatefulWidget {
   const ExpressView({super.key});
 
@@ -33,6 +18,7 @@ class ExpressView extends ConsumerStatefulWidget {
 }
 
 class _ExpressViewState extends ConsumerState<ExpressView> {
+  Set<String> expandedItems = {};
   @override
   Widget build(BuildContext context) {
     final express = ref.watch(expressesProvider).value;
@@ -76,46 +62,15 @@ class _ExpressViewState extends ConsumerState<ExpressView> {
   ListTile buildExpressTile(ExpressItem e, BuildContext context) {
     final itemCount = e.extra.length;
     return ListTile(
-        onTap: () {
-          showDialog(
-              context: context,
-              builder: (context) => Theme(
-                  data: appThemeData,
-                  child: SimpleDialog(
-                      title: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(e.name,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold)),
-                            const SizedBox(height: 5),
-                            Text(e.id,
-                                style: const TextStyle(
-                                    fontSize: 13, color: Colors.white54))
-                          ]),
-                      children: [
-                        SimpleDialogOption(
-                            onPressed: () async {
-                              await FlutterClipboard.copy(e.id);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                      content: const Text("已拷贝快递单号到剪贴板。"),
-                                      action: SnackBarAction(
-                                          label: "OK", onPressed: () {}),
-                                      duration:
-                                          const Duration(milliseconds: 400)));
-                              Navigator.of(context).pop();
-                            },
-                            child: const Text("复制单号")),
-                        SimpleDialogOption(
-                            onPressed: () async {
-                              Navigator.of(context).pop();
-                              await handleDeleteExpress(e.id);
-                              ref.invalidate(expressesProvider);
-                            },
-                            child: const Text("删除"))
-                      ])));
-        },
+        splashColor: Colors.transparent,
+        onTap: () => setState(() {
+              if (expandedItems.contains(e.id)) {
+                expandedItems.remove(e.id);
+              } else {
+                expandedItems.add(e.id);
+              }
+            }),
+        onLongPress: () => showContextMenu(context, e),
         title: Padding(
             padding: const EdgeInsets.only(bottom: 10),
             child: Row(children: [
@@ -133,46 +88,85 @@ class _ExpressViewState extends ConsumerState<ExpressView> {
           Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ...e.extra.indexed.map((e) => Padding(
-                    padding: const EdgeInsets.only(left: 25),
-                    child: DefaultTextStyle(
-                        style: TextStyle(
-                            fontSize: 12,
-                            color: e.$1 == 0
-                                ? Colors.green
-                                : const Color.fromARGB(255, 88, 88, 88),
-                            fontWeight: e.$1 == 0
-                                ? FontWeight.bold
-                                : FontWeight.normal),
-                        child: TweenAnimationBuilder(
-                            duration: const Duration(milliseconds: 300),
-                            tween: Tween(
-                                begin: (itemCount - e.$1) * 0.001, end: 1.0),
-                            builder: (context, value, child) {
-                              return Opacity(opacity: value, child: child);
-                            },
-                            child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(children: [
-                                    CustomPaint(
-                                        painter:
-                                            StatusCircle(isLast: e.$1 == 0)),
-                                    Text(e.$2.timeReadable,
-                                        softWrap: true,
-                                        style: const TextStyle(
-                                            decoration:
-                                                TextDecoration.underline,
-                                            fontFamily: "consolas"))
-                                  ]),
-                                  const SizedBox(height: 5),
-                                  Text(e.$2.status, softWrap: true),
-                                  const SizedBox(height: 5)
-                                ])))))
-              ])
+              children: buildExpressDetailsList(e, itemCount))
         ]));
+  }
+
+  List<Widget> buildExpressDetailsList(ExpressItem e, int itemCount) {
+    return e.extra.indexed
+        .take(expandedItems.contains(e.id) ? e.extra.length : 1)
+        .map((e) => Padding(
+            padding: const EdgeInsets.only(left: 25),
+            child: DefaultTextStyle(
+                style: TextStyle(
+                    fontSize: 12,
+                    color: e.$1 == 0
+                        ? Colors.green
+                        : const Color.fromARGB(255, 88, 88, 88),
+                    fontWeight:
+                        e.$1 == 0 ? FontWeight.bold : FontWeight.normal),
+                child: TweenAnimationBuilder(
+                    duration: const Duration(milliseconds: 300),
+                    tween: Tween(begin: (itemCount - e.$1) * 0.001, end: 1.0),
+                    builder: (context, value, child) {
+                      return Opacity(opacity: value, child: child);
+                    },
+                    child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(children: [
+                            CustomPaint(
+                                painter: StatusCircle(isLast: e.$1 == 0)),
+                            Text(e.$2.timeReadable,
+                                softWrap: true,
+                                style: const TextStyle(
+                                    decoration: TextDecoration.underline,
+                                    fontFamily: "consolas"))
+                          ]),
+                          const SizedBox(height: 5),
+                          Text(e.$2.status, softWrap: true),
+                          const SizedBox(height: 5)
+                        ])))))
+        .toList(growable: false);
+  }
+
+  Future<dynamic> showContextMenu(BuildContext context, ExpressItem e) {
+    return showDialog(
+        context: context,
+        builder: (context) => Theme(
+            data: appThemeData,
+            child: SimpleDialog(
+                title: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(e.name,
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 5),
+                      Text(e.id,
+                          style: const TextStyle(
+                              fontSize: 13, color: Colors.white54))
+                    ]),
+                children: [
+                  SimpleDialogOption(
+                      onPressed: () async {
+                        await FlutterClipboard.copy(e.id);
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: const Text("已拷贝快递单号到剪贴板。"),
+                            action:
+                                SnackBarAction(label: "OK", onPressed: () {}),
+                            duration: const Duration(milliseconds: 400)));
+                        Navigator.of(context).pop();
+                      },
+                      child: const Text("复制单号")),
+                  SimpleDialogOption(
+                      onPressed: () async {
+                        Navigator.of(context).pop();
+                        await handleDeleteExpress(e.id);
+                        ref.invalidate(expressesProvider);
+                      },
+                      child: const Text("删除"))
+                ])));
   }
 
   handleDeleteExpress(String no) async {
@@ -295,4 +289,19 @@ class _ExpressAddViewState extends ConsumerState<ExpressAddView> {
     ref.invalidate(expressesProvider);
     await showSimpleMessage(context, content: d["message"], withPopFirst: true);
   }
+}
+
+class StatusCircle extends CustomPainter {
+  final bool isLast;
+
+  StatusCircle({super.repaint, required this.isLast});
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = isLast ? Colors.green : const Color.fromARGB(255, 86, 86, 86);
+    canvas.drawCircle(const Offset(-15.9, 0), 6, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
