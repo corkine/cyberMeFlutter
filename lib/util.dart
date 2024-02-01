@@ -149,7 +149,8 @@ Future<void> initSystemTray() async {
       () async {
     if (dockedOnWindows) {
       //await windowManager.setAsFrameless();
-      await windowManager.setAlignment(Alignment.bottomRight);
+      await windowManager.setAlignment(
+          Platform.isWindows ? Alignment.bottomRight : Alignment.topLeft);
     }
     await windowManager.show();
     await windowManager.focus();
@@ -188,7 +189,7 @@ class MinListener extends WindowListener {
 }
 
 void installWindowsRouteStream(BuildContext context) {
-  if (!kIsWeb && Platform.isWindows) {
+  if (!kIsWeb && (Platform.isWindows || Platform.isMacOS)) {
     if (routeStream == null) {
       routeStream = StreamController();
       routeStream?.stream.listen((event) {
@@ -201,7 +202,7 @@ void installWindowsRouteStream(BuildContext context) {
 }
 
 void distoryWindowsRouteStream() {
-  if (!kIsWeb && Platform.isWindows) {
+  if (!kIsWeb && (Platform.isWindows || Platform.isMacOS)) {
     debugPrint("Disposing Windows routeStream");
     routeStream?.close();
     routeStream = null;

@@ -6,6 +6,7 @@ import 'package:cyberme_flutter/learn/snh.dart';
 import 'package:cyberme_flutter/pocket/app/body_mass.dart';
 import 'package:cyberme_flutter/pocket/app/esxi.dart';
 import 'package:cyberme_flutter/pocket/app/gitea.dart';
+import 'package:cyberme_flutter/pocket/app/link.dart';
 import 'package:cyberme_flutter/pocket/app/location.dart';
 import 'package:cyberme_flutter/pocket/app/story.dart';
 import 'package:cyberme_flutter/util.dart';
@@ -134,12 +135,12 @@ final apps = {
     "addToMenu": true,
     "icon": Icons.map
   },
-  "cloth": {
-    "name": "衣物管理",
-    "view": (c) => const ClothView(),
+  "link": {
+    "name": "短链接管理",
+    "view": (c) => const QuickLinkView(),
     "addToMenu": true,
-    "addToContext": false,
-    "icon": Icons.ice_skating_outlined
+    "addToContext": true,
+    "icon": Icons.link
   },
   "medic": {
     "name": "药物管理",

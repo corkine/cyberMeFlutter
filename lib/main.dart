@@ -23,7 +23,9 @@ void main() async {
           title: 'CyberMe',
           debugShowCheckedModeBanner: Platform.isWindows ? false : true,
           theme: ThemeData(useMaterial3: true, brightness: Brightness.light),
-          initialRoute: !kIsWeb && Platform.isWindows && dockedOnWindows
+          initialRoute: !kIsWeb &&
+                  (Platform.isWindows || Platform.isMacOS) &&
+                  dockedOnWindows
               ? "/menu"
               : "/home",
           routes: (apps.map((key, value) => MapEntry("/app/$key", (c) {
