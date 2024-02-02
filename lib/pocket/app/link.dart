@@ -61,6 +61,10 @@ class _QuickLinkViewState extends ConsumerState<QuickLinkView> {
                                       .delete(d.id);
                                   await showSimpleMessage(context,
                                       content: res, useSnackBar: true);
+                                } else {
+                                  await FlutterClipboard.copy(d.redirectUrl);
+                                  await showSimpleMessage(context,
+                                      content: "已拷贝链接至剪贴板", useSnackBar: true);
                                 }
                                 return false;
                               },
@@ -80,7 +84,7 @@ class _QuickLinkViewState extends ConsumerState<QuickLinkView> {
                                       alignment: Alignment.centerLeft,
                                       child: Padding(
                                           padding: EdgeInsets.only(left: 20),
-                                          child: Text("TODO",
+                                          child: Text("拷贝到剪贴板",
                                               style: TextStyle(
                                                   color: Colors.white,
                                                   fontSize: 15))))),
