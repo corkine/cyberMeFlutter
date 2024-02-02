@@ -39,13 +39,14 @@ Future<bool> showSimpleMessage(BuildContext context,
     {String? title,
     required String content,
     bool withPopFirst = false,
-    bool useSnackBar = false}) async {
+    bool useSnackBar = false,
+    int duration = 200}) async {
   if (withPopFirst) {
     Navigator.of(context).pop();
   }
   if (useSnackBar) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(content), duration: const Duration(milliseconds: 200)));
+        content: Text(content), duration: Duration(milliseconds: duration)));
     return true;
   } else {
     return await showDialog<bool>(

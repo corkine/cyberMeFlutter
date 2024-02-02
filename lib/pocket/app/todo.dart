@@ -1,9 +1,11 @@
 import 'dart:convert';
 
+import 'package:clipboard/clipboard.dart';
+import 'package:cyberme_flutter/api/gpt.dart';
 import 'package:cyberme_flutter/api/todo.dart';
-import 'package:cyberme_flutter/main.dart';
 import 'package:cyberme_flutter/pocket/app/util.dart';
 import 'package:cyberme_flutter/pocket/models/todo.dart';
+import 'package:cyberme_flutter/util.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart';
@@ -236,6 +238,24 @@ class _TodoViewState extends ConsumerState<TodoView>
   }
 
   AppBar buildAppBar() {
+    final setting = IconButton(
+        onPressed: handleSetting,
+        icon: ref.read(todosProvider).value?.isEmpty ?? true
+            ? const Icon(Icons.settings_outlined)
+            : const Icon(Icons.settings));
+    final dayReportBtn = Tooltip(
+      waitDuration: const Duration(milliseconds: 400),
+      message: "运行日报脚本",
+      child: IconButton(
+          onPressed: handleAddDayReport,
+          icon: const Icon(Icons.description_outlined)),
+    );
+    final reportBtn = Tooltip(
+      waitDuration: const Duration(milliseconds: 400),
+      message: "GPT编周报",
+      child: IconButton(
+          onPressed: handleAddWeekReport, icon: const Icon(Icons.android)),
+    );
     final viewBtn = IconButton(
         onPressed: () {
           setState(() => useTab = !useTab);
@@ -250,14 +270,15 @@ class _TodoViewState extends ConsumerState<TodoView>
     final addTask =
         IconButton(onPressed: addNewTask, icon: const Icon(Icons.add));
     return AppBar(
-        title: const Text("TODO"),
-        centerTitle: false,
         actions: useTab
-            ? [addTask, reload, viewBtn]
+            ? [addTask, dayReportBtn, reportBtn, reload, setting, viewBtn]
             : [
                 addTask,
+                dayReportBtn,
+                reportBtn,
                 reload,
                 viewBtn,
+                setting,
                 PopupMenuButton(
                     tooltip: "List Filter",
                     itemBuilder: (c) {
@@ -492,4 +513,150 @@ class _TodoViewState extends ConsumerState<TodoView>
     //每次获取数据可能有新列表，因此如果使用 tab 每次都要初始化 tabController
     initTabController();
   }
+
+  void handleAddWeekReport() async {
+    final now = DateTime.now();
+    var md = now.add(Duration(days: -1 * now.weekday + 1));
+    md = DateTime(md.year, md.month, md.day);
+    final work = todo.where((t) => t.list?.contains("工作") ?? false).where((t) {
+      final d = t.date;
+      if (d == null) return false;
+      if (d.isBefore(md)) return false;
+      return true;
+    }).toList(growable: false);
+    work.sort((a, b) => a.date!.compareTo(b.date!));
+    final s = work.map((e) {
+      final d = e.date!.weekday;
+      var dd = "";
+      switch (d) {
+        case 1:
+          dd = "周一";
+          break;
+        case 2:
+          dd = "周二";
+          break;
+        case 3:
+          dd = "周三";
+          break;
+        case 4:
+          dd = "周四";
+          break;
+        case 5:
+          dd = "周五";
+          break;
+        case 6:
+          dd = "周六";
+          break;
+        case 7:
+          dd = "周日";
+          break;
+        default:
+          break;
+      }
+      return "$dd: ${e.title}";
+    }).join("。");
+    await showDebugBar(context, "正在运行 GPT, 请稍后");
+    final (_, res) = await ref
+        .read(gPTSettingsProvider.notifier)
+        .request("根据我的一周工作日志生成一份周报和下周计划，"
+            "不要使用 Markdown 标记，比如星号，使用数字标号"
+            "要符合认知动作执行顺序，删除重复项并进行扩充"
+            " $s");
+    ScaffoldMessenger.of(context).clearMaterialBanners();
+    await showModalBottomSheet(
+        context: context,
+        builder: (context) {
+          return GPTWeekPlanView(res);
+        });
+  }
+
+  void handleAddDayReport() async {
+    final url = await ref.read(todosProvider.future);
+    runScript(url);
+  }
+
+  void handleSetting() async {
+    final url = await ref.watch(todosProvider.future);
+    final newUrl = TextEditingController(text: url);
+    final res = await showDialog<bool>(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+              title: const Text("设置脚本"),
+              content: TextField(
+                  decoration: const InputDecoration(helperText: "脚本路径"),
+                  controller: newUrl),
+              actions: [
+                TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: const Text("取消")),
+                TextButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: const Text("确定"))
+              ]);
+        });
+    if (res == true) {
+      await ref.read(todosProvider.notifier).updatePath(newUrl.text);
+      await showSimpleMessage(context, content: "已更新脚本路径", useSnackBar: true);
+    } else {
+      await showSimpleMessage(context, content: "脚本未更新", useSnackBar: true);
+    }
+  }
+}
+
+class GPTWeekPlanView extends ConsumerStatefulWidget {
+  final String answer;
+  const GPTWeekPlanView(this.answer, {super.key});
+
+  @override
+  ConsumerState<ConsumerStatefulWidget> createState() =>
+      _GPTWeekPlanViewState();
+}
+
+class _GPTWeekPlanViewState extends ConsumerState<GPTWeekPlanView> {
+  final controller = TextEditingController();
+  @override
+  void initState() {
+    super.initState();
+    controller.text = widget.answer;
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+        child: Padding(
+            padding: const EdgeInsets.only(left: 10, right: 10, top: 20),
+            child: Column(children: [
+              TextField(maxLines: 9, controller: controller),
+              ButtonBar(alignment: MainAxisAlignment.center, children: [
+                TextButton(
+                    onPressed: () {
+                      controller.text = controller.text.replaceAll("*", "");
+                    },
+                    child: const Text("移星号")),
+                TextButton(
+                    onPressed: () {
+                      controller.text = controller.text.replaceAll("*", "-");
+                    },
+                    child: const Text("星改杠")),
+                TextButton(
+                    onPressed: () {
+                      FlutterClipboard.copy(controller.text);
+                      setState(() => copyText = "已复制");
+                      Future.delayed(const Duration(seconds: 1))
+                          .then((value) => setState(() => copyText = "复制"));
+                    },
+                    child: Text(copyText)),
+                TextButton(onPressed: () {}, child: const Text("确定"))
+              ])
+            ])));
+  }
+
+  String copyText = "复制";
 }

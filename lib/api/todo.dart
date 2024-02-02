@@ -1,13 +1,22 @@
 import 'package:cyberme_flutter/api/basic.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 part 'todo.g.dart';
 
 @riverpod
 class Todos extends _$Todos {
   @override
-  FutureOr<bool> build() async {
-    return true;
+  FutureOr<String> build() async {
+    final s = await SharedPreferences.getInstance();
+    final url = s.getString("todo-script-path") ?? "";
+    return url;
+  }
+
+  Future updatePath(String newPath) async {
+    final s = await SharedPreferences.getInstance();
+    await s.setString("todo-script-path", newPath);
+    state = AsyncData(newPath);
   }
 
   Future<String> addTodo(

@@ -158,6 +158,13 @@ Future<void> initSystemTray() async {
   });
 }
 
+void runScript(String scriptPath) async {
+  var s = scriptPath.split(Platform.pathSeparator);
+  s.removeLast();
+  Process.run("cmd", ["/c", "start", "cmd.exe", "/k", scriptPath],
+      environment: {}, workingDirectory: s.join(Platform.pathSeparator));
+}
+
 void readClipboardAndUploadImage() async {
   //read clipboard's image
   var files = await pb.Pasteboard.files();
