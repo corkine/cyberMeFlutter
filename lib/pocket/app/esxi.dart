@@ -364,7 +364,7 @@ class _ESXiVmDeatilViewState extends ConsumerState<ESXiVmDeatilView> {
                         onTap: ip.isEmpty
                             ? null
                             : () =>
-                                launchUrlString("https://$ip:${service.port}"),
+                                launchUrlString("${service.useHttps ? 'https' : 'http'}://$ip:${service.port}"),
                         title: Text(service.name),
                         subtitle:
                             Text(service.note.isEmpty ? "无备注" : service.note),
@@ -406,60 +406,70 @@ class _ESXiVmDeatilViewState extends ConsumerState<ESXiVmDeatilView> {
     final name = TextEditingController(text: svc?.name ?? "");
     final port = TextEditingController(text: svc?.port.toString() ?? "");
     final note = TextEditingController(text: svc?.note ?? "");
+    var useHttps = svc?.useHttps ?? true;
     await showDialog(
         context: context,
-        builder: (context) => Theme(
-              data: appThemeData,
-              child: AlertDialog(
-                  title: Text(svc == null ? "添加服务" : "修改服务"),
-                  content: Column(mainAxisSize: MainAxisSize.min, children: [
-                    TextField(
-                        autofocus: true,
-                        controller: name,
-                        decoration: const InputDecoration(labelText: "服务名*")),
-                    TextField(
-                        controller: port,
-                        decoration: const InputDecoration(labelText: "端口*"),
-                        keyboardType: TextInputType.number),
-                    TextField(
-                        controller: note,
-                        decoration: const InputDecoration(labelText: "备注"))
-                  ]),
-                  actions: [
-                    TextButton(
-                        onPressed: () {
-                          //服务名和端口不能为空
-                          if (name.text.isEmpty || port.text.isEmpty) {
-                            showSimpleMessage(context, content: "服务名和端口不能为空");
-                            return;
-                          }
-                          //端口必须为数字
-                          if (!RegExp(r"^\d+$").hasMatch(port.text)) {
-                            showSimpleMessage(context, content: "端口必须为数字");
-                            return;
-                          }
-                          //添加服务
-                          ref
-                              .read(eSXiSettingsProvider.notifier)
-                              .addService(
-                                  widget.vmId,
-                                  ESXiService(
-                                      name: name.text,
-                                      port: int.parse(port.text),
-                                      note: note.text),
-                                  svc != null)
-                              .then((value) {
-                            if (value.isEmpty) {
-                              Navigator.of(context).pop();
-                            } else {
-                              Navigator.of(context).pop();
-                              showSimpleMessage(context, content: value);
+        builder: (context) => StatefulBuilder(
+            builder: (context, setState) => Theme(
+                data: appThemeData,
+                child: AlertDialog(
+                    title: Text(svc == null ? "添加服务" : "修改服务"),
+                    content: Column(mainAxisSize: MainAxisSize.min, children: [
+                      TextField(
+                          autofocus: true,
+                          controller: name,
+                          decoration: const InputDecoration(labelText: "服务名*")),
+                      TextField(
+                          controller: port,
+                          decoration: const InputDecoration(labelText: "端口*"),
+                          keyboardType: TextInputType.number),
+                      TextField(
+                          controller: note,
+                          decoration: const InputDecoration(labelText: "备注")),
+                      const SizedBox(height: 10),
+                      Row(children: [
+                        const Text("https 协议"),
+                        const Spacer(),
+                        Switch(
+                            value: useHttps,
+                            onChanged: (v) => setState(() => useHttps = v))
+                      ])
+                    ]),
+                    actions: [
+                      TextButton(
+                          onPressed: () {
+                            //服务名和端口不能为空
+                            if (name.text.isEmpty || port.text.isEmpty) {
+                              showSimpleMessage(context, content: "服务名和端口不能为空");
+                              return;
                             }
-                          });
-                        },
-                        child: const Text("确定"))
-                  ]),
-            ));
+                            //端口必须为数字
+                            if (!RegExp(r"^\d+$").hasMatch(port.text)) {
+                              showSimpleMessage(context, content: "端口必须为数字");
+                              return;
+                            }
+                            //添加服务
+                            ref
+                                .read(eSXiSettingsProvider.notifier)
+                                .addService(
+                                    widget.vmId,
+                                    ESXiService(
+                                        name: name.text,
+                                        port: int.parse(port.text),
+                                        note: note.text,
+                                        useHttps: useHttps),
+                                    svc != null)
+                                .then((value) {
+                              if (value.isEmpty) {
+                                Navigator.of(context).pop();
+                              } else {
+                                Navigator.of(context).pop();
+                                showSimpleMessage(context, content: value);
+                              }
+                            });
+                          },
+                          child: const Text("确定"))
+                    ]))));
   }
 
   changeIp(ESXiSetting setting) async {

@@ -136,7 +136,8 @@ class ESXiService with _$ESXiService {
       {@Default("") String host,
       @Default(-1) int port,
       @Default("") String name,
-      @Default("") String note}) = _ESXiService;
+      @Default("") String note,
+      @Default(true) bool useHttps}) = _ESXiService;
 
   factory ESXiService.fromJson(Map<String, dynamic> json) =>
       _$ESXiServiceFromJson(json);
