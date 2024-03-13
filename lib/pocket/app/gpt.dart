@@ -33,7 +33,14 @@ class _GPTViewState extends ConsumerState<GPTView> {
     return Theme(
         data: appThemeData,
         child: Scaffold(
-            appBar: AppBar(title: const Text("Gemini Lite"), actions: [
+            appBar: AppBar(title: const Text("GPT Lite"), actions: [
+              Tooltip(
+                  message: "切换使用 OpenAI ChatGPT or groq 服务",
+                  waitDuration: const Duration(milliseconds: 400),
+                  child: IconButton(
+                      onPressed: () => handleUseOpenAi(setting),
+                      icon: Icon(Icons.spellcheck,
+                          color: setting.useDirectSvc ? Colors.green : null))),
               IconButton(
                   onPressed: handleAddLastQuestion, icon: const Icon(Icons.add))
             ]),
@@ -74,7 +81,9 @@ class _GPTViewState extends ConsumerState<GPTView> {
                                               .animate()
                                               .shake(delay: 1.seconds, hz: 3),
                                           const SizedBox(width: 10),
-                                          const Text("Gemini")
+                                          Text(setting.useDirectSvc
+                                              ? "Android"
+                                              : "Android (Proxy)")
                                         ])
                                             .animate()
                                             .fadeIn(delay: 0.5.seconds)),
@@ -151,6 +160,25 @@ class _GPTViewState extends ConsumerState<GPTView> {
   void handleDeleteQuickQuestion(String item) async {
     if (await showSimpleMessage(context, content: "是否删除 $item？")) {
       await ref.read(gPTSettingsProvider.notifier).delete(item);
+    }
+  }
+
+  void handleUseOpenAi(GPTSetting setting) async {
+    if (setting.useDirectSvc) {
+      final notUse =
+          await showSimpleMessage(context, content: "确定切换使用 groq 代理服务吗？");
+      if (notUse) {
+        await ref.read(gPTSettingsProvider.notifier).useDirectSvc(false);
+        await showSimpleMessage(context,
+            content: "已切换至 groq 代理服务", useSnackBar: true);
+      }
+    } else {
+      final use = await showSimpleMessage(context, content: "确定切换使用直连服务吗？");
+      if (use) {
+        await ref.read(gPTSettingsProvider.notifier).useDirectSvc(true);
+        await showSimpleMessage(context,
+            content: "已切换至直连服务", useSnackBar: true);
+      }
     }
   }
 
