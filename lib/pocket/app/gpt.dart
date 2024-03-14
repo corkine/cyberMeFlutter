@@ -15,17 +15,17 @@ class GPTView extends ConsumerStatefulWidget {
 }
 
 class _GPTViewState extends ConsumerState<GPTView> {
+  String lastQuestion = "";
+  String lastResp = "";
+  final fn = FocusNode();
   final input = TextEditingController();
+
   @override
   void dispose() {
     input.dispose();
     fn.dispose();
     super.dispose();
   }
-
-  String lastQuestion = "";
-  String lastResp = "";
-  final fn = FocusNode();
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +35,7 @@ class _GPTViewState extends ConsumerState<GPTView> {
         child: Scaffold(
             appBar: AppBar(title: const Text("GPT Lite"), actions: [
               Tooltip(
-                  message: "切换使用 OpenAI ChatGPT or groq 服务",
+                  message: "切换使用 OpenAI ChatGPT 直连服务 or groq 服务",
                   waitDuration: const Duration(milliseconds: 400),
                   child: IconButton(
                       onPressed: () => handleUseOpenAi(setting),

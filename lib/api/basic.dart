@@ -64,6 +64,25 @@ Future<(bool, String)> postFrom<T>(
   }
 }
 
+Future<(bool, String)> patchFrom<T>(
+    String path, Map<String, dynamic> data) async {
+  try {
+    final url = "$endpoint$path";
+    final r = await patch(Uri.parse(url),
+        headers: config.cyberBase64JsonContentHeader, body: jsonEncode(data));
+    final d = jsonDecode(r.body);
+    final code = (d["status"] as int?) ?? -1;
+    //debugPrint("request from $url, data: $d");
+    final msg = d["message"]?.toString() ?? "未知错误";
+    if (code <= 0) return (false, msg);
+    //final originData = d["data"];
+    return (true, msg);
+  } catch (e, st) {
+    debugPrintStack(stackTrace: st);
+    return (false, e.toString());
+  }
+}
+
 Future<(bool, String)> deleteFrom<T>(
     String path, Map<String, dynamic> data) async {
   try {

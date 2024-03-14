@@ -119,6 +119,8 @@ class Todo {
 
   String? get status => _status;
 
+  bool get isCompleted => _status == "completed";
+
   String? get dueAt => _dueAt;
 
   String? get createAt => _createAt;

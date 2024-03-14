@@ -138,15 +138,19 @@ class _TodoViewState extends ConsumerState<TodoView>
                       return Dismissible(
                         key: ValueKey(t),
                         confirmDismiss: (direction) async {
-                          if (direction == DismissDirection.endToStart) {
-                            final res = await ref
-                                .read(todosProvider.notifier)
-                                .deleteTodo(
-                                    listId: t.listId ?? "", taskId: t.id ?? "");
-                            await showSimpleMessage(context,
-                                content: res, useSnackBar: true);
-                            fetchTodo().then((value) => setState(() {}));
-                          }
+                          final ans = direction == DismissDirection.endToStart
+                              ? await ref
+                                  .read(todosProvider.notifier)
+                                  .deleteTodo(
+                                      listId: t.listId ?? "",
+                                      taskId: t.id ?? "")
+                              : await ref.read(todosProvider.notifier).makeTodo(
+                                  listId: t.listId ?? "",
+                                  taskId: t.id ?? "",
+                                  completed: !t.isCompleted);
+                          await showSimpleMessage(context,
+                              content: ans, useSnackBar: true);
+                          fetchTodo().then((value) => setState(() {}));
                           return false;
                         },
                         secondaryBackground: Container(
@@ -161,12 +165,13 @@ class _TodoViewState extends ConsumerState<TodoView>
                                             fontSize: 15))))),
                         background: Container(
                             color: Colors.blue,
-                            child: const Align(
+                            child: Align(
                                 alignment: Alignment.centerLeft,
                                 child: Padding(
-                                    padding: EdgeInsets.only(left: 20),
-                                    child: Text("TODO",
-                                        style: TextStyle(
+                                    padding: const EdgeInsets.only(left: 20),
+                                    child: Text(
+                                        "标记为${t.isCompleted ? "未完成" : "完成"}",
+                                        style: const TextStyle(
                                             color: Colors.white,
                                             fontSize: 15))))),
                         child: ListTile(
@@ -176,7 +181,7 @@ class _TodoViewState extends ConsumerState<TodoView>
                                 style: TextStyle(
                                     fontSize: 15,
                                     color: Colors.black,
-                                    decoration: t.status == "completed"
+                                    decoration: t.isCompleted
                                         ? TextDecoration.lineThrough
                                         : null)),
                             subtitle: Padding(

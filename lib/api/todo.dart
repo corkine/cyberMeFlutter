@@ -38,6 +38,18 @@ class Todos extends _$Todos {
     return msg;
   }
 
+  Future<String> makeTodo(
+      {required String listId,
+      required String taskId,
+      required bool completed}) async {
+    if (listId.isEmpty || taskId.isEmpty) {
+      return "更新失败，列表和任务 Id 均不能为空";
+    }
+    final (_, msg) = await patchFrom("/cyber/todo/ms-todo",
+        {"list": listId, "task": taskId, "completed": completed});
+    return msg;
+  }
+
   Future<String> deleteTodo(
       {required String listId, required String taskId}) async {
     if (listId.isEmpty || taskId.isEmpty) {
