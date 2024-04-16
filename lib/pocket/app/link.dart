@@ -1,9 +1,13 @@
+import 'dart:convert';
+
 import 'package:clipboard/clipboard.dart';
 import 'package:cyberme_flutter/api/link.dart';
 import 'package:cyberme_flutter/pocket/app/util.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:http/http.dart';
 import 'package:url_launcher/url_launcher_string.dart';
+import 'package:uuid/uuid.dart';
 
 class QuickLinkView extends ConsumerStatefulWidget {
   const QuickLinkView({super.key});
@@ -20,11 +24,57 @@ class _QuickLinkViewState extends ConsumerState<QuickLinkView> {
     super.dispose();
   }
 
+  void distroHandler(bool manual) async {
+    final url = await FlutterClipboard.paste();
+    try {
+      if ((url.startsWith("https://mazhangjing.com") ||
+              url.startsWith("mazhangjing.com")) &&
+          url.endsWith("current/release.json")) {
+        final controller = ref.read(linksProvider.call(search.text).notifier);
+        final date = await showDatePicker(
+            context: context,
+            firstDate: DateTime.now(),
+            lastDate: DateTime.now().add(const Duration(days: 30)));
+        final time = await showTimePicker(
+            context: context, initialTime: TimeOfDay.now());
+        if (date == null || time == null) {
+          await showSimpleMessage(context, content: "请选择一个日期");
+          return;
+        }
+        final (msg, link) = await controller.addDistroUrl(url,
+            DateTime(date.year, date.month, date.day, time.hour, time.minute));
+        if (link.isNotEmpty) {
+          await FlutterClipboard.copy(link);
+          await showSimpleMessage(context,
+              content: "已复制到剪贴板", useSnackBar: true);
+        } else {
+          await showSimpleMessage(context, content: msg);
+        }
+      } else {
+        if (manual) {
+          await showSimpleMessage(context, content: "剪贴板没有检测到正确的分发地址");
+        }
+      }
+    } catch (e) {
+      await showSimpleMessage(context, content: e.toString());
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final data = ref.watch(linksProvider.call(search.text)).value;
     return Scaffold(
-        appBar: AppBar(title: const Text("短链接管理")),
+        appBar: AppBar(
+          title: const Text("短链接管理"),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: IconButton(
+                  onPressed: () => distroHandler(true),
+                  icon: const Icon(Icons.schedule_send)),
+            )
+          ],
+        ),
         body: Column(children: [
           Padding(
               padding: const EdgeInsets.only(left: 10, right: 10),
