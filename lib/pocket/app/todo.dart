@@ -89,7 +89,7 @@ class _TodoViewState extends ConsumerState<TodoView>
 
   initTabController() {
     if (useTab) {
-      final lastIdx = tc?.index ?? 0;
+      final lastIdx = tc?.index ?? 1;
       tc?.dispose();
       tc = TabController(
           length: lists.length, vsync: this, initialIndex: lastIdx);
@@ -392,6 +392,7 @@ class _TodoViewState extends ConsumerState<TodoView>
       fetchTodo().then((value) => setState(() {}));
     }
 
+    final node = FocusNode();
     await showDialog(
         context: context,
         builder: (context) {
@@ -406,6 +407,7 @@ class _TodoViewState extends ConsumerState<TodoView>
                       TextField(
                         onSubmitted: (_) => handleAdd(),
                         autofocus: true,
+                        focusNode: node,
                         decoration: const InputDecoration(
                             border: UnderlineInputBorder(), hintText: "标题"),
                         controller: title,
@@ -425,18 +427,32 @@ class _TodoViewState extends ConsumerState<TodoView>
                             });
                           }),
                       const SizedBox(height: 5),
-                      InkWell(
-                          onTap: () async {
-                            final selectedDate = await showDatePicker(
-                                context: context,
-                                firstDate: date.add(const Duration(days: -3)),
-                                lastDate: date.add(const Duration(days: 3)));
-                            if (selectedDate != null) {
-                              setState(() => date = selectedDate);
-                            }
-                          },
-                          child: Text(
-                              "截止于 ${DateFormat("yyyy-MM-dd").format(date)}")),
+                      Row(
+                        children: [
+                          InkWell(
+                              onTap: () async {
+                                final selectedDate = await showDatePicker(
+                                    context: context,
+                                    firstDate:
+                                        date.add(const Duration(days: -3)),
+                                    lastDate:
+                                        date.add(const Duration(days: 3)));
+                                if (selectedDate != null) {
+                                  setState(() => date = selectedDate);
+                                }
+                              },
+                              child: Text(
+                                  "截止于 ${DateFormat("yyyy-MM-dd").format(date)}")),
+                          const SizedBox(width: 5),
+                          TextButton(
+                              onPressed: () {
+                                setState(() => date = DateTime.now()
+                                    .add(const Duration(days: -1)));
+                                FocusScope.of(context).requestFocus(node);
+                              },
+                              child: const Text("昨天")),
+                        ],
+                      ),
                       const SizedBox(height: 3),
                       Transform.translate(
                           offset: const Offset(-8, 0),

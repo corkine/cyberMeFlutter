@@ -24,6 +24,11 @@ class _QuickLinkViewState extends ConsumerState<QuickLinkView> {
     super.dispose();
   }
 
+  void distroSearcher() {
+    search.text = "dist-";
+    ref.invalidate(linksProvider);
+  }
+
   void distroHandler(bool manual) async {
     final url = await FlutterClipboard.paste();
     try {
@@ -67,6 +72,12 @@ class _QuickLinkViewState extends ConsumerState<QuickLinkView> {
         appBar: AppBar(
           title: const Text("短链接管理"),
           actions: [
+            Padding(
+              padding: const EdgeInsets.only(),
+              child: IconButton(
+                  onPressed: () => distroSearcher(),
+                  icon: const Icon(Icons.search)),
+            ),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: IconButton(
