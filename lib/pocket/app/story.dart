@@ -1,7 +1,9 @@
 import 'dart:convert';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cyberme_flutter/api/story.dart';
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart';
 import '../config.dart';
 
@@ -121,7 +123,7 @@ class _StoryViewState extends State<StoryView> {
   }
 }
 
-class BookStoryView extends StatefulWidget {
+class BookStoryView extends ConsumerStatefulWidget {
   final String bookName;
   final List<String> storyNames;
 
@@ -129,12 +131,14 @@ class BookStoryView extends StatefulWidget {
       {super.key, required this.bookName, required this.storyNames});
 
   @override
-  State<BookStoryView> createState() => _BookStoryViewState();
+  ConsumerState<BookStoryView> createState() => _BookStoryViewState();
 }
 
-class _BookStoryViewState extends State<BookStoryView> {
+class _BookStoryViewState extends ConsumerState<BookStoryView> {
   @override
   Widget build(BuildContext context) {
+    final lastRead =
+        ref.watch(storyConfigsProvider).value?.lastRead[widget.bookName];
     return Scaffold(
         backgroundColor: Colors.black,
         body: Stack(children: [
@@ -144,87 +148,128 @@ class _BookStoryViewState extends State<BookStoryView> {
                   imageUrl: cover[widget.bookName] ?? defaultCover)),
           Positioned.fill(child: Container(color: Colors.black54)),
           SafeArea(
-            child:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              TapRegion(
-                  onTapInside: (_) => Navigator.of(context).pop(),
-                  child: Padding(
-                      padding: const EdgeInsets.only(
-                          left: 16, top: 20, bottom: 0, right: 20),
-                      child: Row(
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                TapRegion(
+                    onTapInside: (_) => Navigator.of(context).pop(),
+                    child: Padding(
+                        padding: const EdgeInsets.only(
+                            left: 16, top: 20, bottom: 0, right: 20),
+                        child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(widget.bookName,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .headlineMedium
+                                            ?.copyWith(color: Colors.white)),
+                                    Text("${widget.storyNames.length} 篇",
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall
+                                            ?.copyWith(color: Colors.white))
+                                  ]),
+                              const Spacer(),
+                              ClipRRect(
+                                  borderRadius: BorderRadius.circular(3),
+                                  child: SizedBox(
+                                      width: 50,
+                                      child: CachedNetworkImage(
+                                          fit: BoxFit.cover,
+                                          imageUrl: cover[widget.bookName] ??
+                                              defaultCover)))
+                            ]))),
+                Expanded(
+                    child: ListView.builder(
+                        itemBuilder: (c, i) {
+                          final s = widget.storyNames[i];
+                          return ListTile(
+                              title: Text(s,
+                                  style: const TextStyle(color: Colors.white)),
+                              onTap: () => Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                      builder: (c) => StoryReadView(
+                                          bookName: widget.bookName,
+                                          storyName: s))));
+                        },
+                        itemCount: widget.storyNames.length)),
+                if (lastRead != null)
+                  ListTile(
+                      title: Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(widget.bookName,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .headlineMedium
-                                          ?.copyWith(color: Colors.white)),
-                                  Text("${widget.storyNames.length} 篇",
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall
-                                          ?.copyWith(color: Colors.white))
-                                ]),
+                            Text(lastRead.name,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.green)),
                             const Spacer(),
-                            ClipRRect(
-                                borderRadius: BorderRadius.circular(3),
-                                child: SizedBox(
-                                    width: 50,
-                                    child: CachedNetworkImage(
-                                        fit: BoxFit.cover,
-                                        imageUrl: cover[widget.bookName] ??
-                                            defaultCover)))
-                          ]))),
-              Expanded(
-                  child: ListView.builder(
-                      itemBuilder: (c, i) {
-                        final s = widget.storyNames[i];
-                        return ListTile(
-                            title: Text(s,
-                                style: const TextStyle(color: Colors.white)),
-                            onTap: () => Navigator.of(context).push(
-                                MaterialPageRoute(
-                                    builder: (c) => StoryReadView(
-                                        bookName: widget.bookName,
-                                        storyName: s))));
-                      },
-                      itemCount: widget.storyNames.length))
-            ]),
-          )
+                            const Text("继续阅读 >",
+                                style: TextStyle(
+                                    fontSize: 12, color: Colors.green))
+                          ]),
+                      onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                          builder: (c) => StoryReadView(
+                              bookName: widget.bookName,
+                              storyName: lastRead.name))))
+              ]))
         ]));
   }
 }
 
-class StoryReadView extends StatefulWidget {
+/// 故事阅读界面，进入时保存最后阅读，退出后保存阅读进度
+class StoryReadView extends ConsumerStatefulWidget {
   final String bookName;
   final String storyName;
+  final double lastReadIndex;
 
   const StoryReadView(
-      {super.key, required this.bookName, required this.storyName});
+      {super.key,
+      required this.bookName,
+      required this.storyName,
+      this.lastReadIndex = 0});
 
   @override
-  State<StoryReadView> createState() => _StoryReadViewState();
+  ConsumerState<StoryReadView> createState() => _StoryReadViewState();
 }
 
-class _StoryReadViewState extends State<StoryReadView> {
+class _StoryReadViewState extends ConsumerState<StoryReadView> {
   List<String> content = [];
+  int enterTime = 0;
+  late final controller =
+      ScrollController(initialScrollOffset: widget.lastReadIndex);
+  late StoryConfigs storyConfig;
+  double offset = 0;
 
   @override
   void initState() {
     super.initState();
+    enterTime = DateTime.now().millisecondsSinceEpoch;
     Future.delayed(Duration.zero, () {
-      handleLoadStory();
+      return handleLoadStory();
     });
+    controller.addListener(() => offset = controller.offset);
+  }
+
+  @override
+  void dispose() {
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final data = LastReadStory(
+        enter: enterTime, exit: now, name: widget.storyName, index: offset);
+    storyConfig.setLastRead(widget.bookName, data);
+    controller.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    storyConfig = ref.read(storyConfigsProvider.notifier);
     return Scaffold(
         backgroundColor: Colors.black,
-        body: CustomScrollView(slivers: [
+        body: CustomScrollView(controller: controller, slivers: [
           SliverAppBar(
               stretch: true,
               title: Text(widget.storyName),

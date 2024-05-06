@@ -528,6 +528,7 @@ class _TodoViewState extends ConsumerState<TodoView>
     todoMap.forEach((key, value) =>
         value.sort((t2, t1) => t1.time?.compareTo(t2.time ?? "") ?? 0));
     todo.sort((t2, t1) => t1.time?.compareTo(t2.time ?? "") ?? 0);
+    lists = (lists.toList(growable: false)..sort()).toSet();
     //执行 filter
     updateFiltered();
     if (firstTime) initScrollController();
