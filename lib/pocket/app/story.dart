@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cyberme_flutter/api/story.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart';
 import '../config.dart';
@@ -141,29 +142,12 @@ class _BookStoryViewState extends ConsumerState<BookStoryView> {
   @override
   void initState() {
     super.initState();
-    handleLoadBooks();
-  }
-
-  Future handleLoadBooks() async {
-    final r = await get(Uri.parse(Config.storyBookUrl(widget.bookName)),
-        headers: config.cyberBase64Header);
-    final j = jsonDecode(r.body);
-    final s = (j["status"] as int?) ?? -1;
-    final m = j["message"] ?? "没有返回消息";
-    //final d = (j["data"] as List?) ?? [];
-    refer = (j["count"] as Map<String, dynamic>? ?? {})
-        .map((key, value) => MapEntry(key, value as int? ?? 0));
-    if (s <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m)));
-      return;
-    }
-    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    final lastRead =
-        ref.watch(storyConfigsProvider).value?.lastRead[widget.bookName];
+    final items =
+        ref.watch(bookInfosProvider.call(widget.bookName)).value ?? BookItems();
     return Scaffold(
         backgroundColor: Colors.black,
         body: Stack(children: [
@@ -209,65 +193,90 @@ class _BookStoryViewState extends ConsumerState<BookStoryView> {
                                               defaultCover)))
                             ]))),
                 Expanded(
-                    child: ListView.builder(
-                        itemBuilder: (c, i) {
-                          final s = widget.storyNames[i];
-                          return ListTile(
-                              title: Text(s,
-                                  style: const TextStyle(color: Colors.white)),
-                              subtitle: Text(
-                                  (refer[s]?.toString() ?? "-1") + "字",
-                                  style: const TextStyle(
-                                      color: Colors.white60, fontSize: 10)),
-                              onTap: () => Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                      builder: (c) => StoryReadView(
-                                          bookName: widget.bookName,
-                                          storyName: s))));
-                        },
-                        itemCount: widget.storyNames.length))
+                    child: Material(
+                        color: Colors.transparent,
+                        child: ListView.builder(
+                            itemExtent: 50,
+                            itemBuilder: (c, i) =>
+                                buildStoryItem(items.items[i], context, i),
+                            itemCount: items.items.length)))
               ])),
-          if (lastRead != null)
+          if (items.lastRead != null)
             Positioned(
                 bottom: 5,
                 left: 5,
                 right: 5,
                 child: SafeArea(
-                    bottom: true,
-                    child: InkWell(
-                        onTap: () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                                builder: (c) => StoryReadView(
-                                    bookName: widget.bookName,
-                                    storyName: lastRead.name,
-                                    lastReadIndex: lastRead.index))),
-                        child: Container(
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
-                                color: Colors.black87),
-                            padding: const EdgeInsets.only(
-                                left: 15, right: 15, bottom: 10, top: 10),
-                            child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Text(lastRead.name,
-                                      style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white)),
-                                  const Spacer(),
-                                  Container(
-                                    padding: const EdgeInsets.only(
-                                        left: 10, right: 10, top: 5, bottom: 5),
-                                    decoration: BoxDecoration(
-                                        color: Colors.blue,
-                                        borderRadius:
-                                            BorderRadius.circular(20)),
-                                    child: const Text("继续阅读 >",
-                                        style: TextStyle(
-                                            fontSize: 12, color: Colors.white)),
-                                  )
-                                ])))))
+                    bottom: true, child: buildReadLastBar(context, items)))
         ]));
+  }
+
+  InkWell buildReadLastBar(BuildContext context, BookItems items) {
+    return InkWell(
+        onTap: () => Navigator.of(context).push(MaterialPageRoute(
+            builder: (c) => StoryReadView(
+                bookName: widget.bookName,
+                storyName: items.lastRead!.name,
+                lastReadIndex: items.lastRead!.index))),
+        child: Container(
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10), color: Colors.black87),
+            padding:
+                const EdgeInsets.only(left: 15, right: 15, bottom: 10, top: 10),
+            child: Row(children: [
+              Expanded(
+                  child: Text(items.lastRead!.name,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, color: Colors.white))),
+              Container(
+                  margin: const EdgeInsets.only(left: 5),
+                  padding: const EdgeInsets.only(
+                      left: 10, right: 10, top: 5, bottom: 5),
+                  decoration: BoxDecoration(
+                      color: Colors.blue,
+                      borderRadius: BorderRadius.circular(20)),
+                  child: const Text("继续阅读",
+                      style: TextStyle(fontSize: 12, color: Colors.white)))
+            ])));
+  }
+
+  Widget buildStoryItem(BookItem item, BuildContext context, int i) {
+    return InkWell(
+        onTap: () => Navigator.of(context).push(MaterialPageRoute(
+            builder: (c) => StoryReadView(
+                bookName: widget.bookName, storyName: item.name))),
+        child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                  child: Padding(
+                      padding: const EdgeInsets.only(left: 15),
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            FittedBox(
+                                child: Text(item.name,
+                                    style: const TextStyle(
+                                        fontSize: 15, color: Colors.white))),
+                            Text(item.count == 0 ? "" : "${item.count} 字",
+                                style: const TextStyle(
+                                    color: Colors.white60, fontSize: 10))
+                          ]))),
+              Padding(
+                  padding: const EdgeInsets.only(left: 3, right: 18),
+                  child: InkResponse(
+                      onTap: () async => await ref
+                          .read(storyConfigsProvider.notifier)
+                          .setFavorite(
+                              widget.bookName, item.name, !item.isFavorite),
+                      child: !item.isFavorite
+                          ? const Icon(Icons.bookmark_add_outlined,
+                              color: Colors.white24)
+                          : const Icon(Icons.bookmark,
+                              color: Colors.orangeAccent)))
+            ]));
   }
 }
 
@@ -300,6 +309,7 @@ class _StoryReadViewState extends ConsumerState<StoryReadView> {
     enterTime = DateTime.now().millisecondsSinceEpoch;
     Future.delayed(Duration.zero, () async {
       await handleLoadStory();
+      storyConfig = ref.read(storyConfigsProvider.notifier);
       controller.animateTo(widget.lastReadIndex,
           duration: const Duration(milliseconds: 500), curve: Curves.ease);
       controller.addListener(() => offset = controller.offset);
@@ -318,7 +328,9 @@ class _StoryReadViewState extends ConsumerState<StoryReadView> {
 
   @override
   Widget build(BuildContext context) {
-    storyConfig = ref.read(storyConfigsProvider.notifier);
+    final sc = ref.watch(storyConfigsProvider).value ?? StoryConfig();
+    final isFav = StoryConfigs.isFavoriate(
+        sc.favoriteStory, widget.bookName, widget.storyName);
     return Scaffold(
         backgroundColor: Colors.black,
         body: CustomScrollView(controller: controller, slivers: [
@@ -326,6 +338,19 @@ class _StoryReadViewState extends ConsumerState<StoryReadView> {
               stretch: true,
               title: Text(widget.storyName),
               leading: const BackButton(color: Colors.white38),
+              actions: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 5),
+                  child: IconButton(
+                      icon: isFav
+                          ? const Icon(Icons.bookmark,
+                              color: Colors.orangeAccent)
+                          : const Icon(Icons.bookmark_add_outlined,
+                              color: Colors.white30),
+                      onPressed: () async => await storyConfig.setFavorite(
+                          widget.bookName, widget.storyName, !isFav)),
+                )
+              ],
               expandedHeight: 350,
               backgroundColor: Colors.black,
               foregroundColor: Colors.white,
