@@ -36,6 +36,7 @@ class StoryConfig with _$StoryConfig {
       _$StoryConfigFromJson(json);
 }
 
+/// 保存最后阅读故事和收藏的故事
 @Riverpod(keepAlive: true)
 class StoryConfigs extends _$StoryConfigs {
   static const persistKey = "storyConfig";
@@ -98,7 +99,8 @@ class BookItems with _$BookItems {
       _$BookItemsFromJson(json);
 }
 
-@Riverpod(keepAlive: true)
+/// 获取书籍各故事的字数、整合其是否收藏的信息
+@riverpod
 Future<BookItems> bookInfos(BookInfosRef ref, String bookName) async {
   final cfg = ref.watch(storyConfigsProvider).value ?? StoryConfig();
   final fav = cfg.favoriteStory;
