@@ -109,6 +109,9 @@ class Config {
   static const String storyListUrl =
       "https://cyber.mazhangjing.com/cyber/story/all-book-and-story-name";
 
+  static storyBookUrl(String book) =>
+      "https://cyber.mazhangjing.com/cyber/story/all-story-name/$book";
+
   static String storyReadUrl(String bookName, String storyName) => Uri.encodeFull(
       "https://cyber.mazhangjing.com/cyber/story/read-story/$bookName/$storyName");
 

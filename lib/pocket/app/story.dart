@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cyberme_flutter/api/story.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart';
@@ -135,6 +136,30 @@ class BookStoryView extends ConsumerStatefulWidget {
 }
 
 class _BookStoryViewState extends ConsumerState<BookStoryView> {
+  Map<String, int> refer = {};
+
+  @override
+  void initState() {
+    super.initState();
+    handleLoadBooks();
+  }
+
+  Future handleLoadBooks() async {
+    final r = await get(Uri.parse(Config.storyBookUrl(widget.bookName)),
+        headers: config.cyberBase64Header);
+    final j = jsonDecode(r.body);
+    final s = (j["status"] as int?) ?? -1;
+    final m = j["message"] ?? "没有返回消息";
+    //final d = (j["data"] as List?) ?? [];
+    refer = (j["count"] as Map<String, dynamic>? ?? {})
+        .map((key, value) => MapEntry(key, value as int? ?? 0));
+    if (s <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m)));
+      return;
+    }
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     final lastRead =
@@ -190,32 +215,58 @@ class _BookStoryViewState extends ConsumerState<BookStoryView> {
                           return ListTile(
                               title: Text(s,
                                   style: const TextStyle(color: Colors.white)),
+                              subtitle: Text(
+                                  (refer[s]?.toString() ?? "-1") + "字",
+                                  style: const TextStyle(
+                                      color: Colors.white60, fontSize: 10)),
                               onTap: () => Navigator.of(context).push(
                                   MaterialPageRoute(
                                       builder: (c) => StoryReadView(
                                           bookName: widget.bookName,
                                           storyName: s))));
                         },
-                        itemCount: widget.storyNames.length)),
-                if (lastRead != null)
-                  ListTile(
-                      title: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text(lastRead.name,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.green)),
-                            const Spacer(),
-                            const Text("继续阅读 >",
-                                style: TextStyle(
-                                    fontSize: 12, color: Colors.green))
-                          ]),
-                      onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                          builder: (c) => StoryReadView(
-                              bookName: widget.bookName,
-                              storyName: lastRead.name))))
-              ]))
+                        itemCount: widget.storyNames.length))
+              ])),
+          if (lastRead != null)
+            Positioned(
+                bottom: 5,
+                left: 5,
+                right: 5,
+                child: SafeArea(
+                    bottom: true,
+                    child: InkWell(
+                        onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                                builder: (c) => StoryReadView(
+                                    bookName: widget.bookName,
+                                    storyName: lastRead.name,
+                                    lastReadIndex: lastRead.index))),
+                        child: Container(
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10),
+                                color: Colors.black87),
+                            padding: const EdgeInsets.only(
+                                left: 15, right: 15, bottom: 10, top: 10),
+                            child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Text(lastRead.name,
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white)),
+                                  const Spacer(),
+                                  Container(
+                                    padding: const EdgeInsets.only(
+                                        left: 10, right: 10, top: 5, bottom: 5),
+                                    decoration: BoxDecoration(
+                                        color: Colors.blue,
+                                        borderRadius:
+                                            BorderRadius.circular(20)),
+                                    child: const Text("继续阅读 >",
+                                        style: TextStyle(
+                                            fontSize: 12, color: Colors.white)),
+                                  )
+                                ])))))
         ]));
   }
 }
@@ -239,8 +290,7 @@ class StoryReadView extends ConsumerStatefulWidget {
 class _StoryReadViewState extends ConsumerState<StoryReadView> {
   List<String> content = [];
   int enterTime = 0;
-  late final controller =
-      ScrollController(initialScrollOffset: widget.lastReadIndex);
+  final controller = ScrollController();
   late StoryConfigs storyConfig;
   double offset = 0;
 
@@ -248,10 +298,12 @@ class _StoryReadViewState extends ConsumerState<StoryReadView> {
   void initState() {
     super.initState();
     enterTime = DateTime.now().millisecondsSinceEpoch;
-    Future.delayed(Duration.zero, () {
-      return handleLoadStory();
+    Future.delayed(Duration.zero, () async {
+      await handleLoadStory();
+      controller.animateTo(widget.lastReadIndex,
+          duration: const Duration(milliseconds: 500), curve: Curves.ease);
+      controller.addListener(() => offset = controller.offset);
     });
-    controller.addListener(() => offset = controller.offset);
   }
 
   @override
