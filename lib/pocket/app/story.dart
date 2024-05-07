@@ -2,9 +2,7 @@ import 'dart:convert';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cyberme_flutter/api/story.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart';
 import '../config.dart';
@@ -17,9 +15,13 @@ Map<String, String> cover = {
   "王尔德童话": "https://static2.mazhangjing.com/cyber/202310/627f2f86_图片.png",
   "笨狼的故事": "https://static2.mazhangjing.com/cyber/202310/efde917f_图片.png",
   "安徒生童话": "https://static2.mazhangjing.com/cyber/202310/efbd86c8_图片.png",
+  "佩罗童话": "https://static2.mazhangjing.com/cyber/202405/6c3de10b_image.png",
+  "恰佩克童话": "https://static2.mazhangjing.com/cyber/202405/1ab939ee_image.png",
+  "欧亨利短篇小说选": "https://static2.mazhangjing.com/cyber/202405/cf9d091c_image.png",
   "阿瑟克拉克科幻小说选": "https://static2.mazhangjing.com/cyber/202310/d4461685_图片.png",
   "银河系边缘的小失常": "https://static2.mazhangjing.com/cyber/202310/dc840e21_图片.png",
-  "伟大的短篇小说们": "https://static2.mazhangjing.com/cyber/202310/d6c77430_图片.png"
+  "伟大的短篇小说们": "https://static2.mazhangjing.com/cyber/202310/d6c77430_图片.png",
+  "日本民间童话故事": "https://static2.mazhangjing.com/cyber/202405/f8ef4c95_image.png"
 };
 
 String defaultCover =
@@ -48,11 +50,17 @@ class _StoryViewState extends State<StoryView> {
     return Scaffold(
         backgroundColor: Colors.black,
         appBar: AppBar(
-          title: const Text("故事社"),
-          centerTitle: true,
-          foregroundColor: Colors.white,
-          backgroundColor: Colors.black12,
-        ),
+            title: const Text("故事社"),
+            centerTitle: true,
+            foregroundColor: Colors.white,
+            backgroundColor: Colors.black12,
+            actions: [
+              Padding(
+                  padding: const EdgeInsets.only(right: 5),
+                  //TODO 实现搜索功能
+                  child: IconButton(
+                      onPressed: () {}, icon: const Icon(Icons.search)))
+            ]),
         body: DefaultTextStyle(
           style: const TextStyle(color: Colors.white),
           child: RefreshIndicator(
