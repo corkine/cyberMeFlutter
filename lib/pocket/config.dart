@@ -115,6 +115,9 @@ class Config {
   static String storyReadUrl(String bookName, String storyName) => Uri.encodeFull(
       "https://cyber.mazhangjing.com/cyber/story/read-story/$bookName/$storyName");
 
+  static String storySearchUrl =
+      "https://cyber.mazhangjing.com/cyber/story/api-search";
+
   static Uri goNoteUrl(String keyword, String noteContent) => Uri(
           scheme: 'https',
           host: 'cyber.mazhangjing.com',

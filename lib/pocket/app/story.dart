@@ -17,6 +17,7 @@ Map<String, String> cover = {
   "安徒生童话": "https://static2.mazhangjing.com/cyber/202310/efbd86c8_图片.png",
   "佩罗童话": "https://static2.mazhangjing.com/cyber/202405/6c3de10b_image.png",
   "恰佩克童话": "https://static2.mazhangjing.com/cyber/202405/1ab939ee_image.png",
+  "罗尔德童话": "https://static2.mazhangjing.com/cyber/202405/b081a67c_image.png",
   "欧亨利短篇小说选": "https://static2.mazhangjing.com/cyber/202405/cf9d091c_image.png",
   "阿瑟克拉克科幻小说选": "https://static2.mazhangjing.com/cyber/202310/d4461685_图片.png",
   "银河系边缘的小失常": "https://static2.mazhangjing.com/cyber/202310/dc840e21_图片.png",
@@ -57,9 +58,10 @@ class _StoryViewState extends State<StoryView> {
             actions: [
               Padding(
                   padding: const EdgeInsets.only(right: 5),
-                  //TODO 实现搜索功能
                   child: IconButton(
-                      onPressed: () {}, icon: const Icon(Icons.search)))
+                      onPressed: () => showSearch(
+                          context: context, delegate: StorySearchDelegate()),
+                      icon: const Icon(Icons.search)))
             ]),
         body: DefaultTextStyle(
           style: const TextStyle(color: Colors.white),
@@ -451,5 +453,75 @@ class _StoryReadViewState extends ConsumerState<StoryReadView> {
         .where((element) => element.isNotEmpty)
         .toList(growable: false);
     setState(() {});
+  }
+}
+
+class StorySearchDelegate extends SearchDelegate<String> {
+  StorySearchDelegate()
+      : super(
+            searchFieldLabel: "搜索故事或内容",
+            keyboardType: TextInputType.text,
+            textInputAction: TextInputAction.search);
+
+  @override
+  Widget buildLeading(BuildContext context) => const BackButton();
+
+  @override
+  Widget buildSuggestions(BuildContext context) => const SizedBox();
+
+  @override
+  Widget buildResults(BuildContext context) => StorySearchResultView(query);
+
+  @override
+  List<Widget> buildActions(BuildContext context) => <Widget>[
+        Padding(
+            padding: const EdgeInsets.only(right: 0),
+            child: IconButton(
+                onPressed: () => query = "", icon: const Icon(Icons.clear))),
+        Padding(
+            padding: const EdgeInsets.only(right: 10),
+            child: IconButton(
+                onPressed: () => showResults(context),
+                icon: const Icon(Icons.search)))
+      ];
+}
+
+class StorySearchResultView extends ConsumerStatefulWidget {
+  final String query;
+  const StorySearchResultView(this.query, {super.key});
+
+  @override
+  ConsumerState<ConsumerStatefulWidget> createState() =>
+      _StorySearchResultViewState();
+}
+
+class _StorySearchResultViewState extends ConsumerState<StorySearchResultView> {
+  @override
+  Widget build(BuildContext context) {
+    final res = ref.watch(searchStoryProvider.call(widget.query)).value;
+    if (res == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    return Container(
+        color: Colors.white,
+        child: ListView.builder(
+            itemCount: res.result.length,
+            itemBuilder: (c, i) {
+              final item = res.result[i];
+              return ListTile(
+                  onTap: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => StoryReadView(
+                            bookName: item.book, storyName: item.story)));
+                  },
+                  title: Text("${item.book} / ${item.story}"),
+                  subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: item.content
+                          .map((e) => Text(e,
+                              style: const TextStyle(
+                                  fontSize: 11, color: Colors.grey)))
+                          .toList()));
+            }));
   }
 }

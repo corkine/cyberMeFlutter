@@ -1,3 +1,5 @@
+// ignore_for_file: invalid_annotation_target
+
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -175,4 +177,47 @@ Future<BookItems> bookInfos(BookInfosRef ref, String bookName) async {
           return b - a;
         })),
       lastRead: cfg.lastRead[bookName]);
+}
+
+@freezed
+class StorySearchItem with _$StorySearchItem {
+  factory StorySearchItem(
+      {@Default("") String book,
+      @Default("") String story,
+      @JsonKey(name: "book_en") @Default("") String bookEn,
+      @Default([]) List<String> content,
+      @Default(0.0) double score}) = _StorySearchItem;
+
+  factory StorySearchItem.fromJson(Map<String, dynamic> json) =>
+      _$StorySearchItemFromJson(json);
+}
+
+@freezed
+class StorySearchResult with _$StorySearchResult {
+  factory StorySearchResult(
+      {@Default([]) List<StorySearchItem> result,
+      @Default(0) int cost,
+      @Default(0) int count}) = _StorySearchResult;
+
+  factory StorySearchResult.fromJson(Map<String, dynamic> json) =>
+      _$StorySearchResultFromJson(json);
+}
+
+@riverpod
+Future<StorySearchResult> searchStory(SearchStoryRef ref, String query) async {
+  try {
+    final r = await post(Uri.parse(Config.storySearchUrl),
+        headers: config.cyberBase64JsonContentHeader,
+        body: jsonEncode(
+            {"search": query, "cache": true, "batch": 20, "size": 20}));
+    final j = jsonDecode(r.body);
+    // final s = (j["status"] as int?) ?? -1;
+    // final m = j["message"] ?? "没有返回消息";
+    final d = j["data"] as Map<String, dynamic>? ?? {};
+    final res = StorySearchResult.fromJson(d);
+    return res;
+  } catch (e, st) {
+    debugPrintStack(stackTrace: st);
+    return StorySearchResult(result: [], cost: 0, count: 0);
+  }
 }
