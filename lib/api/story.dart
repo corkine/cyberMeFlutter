@@ -25,11 +25,13 @@ class LastReadStory with _$LastReadStory {
       _$LastReadStoryFromJson(json);
 }
 
+/// 整个 App 保存的配置：每部故事书的最后阅读，所有待读的故事，所有已读的故事
 @freezed
 class StoryConfig with _$StoryConfig {
   factory StoryConfig({
     @Default({}) Map<String, LastReadStory> lastRead,
-    @Default({}) Set<String> favoriteStory,
+    @Default({}) Set<String> willReadStory,
+    @Default({}) Set<String> readedStory,
   }) = _StoryConfig;
 
   factory StoryConfig.fromJson(Map<String, dynamic> json) =>
@@ -50,18 +52,28 @@ class StoryConfigs extends _$StoryConfigs {
     return state.value?.lastRead[bookName];
   }
 
-  static bool isFavoriate(Set<String>? set, String bookName, String storyName) {
-    return set?.contains(bookName + "::$storyName") ?? false;
+  static bool isWillRead(Set<String>? set, String bookName, String storyName) {
+    return set?.contains(readKey(bookName, storyName)) ?? false;
   }
 
-  Future<String> setFavorite(
-      String bookName, String favoriateName, bool isFavorite) async {
-    final key = "$bookName::$favoriateName";
+  static bool isReaded(Set<String>? set, String bookName, String storyName) {
+    return isWillRead(set, bookName, storyName);
+  }
+
+  static String readKey(String bookName, String storyName) {
+    return bookName + "::$storyName";
+  }
+
+  Future<String> setWillRead(
+      String bookName, String storyName, bool will) async {
+    final key = readKey(bookName, storyName);
     final oldState = state.value ?? StoryConfig();
+    final oldWillRead = oldState.willReadStory;
+    final oldReaded = oldState.readedStory;
     final now = oldState.copyWith(
-        favoriteStory: isFavorite
-            ? {...oldState.favoriteStory, key}
-            : ({...oldState.favoriteStory}..remove(key)));
+        readedStory: will ? ({...oldReaded}..remove(key)) : oldReaded,
+        willReadStory:
+            will ? {...oldWillRead, key} : ({...oldWillRead}..remove(key)));
     final s = await SharedPreferences.getInstance();
     await s.setString(persistKey, jsonEncode(now));
     state = AsyncData(now);
@@ -76,6 +88,29 @@ class StoryConfigs extends _$StoryConfigs {
     state = AsyncData(now);
     return "已成功保存配置";
   }
+
+  Future<String> removeLastRead(String bookName) async {
+    final s = await SharedPreferences.getInstance();
+    final now = (state.value ?? StoryConfig())
+        .copyWith(lastRead: {...state.value?.lastRead ?? {}}..remove(bookName));
+    await s.setString(persistKey, jsonEncode(now));
+    state = AsyncData(now);
+    return "已成功保存配置";
+  }
+
+  Future<String> setReaded(String bookName, String storyName,
+      {required bool read}) async {
+    final s = await SharedPreferences.getInstance();
+    final key = readKey(bookName, storyName);
+    final oldReaded = state.value?.readedStory ?? {};
+    final willRead = state.value?.willReadStory ?? {};
+    final now = (state.value ?? StoryConfig()).copyWith(
+        readedStory: read ? {...oldReaded, key} : ({...oldReaded}..remove(key)),
+        willReadStory: read ? ({...willRead}..remove(key)) : willRead);
+    await s.setString(persistKey, jsonEncode(now));
+    state = AsyncData(now);
+    return "已成功保存配置";
+  }
 }
 
 @freezed
@@ -83,7 +118,8 @@ class BookItem with _$BookItem {
   factory BookItem(
       {@Default("") String name,
       @Default(0) int count,
-      @Default(false) bool isFavorite}) = _BookItem;
+      @Default(false) bool willRead,
+      @Default(false) bool isReaded}) = _BookItem;
 
   factory BookItem.fromJson(Map<String, dynamic> json) =>
       _$BookItemFromJson(json);
@@ -103,7 +139,8 @@ class BookItems with _$BookItems {
 @riverpod
 Future<BookItems> bookInfos(BookInfosRef ref, String bookName) async {
   final cfg = ref.watch(storyConfigsProvider).value ?? StoryConfig();
-  final fav = cfg.favoriteStory;
+  final willReads = cfg.willReadStory;
+  final isReadeds = cfg.readedStory;
   final r = await get(Uri.parse(Config.storyBookUrl(bookName)),
       headers: config.cyberBase64Header);
   final j = jsonDecode(r.body);
@@ -119,18 +156,23 @@ Future<BookItems> bookInfos(BookInfosRef ref, String bookName) async {
       items: (d.map((e) {
         final storyName = e as String;
         final count = refer[storyName] ?? 0;
-        final isFav = fav.contains("$bookName::$storyName");
-        return BookItem(name: storyName, count: count, isFavorite: isFav);
+        final key = StoryConfigs.readKey(bookName, storyName);
+        final willRead = willReads.contains(key);
+        final isReaded = isReadeds.contains(key);
+        return BookItem(
+            name: storyName,
+            count: count,
+            willRead: willRead,
+            isReaded: isReaded);
       }).toList()
         ..sort((item1, item2) {
-          if (item1.isFavorite != item2.isFavorite) {
-            if (item1.isFavorite) {
-              return -1;
-            } else {
-              return 1;
-            }
-          }
-          return 0;
+          var a = 0;
+          var b = 0;
+          if (item1.willRead) a += 10;
+          if (item2.willRead) b += 10;
+          if (item1.isReaded) a -= 100;
+          if (item2.isReaded) b -= 100;
+          return b - a;
         })),
       lastRead: cfg.lastRead[bookName]);
 }

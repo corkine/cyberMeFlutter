@@ -205,9 +205,10 @@ class _BookStoryViewState extends ConsumerState<BookStoryView> {
                         color: Colors.transparent,
                         child: ListView.builder(
                             itemExtent: 50,
-                            itemBuilder: (c, i) =>
-                                buildStoryItem(items.items[i], context, i),
-                            itemCount: items.items.length)))
+                            itemBuilder: (c, i) => i >= items.items.length
+                                ? const SizedBox()
+                                : buildStoryItem(items.items[i], context, i),
+                            itemCount: items.items.length + 2)))
               ])),
           if (items.lastRead != null)
             Positioned(
@@ -220,20 +221,26 @@ class _BookStoryViewState extends ConsumerState<BookStoryView> {
   }
 
   InkWell buildReadLastBar(BuildContext context, BookItems items) {
+    final lastReadName = items.lastRead!.name;
+    final lastReadIndex = items.lastRead!.index;
+    BookItem? lastRead =
+        items.items.firstWhere((element) => element.name == lastReadName);
     return InkWell(
         onTap: () => Navigator.of(context).push(MaterialPageRoute(
             builder: (c) => StoryReadView(
                 bookName: widget.bookName,
-                storyName: items.lastRead!.name,
-                lastReadIndex: items.lastRead!.index))),
+                storyName: lastReadName,
+                lastReadIndex: lastReadIndex))),
         child: Container(
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10), color: Colors.black87),
             padding:
                 const EdgeInsets.only(left: 15, right: 15, bottom: 10, top: 10),
             child: Row(children: [
+              buildAddFavoriateMark(lastRead),
+              const SizedBox(width: 5),
               Expanded(
-                  child: Text(items.lastRead!.name,
+                  child: Text(lastReadName,
                       style: const TextStyle(
                           fontWeight: FontWeight.bold, color: Colors.white))),
               Container(
@@ -274,17 +281,21 @@ class _BookStoryViewState extends ConsumerState<BookStoryView> {
                           ]))),
               Padding(
                   padding: const EdgeInsets.only(left: 3, right: 18),
-                  child: InkResponse(
-                      onTap: () async => await ref
-                          .read(storyConfigsProvider.notifier)
-                          .setFavorite(
-                              widget.bookName, item.name, !item.isFavorite),
-                      child: !item.isFavorite
-                          ? const Icon(Icons.bookmark_add_outlined,
-                              color: Colors.white24)
-                          : const Icon(Icons.bookmark,
-                              color: Colors.orangeAccent)))
+                  child: buildAddFavoriateMark(item))
             ]));
+  }
+
+  InkResponse buildAddFavoriateMark(BookItem item) {
+    return InkResponse(
+        onTap: () async => await ref
+            .read(storyConfigsProvider.notifier)
+            .setWillRead(widget.bookName, item.name, !item.willRead),
+        child: item.willRead
+            ? const Icon(Icons.bookmark, color: Colors.orangeAccent)
+            : item.isReaded
+                ? const Icon(Icons.bookmark_border, color: Colors.green)
+                : const Icon(Icons.bookmark_add_outlined,
+                    color: Colors.white24));
   }
 }
 
@@ -310,6 +321,7 @@ class _StoryReadViewState extends ConsumerState<StoryReadView> {
   final controller = ScrollController();
   late StoryConfigs storyConfig;
   double offset = 0;
+  bool isReaded = false;
 
   @override
   void initState() {
@@ -329,7 +341,11 @@ class _StoryReadViewState extends ConsumerState<StoryReadView> {
     final now = DateTime.now().millisecondsSinceEpoch;
     final data = LastReadStory(
         enter: enterTime, exit: now, name: widget.storyName, index: offset);
-    storyConfig.setLastRead(widget.bookName, data);
+    if (!isReaded) {
+      storyConfig.setLastRead(widget.bookName, data);
+    } else {
+      storyConfig.removeLastRead(widget.bookName);
+    }
     controller.dispose();
     super.dispose();
   }
@@ -337,8 +353,10 @@ class _StoryReadViewState extends ConsumerState<StoryReadView> {
   @override
   Widget build(BuildContext context) {
     final sc = ref.watch(storyConfigsProvider).value ?? StoryConfig();
-    final isFav = StoryConfigs.isFavoriate(
-        sc.favoriteStory, widget.bookName, widget.storyName);
+    final willRead = StoryConfigs.isWillRead(
+        sc.willReadStory, widget.bookName, widget.storyName);
+    isReaded = sc.readedStory
+        .contains(StoryConfigs.readKey(widget.bookName, widget.storyName));
     return Scaffold(
         backgroundColor: Colors.black,
         body: CustomScrollView(controller: controller, slivers: [
@@ -350,13 +368,13 @@ class _StoryReadViewState extends ConsumerState<StoryReadView> {
                 Padding(
                   padding: const EdgeInsets.only(right: 5),
                   child: IconButton(
-                      icon: isFav
+                      icon: willRead
                           ? const Icon(Icons.bookmark,
                               color: Colors.orangeAccent)
                           : const Icon(Icons.bookmark_add_outlined,
                               color: Colors.white30),
-                      onPressed: () async => await storyConfig.setFavorite(
-                          widget.bookName, widget.storyName, !isFav)),
+                      onPressed: () async => await storyConfig.setWillRead(
+                          widget.bookName, widget.storyName, !willRead)),
                 )
               ],
               expandedHeight: 350,
@@ -379,7 +397,39 @@ class _StoryReadViewState extends ConsumerState<StoryReadView> {
                             fontSize: 16,
                             letterSpacing: 1,
                             color: Colors.white70)));
-              })
+              }),
+          if (content.isNotEmpty)
+            SliverToBoxAdapter(
+                child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: TextButton(
+                        style: ButtonStyle(backgroundColor:
+                            MaterialStateProperty.resolveWith((states) {
+                          if (states.contains(MaterialState.pressed)) {
+                            return const Color.fromARGB(62, 76, 175, 79);
+                          } else if (states.contains(MaterialState.hovered)) {
+                            return const Color.fromARGB(24, 76, 175, 79);
+                          } else {
+                            return Colors.transparent;
+                          }
+                        })),
+                        onPressed: () async => await ref
+                            .read(storyConfigsProvider.notifier)
+                            .setReaded(widget.bookName, widget.storyName,
+                                read: !isReaded),
+                        child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              isReaded
+                                  ? const Icon(Icons.done_all,
+                                      color: Colors.green)
+                                  : const Icon(Icons.done,
+                                      color: Color.fromARGB(166, 76, 175, 79)),
+                              const SizedBox(width: 8),
+                              Text(isReaded ? "故事已读" : "标记为已读",
+                                  style: const TextStyle(color: Colors.green))
+                            ])))),
+          const SliverPadding(padding: EdgeInsets.only(bottom: 15))
         ]));
   }
 
