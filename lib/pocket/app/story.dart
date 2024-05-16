@@ -357,8 +357,8 @@ class _StoryReadViewState extends ConsumerState<StoryReadView> {
     final sc = ref.watch(storyConfigsProvider).value ?? StoryConfig();
     final willRead = StoryConfigs.isWillRead(
         sc.willReadStory, widget.bookName, widget.storyName);
-    isReaded = sc.readedStory
-        .contains(StoryConfigs.readKey(widget.bookName, widget.storyName));
+    isReaded = StoryConfigs.isReaded(
+        sc.readedStory, widget.bookName, widget.storyName);
     return Scaffold(
         backgroundColor: Colors.black,
         body: CustomScrollView(controller: controller, slivers: [
@@ -373,10 +373,21 @@ class _StoryReadViewState extends ConsumerState<StoryReadView> {
                       icon: willRead
                           ? const Icon(Icons.bookmark,
                               color: Colors.orangeAccent)
-                          : const Icon(Icons.bookmark_add_outlined,
-                              color: Colors.white30),
-                      onPressed: () async => await storyConfig.setWillRead(
-                          widget.bookName, widget.storyName, !willRead)),
+                          : isReaded
+                              ? const Icon(Icons.bookmark_border,
+                                  color: Colors.green)
+                              : const Icon(Icons.bookmark_add_outlined,
+                                  color: Colors.white24),
+                      onPressed: () async {
+                        if (isReaded) {
+                          await storyConfig.setReaded(
+                              widget.bookName, widget.storyName,
+                              read: !isReaded);
+                        } else {
+                          await storyConfig.setWillRead(
+                              widget.bookName, widget.storyName, !willRead);
+                        }
+                      }),
                 )
               ],
               expandedHeight: 350,
