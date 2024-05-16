@@ -53,11 +53,11 @@ class Links extends _$Links {
   }
 
   Future<String> add(String keyword, String url,
-      {bool override = false}) async {
+      {bool override = false, required String note}) async {
     final (_, res) = await postFrom("/cyber/go/add", {
       "keyword": keyword,
       "redirectURL": url,
-      "note": "由 CyberMe Flutter 添加：${DateTime.now()}",
+      "note": note,
       "override": override
     });
     ref.invalidateSelf();
@@ -84,7 +84,8 @@ class Links extends _$Links {
     final targetUrl =
         "https://mazhangjing.com/distro/?go=${base64Encode(utf8.encode(data))}";
     //debugPrint(targetUrl);
-    final res = await add(keyword, targetUrl);
+    final res = await add(keyword, targetUrl,
+        note: "由 CyberMe Flutter 添加：${DateTime.now()}");
     return (res, "https://go.mazhangjing.com/$keyword");
   }
 }

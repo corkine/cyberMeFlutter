@@ -69,23 +69,19 @@ class _QuickLinkViewState extends ConsumerState<QuickLinkView> {
   Widget build(BuildContext context) {
     final data = ref.watch(linksProvider.call(search.text)).value;
     return Scaffold(
-        appBar: AppBar(
-          title: const Text("短链接管理"),
-          actions: [
-            Padding(
-              padding: const EdgeInsets.only(),
-              child: IconButton(
-                  onPressed: () => distroSearcher(),
-                  icon: const Icon(Icons.search)),
-            ),
-            Padding(
+        appBar: AppBar(title: const Text("短链接管理"), actions: [
+          Padding(
+            padding: const EdgeInsets.only(),
+            child: IconButton(
+                onPressed: () => distroSearcher(),
+                icon: const Icon(Icons.search)),
+          ),
+          Padding(
               padding: const EdgeInsets.all(8.0),
               child: IconButton(
                   onPressed: () => distroHandler(true),
-                  icon: const Icon(Icons.schedule_send)),
-            )
-          ],
-        ),
+                  icon: const Icon(Icons.schedule_send)))
+        ]),
         body: Column(children: [
           Padding(
               padding: const EdgeInsets.only(left: 10, right: 10),
@@ -150,16 +146,48 @@ class _QuickLinkViewState extends ConsumerState<QuickLinkView> {
                                                   color: Colors.white,
                                                   fontSize: 15))))),
                               child: ListTile(
-                                  onTap: () => launchUrlString(d.redirectUrl),
+                                  onTap: () {
+                                    if (d.redirectUrl == ":note") {
+                                      showDialog(
+                                          context: context,
+                                          builder: (context) => AlertDialog(
+                                                  title: const Text("内容"),
+                                                  content:
+                                                      SingleChildScrollView(
+                                                          child: Text(d.note)),
+                                                  actions: [
+                                                    TextButton(
+                                                        onPressed: () =>
+                                                            Navigator.of(
+                                                                    context)
+                                                                .pop(),
+                                                        child: const Text("确定"))
+                                                  ]));
+                                    } else {
+                                      launchUrlString(d.redirectUrl);
+                                    }
+                                  },
                                   visualDensity: VisualDensity.compact,
                                   dense: true,
                                   title: Text(d.keyword),
-                                  subtitle: Text(d.redirectUrl,
-                                      softWrap: false,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                          fontSize: 11, color: Colors.grey))),
+                                  subtitle: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(d.redirectUrl,
+                                            softWrap: false,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                                fontSize: 11,
+                                                color: Colors.grey)),
+                                        Text(d.note,
+                                            softWrap: true,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                                fontSize: 11,
+                                                color: Colors.grey))
+                                      ])),
                             );
                           },
                           itemCount: data.length))
@@ -168,10 +196,20 @@ class _QuickLinkViewState extends ConsumerState<QuickLinkView> {
 
   handleAdd() async {
     final url = TextEditingController();
+    final note = TextEditingController();
+    var noteMaxLine = 1;
     var override = true;
     final data = await FlutterClipboard.paste();
     if (data.isNotEmpty) {
       url.text = data;
+    }
+    final searchMatch =
+        ref.read(linksProvider.call(search.text)).value?.firstOrNull;
+    if (searchMatch != null && searchMatch.keyword == search.text) {
+      note.text = searchMatch.note;
+      if (searchMatch.redirectUrl == ":note") noteMaxLine = 10;
+    } else {
+      note.text = "由 CyberMe Flutter 添加：${DateTime.now()}";
     }
     await showDialog(
         context: context,
@@ -179,11 +217,12 @@ class _QuickLinkViewState extends ConsumerState<QuickLinkView> {
           return StatefulBuilder(
               builder: (context, setState) => AlertDialog(
                       title: const Text("添加到短链接"),
-                      content: Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
+                      content: SingleChildScrollView(
+                          child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
                             Text("https://go.mazhangjing.com/${search.text}"),
                             TextField(
                                 controller: url,
@@ -191,15 +230,21 @@ class _QuickLinkViewState extends ConsumerState<QuickLinkView> {
                                 decoration:
                                     const InputDecoration(hintText: "跳转到")),
                             const SizedBox(height: 10),
+                            TextField(
+                                controller: note,
+                                maxLines: noteMaxLine,
+                                decoration:
+                                    const InputDecoration(hintText: "备注")),
+                            const SizedBox(height: 10),
                             Row(children: [
                               const Text("允许覆盖"),
                               const Spacer(),
                               Switch(
                                   value: override,
                                   onChanged: (v) =>
-                                      setState(() => override = v)),
+                                      setState(() => override = v))
                             ])
-                          ]),
+                          ])),
                       actions: [
                         TextButton(
                             onPressed: () => Navigator.of(context).pop(false),
@@ -215,7 +260,7 @@ class _QuickLinkViewState extends ConsumerState<QuickLinkView> {
                                   .read(
                                       linksProvider.call(search.text).notifier)
                                   .add(search.text, url.text,
-                                      override: override);
+                                      override: override, note: note.text);
                               Navigator.of(context).pop(true);
                               await showSimpleMessage(context, content: res);
                             },

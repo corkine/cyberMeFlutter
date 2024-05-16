@@ -156,7 +156,6 @@ class _SearchPageState extends State<SearchPage> {
 }
 
 class ItemSearchDelegate extends SearchDelegate<String> {
-
   ItemSearchDelegate()
       : super(
             searchFieldLabel: '查找或插入',
@@ -325,27 +324,26 @@ class _SearchResultState extends State<SearchResult> {
   }
 
   @override
-  Widget build(BuildContext context) {;
+  Widget build(BuildContext context) {
+    ;
     _future = _loadData(config);
     return FutureBuilder(
         future: _future,
         builder: (c, s) {
           if (s.connectionState != ConnectionState.done) {
             return Container(
-              alignment: const Alignment(0, -0.8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  SizedBox(
-                      height: 15,
-                      width: 15,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                      )),
-                  Text('  正在检索')
-                ],
-              ),
-            );
+                alignment: const Alignment(0, -0.8),
+                child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                          height: 15,
+                          width: 15,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                          )),
+                      Text('  正在检索')
+                    ]));
           }
           if (s.hasError) {
             return InkWell(onTap: _retry(config), child: const Text('出错了，请重试'));
