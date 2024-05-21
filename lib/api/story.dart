@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 
+import 'package:cyberme_flutter/api/basic.dart';
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:http/http.dart';
@@ -46,8 +47,10 @@ class StoryConfigs extends _$StoryConfigs {
   static const persistKey = "storyConfig";
   @override
   FutureOr<StoryConfig> build() async {
-    final s = await SharedPreferences.getInstance();
-    return StoryConfig.fromJson(jsonDecode(s.getString(persistKey) ?? "{}"));
+    //final s = await SharedPreferences.getInstance();
+    //return StoryConfig.fromJson(jsonDecode(s.getString(persistKey) ?? "{}"));
+    return await settingFetch(persistKey, StoryConfig.fromJson) ??
+        StoryConfig();
   }
 
   LastReadStory? getLastRead(String bookName) {
@@ -76,40 +79,44 @@ class StoryConfigs extends _$StoryConfigs {
         readedStory: will ? ({...oldReaded}..remove(key)) : oldReaded,
         willReadStory:
             will ? {...oldWillRead, key} : ({...oldWillRead}..remove(key)));
-    final s = await SharedPreferences.getInstance();
-    await s.setString(persistKey, jsonEncode(now));
+    // final s = await SharedPreferences.getInstance();
+    // await s.setString(persistKey, jsonEncode(now));
+    await settingUpload(persistKey, now.toJson());
     state = AsyncData(now);
     return "已成功保存配置";
   }
 
   Future<String> setLastRead(String bookName, LastReadStory lastRead) async {
-    final s = await SharedPreferences.getInstance();
     final now = (state.value ?? StoryConfig()).copyWith(
         lastRead: {...state.value?.lastRead ?? {}, bookName: lastRead});
-    await s.setString(persistKey, jsonEncode(now));
+    // final s = await SharedPreferences.getInstance();
+    // await s.setString(persistKey, jsonEncode(now));
+    await settingUpload(persistKey, now.toJson());
     state = AsyncData(now);
     return "已成功保存配置";
   }
 
   Future<String> removeLastRead(String bookName) async {
-    final s = await SharedPreferences.getInstance();
     final now = (state.value ?? StoryConfig())
         .copyWith(lastRead: {...state.value?.lastRead ?? {}}..remove(bookName));
-    await s.setString(persistKey, jsonEncode(now));
+    // final s = await SharedPreferences.getInstance();
+    // await s.setString(persistKey, jsonEncode(now));
+    await settingUpload(persistKey, now.toJson());
     state = AsyncData(now);
     return "已成功保存配置";
   }
 
   Future<String> setReaded(String bookName, String storyName,
       {required bool read}) async {
-    final s = await SharedPreferences.getInstance();
     final key = readKey(bookName, storyName);
     final oldReaded = state.value?.readedStory ?? {};
     final willRead = state.value?.willReadStory ?? {};
     final now = (state.value ?? StoryConfig()).copyWith(
         readedStory: read ? {...oldReaded, key} : ({...oldReaded}..remove(key)),
         willReadStory: read ? ({...willRead}..remove(key)) : willRead);
-    await s.setString(persistKey, jsonEncode(now));
+    // final s = await SharedPreferences.getInstance();
+    // await s.setString(persistKey, jsonEncode(now));
+    await settingUpload(persistKey, now.toJson());
     state = AsyncData(now);
     return "已成功保存配置";
   }

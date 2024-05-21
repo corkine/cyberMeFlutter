@@ -180,7 +180,7 @@ class _DiaryCardsState extends State<DiaryCards> {
                                       Text("${d.day}: ${d.title}",
                                           style: Theme.of(context)
                                               .primaryTextTheme
-                                              .headline2!
+                                              .headlineLarge!
                                               .copyWith(
                                                   color: Colors.black,
                                                   fontSize: 19)),
@@ -188,7 +188,7 @@ class _DiaryCardsState extends State<DiaryCards> {
                                       Text(d.preview,
                                           style: Theme.of(context)
                                               .primaryTextTheme
-                                              .bodyText1!
+                                              .bodyLarge!
                                               .copyWith(color: Colors.black54))
                                     ]),
                               ),

@@ -1,4 +1,3 @@
-
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
@@ -20,8 +19,8 @@ class _Demo2State extends State<Demo2> {
         itemCount: 200,
         gridDelegate: g1,
         itemBuilder: (_, i) => Container(
-          color: Colors.orange[i % 8 * 100],
-        ));
+              color: Colors.orange[i % 8 * 100],
+            ));
     const g2 = SliverGridDelegateWithMaxCrossAxisExtent(
         maxCrossAxisExtent: 80, //交叉轴每个元素最大宽度
         childAspectRatio: 16 / 9);
@@ -46,12 +45,12 @@ class _Demo2State extends State<Demo2> {
         Icons.build
       ]
           .map((e) => Container(
-        child: Icon(
-          e,
-          color: Colors.white,
-        ),
-        color: Colors.blue,
-      ))
+                child: Icon(
+                  e,
+                  color: Colors.white,
+                ),
+                color: Colors.blue,
+              ))
           .toList(),
     );
     var ls = ListWheelScrollView(
@@ -68,15 +67,15 @@ class _Demo2State extends State<Demo2> {
         onSelectedItemChanged: (index) => print("Now select $index"),
         children: List.generate(
             30,
-                (index) => Container(
-              color: Colors.blue,
-              alignment: Alignment.center,
-              child: Center(
-                  child: Text(
+            (index) => Container(
+                  color: Colors.blue,
+                  alignment: Alignment.center,
+                  child: Center(
+                      child: Text(
                     "Hello $index",
-                    style: Theme.of(context).primaryTextTheme.headline4,
+                    style: Theme.of(context).primaryTextTheme.headlineSmall,
                   )),
-            )).toList());
+                )).toList());
     //可以将其文字和列表转动
     var ls2 = RotatedBox(
       quarterTurns: 1,
@@ -85,16 +84,16 @@ class _Demo2State extends State<Demo2> {
         itemExtent: 100,
         children: List.generate(
             10,
-                (index) => RotatedBox(
-              quarterTurns: -1,
-              child: Container(
-                alignment: Alignment.center,
-                child: Text(
-                  "$index",
-                  style: const TextStyle(fontSize: 72),
-                ),
-              ),
-            )).toList(),
+            (index) => RotatedBox(
+                  quarterTurns: -1,
+                  child: Container(
+                    alignment: Alignment.center,
+                    child: Text(
+                      "$index",
+                      style: const TextStyle(fontSize: 72),
+                    ),
+                  ),
+                )).toList(),
       ),
     );
     var pv = PageView(
@@ -103,15 +102,15 @@ class _Demo2State extends State<Demo2> {
       onPageChanged: (index) => print("Now is $index"),
       children: List.generate(
           4,
-              (index) => Container(
-            color: Colors.primaries[index][100],
-            child: Center(
-              child: Text(
-                "$index",
-                style: Theme.of(context).primaryTextTheme.headline1,
-              ),
-            ),
-          )),
+          (index) => Container(
+                color: Colors.primaries[index][100],
+                child: Center(
+                  child: Text(
+                    "$index",
+                    style: Theme.of(context).primaryTextTheme.headlineMedium,
+                  ),
+                ),
+              )),
     );
     var rl = ReorderableListView(
         header: const Text(
@@ -120,18 +119,18 @@ class _Demo2State extends State<Demo2> {
         ),
         children: List.generate(
             100,
-                (index) => Container(
-              key: UniqueKey(),
-              height: 100,
-              color: Colors.blue[index % 8 * 100],
-            )),
+            (index) => Container(
+                  key: UniqueKey(),
+                  height: 100,
+                  color: Colors.blue[index % 8 * 100],
+                )),
         onReorder: (o, n) {});
     //SingleChildScrollView 用于避免意外布局不足需要滚动的情况
     //其不同于 ListView，后者哪怕元素不足滚动也支持拖拽，而 SCSV
     //则仅限于超出屏幕宽度的滚动。
-    var cs = SingleChildScrollView(
+    var cs = const SingleChildScrollView(
       child: Column(
-        children: const <Widget>[
+        children: <Widget>[
           FlutterLogo(
             size: 400,
           ),
@@ -169,7 +168,7 @@ class Website {
 
   Website.of(j)
       : this(j["name"], j["websiteUrl"], j["websiteNote"], j["websiteId"],
-      j["healthy"], j["activityCount"], j["from"], j["end"]);
+            j["healthy"], j["activityCount"], j["from"], j["end"]);
 
   @override
   String toString() {
@@ -182,7 +181,7 @@ class _DemoState extends State<Demo> {
 
   Future fetch() async {
     final res =
-    await http.get(Uri.parse("https://status.mazhangjing.com/status"));
+        await http.get(Uri.parse("https://status.mazhangjing.com/status"));
     if (res.statusCode == 200) {
       print(res.body);
       final data = (jsonDecode(res.body) as List).map((e) => Website.of(e));
@@ -216,44 +215,44 @@ class _DemoState extends State<Demo> {
           child: ListView(
             children: _data
                 .map<Widget>((e) => Dismissible(
-              key: ValueKey(e.websiteId),
-              onDismissed: (d) {
-                setState(() {
-                  _data.removeWhere(
-                          (element) => element.websiteId == e.websiteId);
-                });
-              },
-              confirmDismiss: (_) async {
-                return showDialog(
-                    context: context,
-                    builder: (_) {
-                      return AlertDialog(
-                        title: const Text("确定删除吗？"),
-                        content: const Text("真的吗？"),
-                        actions: [
-                          TextButton(
-                              onPressed: () {
-                                Navigator.of(context).pop(true);
-                              },
-                              child: const Text("确定")),
-                          TextButton(
-                              onPressed: () {
-                                Navigator.of(context).pop(false);
-                              },
-                              child: const Text("取消"))
-                        ],
-                      );
-                    });
-              },
-              child: ListTile(
-                leading: Image.network(
-                  "https://mazhangjing.com/static/favicon.ico",
-                  width: 40,
-                ),
-                title: Text(e.websiteUrl),
-                subtitle: Text(e.from),
-              ),
-            ))
+                      key: ValueKey(e.websiteId),
+                      onDismissed: (d) {
+                        setState(() {
+                          _data.removeWhere(
+                              (element) => element.websiteId == e.websiteId);
+                        });
+                      },
+                      confirmDismiss: (_) async {
+                        return showDialog(
+                            context: context,
+                            builder: (_) {
+                              return AlertDialog(
+                                title: const Text("确定删除吗？"),
+                                content: const Text("真的吗？"),
+                                actions: [
+                                  TextButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop(true);
+                                      },
+                                      child: const Text("确定")),
+                                  TextButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop(false);
+                                      },
+                                      child: const Text("取消"))
+                                ],
+                              );
+                            });
+                      },
+                      child: ListTile(
+                        leading: Image.network(
+                          "https://mazhangjing.com/static/favicon.ico",
+                          width: 40,
+                        ),
+                        title: Text(e.websiteUrl),
+                        subtitle: Text(e.from),
+                      ),
+                    ))
                 .toList(),
           ),
         ),
@@ -261,7 +260,6 @@ class _DemoState extends State<Demo> {
     );
   }
 }
-
 
 class LearnLayout extends StatelessWidget {
   const LearnLayout({Key? key}) : super(key: key);

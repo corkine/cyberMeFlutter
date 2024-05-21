@@ -8,7 +8,7 @@ part of 'ticket.dart';
 
 Ticket _$TicketFromJson(Map<String, dynamic> json) => Ticket(
       message: json['message'] as String?,
-      status: json['status'] as int?,
+      status: (json['status'] as num?)?.toInt(),
       data: (json['data'] as List<dynamic>?)
           ?.map((e) => Data.fromJson(e as Map<String, dynamic>))
           .toList(),

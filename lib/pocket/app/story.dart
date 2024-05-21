@@ -368,27 +368,33 @@ class _StoryReadViewState extends ConsumerState<StoryReadView> {
               leading: const BackButton(color: Colors.white38),
               actions: [
                 Padding(
-                  padding: const EdgeInsets.only(right: 5),
-                  child: IconButton(
-                      icon: willRead
-                          ? const Icon(Icons.bookmark,
-                              color: Colors.orangeAccent)
-                          : isReaded
-                              ? const Icon(Icons.bookmark_border,
-                                  color: Colors.green)
-                              : const Icon(Icons.bookmark_add_outlined,
-                                  color: Colors.white24),
-                      onPressed: () async {
-                        if (isReaded) {
+                    padding: const EdgeInsets.only(right: 5),
+                    child: InkWell(
+                        child: willRead
+                            ? const Icon(Icons.bookmark,
+                                color: Colors.orangeAccent)
+                            : isReaded
+                                ? const Icon(Icons.bookmark_border,
+                                    color: Colors.green)
+                                : const Icon(Icons.bookmark_add_outlined,
+                                    color: Colors.white24),
+                        onTap: () async {
+                          //待读 vs. 未读
+                          if (isReaded) {
+                            await storyConfig.setReaded(
+                                widget.bookName, widget.storyName,
+                                read: !isReaded);
+                          } else {
+                            await storyConfig.setWillRead(
+                                widget.bookName, widget.storyName, !willRead);
+                          }
+                        },
+                        onLongPress: () async {
+                          //已读 vs. 未读
                           await storyConfig.setReaded(
                               widget.bookName, widget.storyName,
                               read: !isReaded);
-                        } else {
-                          await storyConfig.setWillRead(
-                              widget.bookName, widget.storyName, !willRead);
-                        }
-                      }),
-                )
+                        }))
               ],
               expandedHeight: 350,
               backgroundColor: Colors.black,

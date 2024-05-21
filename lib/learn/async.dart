@@ -69,13 +69,12 @@ class _MeState extends State<Me> {
     return Padding(
       padding: const EdgeInsets.only(top: 100),
       child: DefaultTextStyle(
-        style: Theme.of(context).primaryTextTheme.headline1!,
+        style: Theme.of(context).primaryTextTheme.headlineLarge!,
         child: Center(
           child: Column(
             children: [
               StreamBuilder(
-                stream:
-                controller.stream.transform(MyST()),
+                stream: controller.stream.transform(MyST()),
                 /*controller.stream
                 .where((event) => event % 2 == 0)
                 .map((event) => event * 10)
@@ -97,7 +96,9 @@ class _MeState extends State<Me> {
                   }
                 },
               ),
-              const SizedBox(height: 100,),
+              const SizedBox(
+                height: 100,
+              ),
               TextButton(
                   onPressed: () {
                     controller.sink.add(Random().nextInt(100));
@@ -122,7 +123,6 @@ class _MeState extends State<Me> {
 }
 
 class MyST extends StreamTransformerBase {
-
   int sum = 0;
   StreamController controller = StreamController();
   @override
@@ -135,9 +135,7 @@ class MyST extends StreamTransformerBase {
   }
 
   @override
-  StreamTransformer<RS, RT> cast<RS, RT>() =>
-      StreamTransformer.castFrom(this);
-
+  StreamTransformer<RS, RT> cast<RS, RT>() => StreamTransformer.castFrom(this);
 }
 
 class MyST2 extends StreamTransformerBase {
@@ -157,8 +155,7 @@ class MyST2 extends StreamTransformerBase {
     });
     return controller.stream;
   }
-  @override
-  StreamTransformer<RS, RT> cast<RS, RT>() =>
-      StreamTransformer.castFrom(this);
 
+  @override
+  StreamTransformer<RS, RT> cast<RS, RT>() => StreamTransformer.castFrom(this);
 }

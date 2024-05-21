@@ -3,7 +3,6 @@
 import 'dart:convert';
 
 import 'package:cyberme_flutter/api/basic.dart';
-import 'package:cyberme_flutter/pocket/app/ticket.dart';
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:http/http.dart';

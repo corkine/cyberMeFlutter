@@ -120,3 +120,31 @@ Future<(T?, String)> requestFromList<T>(
     return (null, e.toString());
   }
 }
+
+Future<T?> settingFetch<T>(
+    String tag, T Function(Map<String, dynamic>) func) async {
+  debugPrint("sync $tag with server $endpoint now");
+  final (setting, msg) =
+      await requestFrom("/cyber/service/common-setting/$tag", func);
+  if (setting == null) {
+    debugPrint("sync $tag setting failed: $msg");
+    return null;
+  }
+  return setting;
+}
+
+settingUpload<T>(String tag, Map<String, dynamic>? state) async {
+  debugPrint("upload $tag sync now");
+  if (state == null) return;
+  try {
+    final (ok, msg) =
+        await postFrom("/cyber/service/common-setting/$tag", state);
+    if (!ok) {
+      debugPrint("sync track setting failed: $msg");
+      return;
+    }
+  } catch (e, tx) {
+    debugPrintStack(stackTrace: tx, label: e.toString());
+    return;
+  }
+}
