@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -26,14 +27,24 @@ class _FuckCounterViewState extends ConsumerState<FuckCounterView> {
         appBar: AppBar(title: const Text("Counter")),
         body: Column(children: [
           Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            TextButton(onPressed: handleAdd2, child: const Text("Add Out")),
-            TextButton(onPressed: handleAdd, child: const Text("Add In"))
+            TextButton(
+                onPressed: () => handleAdd(mark: CounterX.OUT),
+                onLongPress: () => handleAdd(mark: CounterX.OUT, quick: true),
+                child: const Text("Add Out")),
+            TextButton(
+                onPressed: () => handleAdd(mark: CounterX.IN),
+                onLongPress: () => handleAdd(mark: CounterX.IN, quick: true),
+                child: const Text("Add In"))
           ]),
           Expanded(
               child: ListView.builder(
                   itemBuilder: (c, i) {
                     final co = d[i];
                     final color = co.isOut ? Colors.red : Colors.green;
+                    final first = i == 0;
+                    final icon = co.isOut
+                        ? Icon(Icons.arrow_downward, color: color)
+                        : Icon(Icons.arrow_back, color: color);
                     return Dismissible(
                         key: ValueKey(co.time),
                         confirmDismiss: (direction) async {
@@ -55,16 +66,20 @@ class _FuckCounterViewState extends ConsumerState<FuckCounterView> {
                           child: const Icon(Icons.delete, color: Colors.white),
                         ),
                         child: ListTile(
-                            dense: true,
-                            title: Text(co.note.isEmpty ? "无备注" : co.note,
-                                style: TextStyle(color: color)),
-                            subtitle: Text(
-                                DateTime.fromMillisecondsSinceEpoch(co.time)
-                                    .toString(),
-                                style: TextStyle(color: color)),
-                            trailing: co.isOut
-                                ? Icon(Icons.arrow_downward, color: color)
-                                : Icon(Icons.arrow_back, color: color)));
+                                dense: true,
+                                title: Text(co.note.isEmpty ? "无备注" : co.note,
+                                    style: TextStyle(color: color)),
+                                subtitle: Text(
+                                    DateTime.fromMillisecondsSinceEpoch(co.time)
+                                        .toString(),
+                                    style: TextStyle(color: color)),
+                                trailing: first
+                                    ? icon.animate().shake(
+                                        rotation: 0.2, duration: 1.seconds)
+                                    : icon)
+                            .animate()
+                            .moveY(begin: 50, end: 0, duration: 0.3.seconds)
+                            .fadeIn());
                   },
                   itemCount: d.length)),
           Text(ref.watch(counterInfoProvider)),
@@ -155,19 +170,11 @@ class _FuckCounterViewState extends ConsumerState<FuckCounterView> {
     }
   }
 
-  void handleAdd() async {
+  void handleAdd({bool quick = false, required String mark}) async {
     await ref.read(countersProvider.notifier).add(Counter(
         id: const Uuid().v4(),
-        mark: CounterX.IN,
-        note: await collectNote(),
-        time: DateTime.now().millisecondsSinceEpoch));
-  }
-
-  void handleAdd2() async {
-    await ref.read(countersProvider.notifier).add(Counter(
-        id: const Uuid().v4(),
-        mark: CounterX.OUT,
-        note: await collectNote(),
+        mark: mark,
+        note: quick ? "" : await collectNote(),
         time: DateTime.now().millisecondsSinceEpoch));
   }
 
@@ -218,24 +225,26 @@ class Counters extends _$Counters {
     final d = jsonDecode(s.getString("counter") ?? "[]") as List;
     final t =
         d.map((e) => Counter.fromJson(e as Map<String, dynamic>)).toList();
-    return t;
+    return t..sort((b, a) => a.time - b.time);
   }
 
   add(Counter counter) async {
-    state = AsyncData([...state.valueOrNull ?? [], counter]);
+    state = AsyncData(
+        [...state.valueOrNull ?? [], counter]..sort((b, a) => a.time - b.time));
     save();
   }
 
   remove(String id) async {
     state =
-        AsyncData(state.valueOrNull?.where((e) => e.id != id).toList() ?? []);
+        AsyncData((state.valueOrNull?.where((e) => e.id != id).toList() ?? []));
     save();
   }
 
   modify(Counter counter) async {
-    state = AsyncData(state.valueOrNull
+    state = AsyncData((state.valueOrNull
             ?.map((e) => e.id == counter.id ? counter : e)
-            .toList() ??
+            .toList()
+          ?..sort((b, a) => a.time - b.time)) ??
         []);
     save();
   }
