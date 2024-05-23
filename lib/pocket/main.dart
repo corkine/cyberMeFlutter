@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:cyberme_flutter/learn/game.dart';
 import 'package:cyberme_flutter/learn/snh.dart';
 import 'package:cyberme_flutter/pocket/app/body_mass.dart';
+import 'package:cyberme_flutter/pocket/app/counter.dart';
 import 'package:cyberme_flutter/pocket/app/esxi.dart';
 import 'package:cyberme_flutter/pocket/app/gitea.dart';
 import 'package:cyberme_flutter/pocket/app/link.dart';
@@ -163,6 +164,13 @@ final apps = {
     "addToContext": false,
     "icon": Icons.heart_broken_rounded
   },
+  "counter": {
+    "name": "Counter",
+    "view": (c) => const FuckCounterView(),
+    "addToMenu": true,
+    "addToContext": true,
+    "icon": Icons.countertops
+  }
 };
 
 class PocketHome extends StatefulWidget {
