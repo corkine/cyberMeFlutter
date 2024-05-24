@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:io';
 
 import 'package:cyberme_flutter/learn/game.dart';
@@ -10,10 +9,8 @@ import 'package:cyberme_flutter/pocket/app/gitea.dart';
 import 'package:cyberme_flutter/pocket/app/link.dart';
 import 'package:cyberme_flutter/pocket/app/location.dart';
 import 'package:cyberme_flutter/pocket/app/story.dart';
-import 'package:cyberme_flutter/util.dart';
 import 'app/blog.dart';
 import 'app/blue.dart';
-import 'app/cloth.dart';
 import 'app/gpt.dart';
 import 'app/medic.dart';
 import 'dashboard.dart' as dash;

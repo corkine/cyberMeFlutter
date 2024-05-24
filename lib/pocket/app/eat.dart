@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../config.dart';
 import '../models/eatItem.dart';
 
 class EatView extends StatefulWidget {
@@ -11,7 +10,6 @@ class EatView extends StatefulWidget {
 }
 
 class _EatViewState extends State<EatView> {
-
   @override
   void initState() {
     super.initState();

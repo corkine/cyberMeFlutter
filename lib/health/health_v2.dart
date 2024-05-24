@@ -5,6 +5,7 @@ import '../util.dart';
 import 'data.dart';
 import 'animate.dart' as go;
 
+// ignore: must_be_immutable
 class HealthCard extends StatefulWidget {
   final Info info;
 
@@ -420,8 +421,8 @@ class _HealthCardState extends State<HealthCard>
                   borderRadius: BorderRadius.circular(50),
                   color: const Color.fromRGBO(78, 118, 207, 1)),
               child: Padding(
-                padding:
-                    const EdgeInsets.only(left: 11, right: 8, top: 2, bottom: 3),
+                padding: const EdgeInsets.only(
+                    left: 11, right: 8, top: 2, bottom: 3),
                 child: Row(
                   children: [
                     GestureDetector(

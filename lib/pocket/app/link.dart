@@ -1,13 +1,9 @@
-import 'dart:convert';
-
 import 'package:clipboard/clipboard.dart';
 import 'package:cyberme_flutter/api/link.dart';
 import 'package:cyberme_flutter/pocket/app/util.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:http/http.dart';
 import 'package:url_launcher/url_launcher_string.dart';
-import 'package:uuid/uuid.dart';
 
 class QuickLinkView extends ConsumerStatefulWidget {
   const QuickLinkView({super.key});

@@ -39,6 +39,7 @@ class Util {
     var now = DateTime.now().toLocal();
 
     /// 暂时不显示 核酸已采样 字样
+    // ignore: dead_code
     if (false && now.hour >= 12) {
       return clock(justDate: true);
     } else {

@@ -4,6 +4,7 @@ import 'place.dart';
 import '../util.dart';
 import 'data.dart';
 
+// ignore: must_be_immutable
 class HealthCard extends StatefulWidget {
   final Info info;
 
@@ -48,7 +49,7 @@ class _HealthCardState extends State<HealthCard> {
 
   Positioned buildBlue() {
     return Positioned(
-      //蓝色背景
+        //蓝色背景
         top: 0,
         left: 0,
         right: 0,
@@ -79,7 +80,7 @@ class _HealthCardState extends State<HealthCard> {
               ),
               Text(
                 List.generate(widget.info.name.length - 1, (index) => "*")
-                    .reduce((value, element) => value + element) +
+                        .reduce((value, element) => value + element) +
                     widget.info.name[widget.info.name.length - 1],
                 style: Info.nameStyle,
               ),
@@ -103,7 +104,7 @@ class _HealthCardState extends State<HealthCard> {
               ),
               Text(
                 List.generate(widget.info.id.length - 4, (index) => "*")
-                    .reduce((value, element) => value + element) +
+                        .reduce((value, element) => value + element) +
                     widget.info.id.substring(widget.info.id.length - 4),
                 style: Info.nameStyle,
               ),
@@ -135,9 +136,9 @@ class _HealthCardState extends State<HealthCard> {
                             hintStyle: TextStyle(color: Colors.grey)),
                         initialValue: widget.info.name,
                         validator: (v) =>
-                        (v != null && v.isNotEmpty && v.length >= 2)
-                            ? null
-                            : "需要输入名字",
+                            (v != null && v.isNotEmpty && v.length >= 2)
+                                ? null
+                                : "需要输入名字",
                         onSaved: (e) => widget.info.name = e!,
                       ),
                       TextFormField(
@@ -147,9 +148,9 @@ class _HealthCardState extends State<HealthCard> {
                             hintStyle: TextStyle(color: Colors.grey)),
                         initialValue: widget.info.id,
                         validator: (v) =>
-                        (v != null && v.isNotEmpty && v.length == 18)
-                            ? null
-                            : "需要输入完整身份证号",
+                            (v != null && v.isNotEmpty && v.length == 18)
+                                ? null
+                                : "需要输入完整身份证号",
                         onSaved: (e) => widget.info.id = e!,
                       ),
                       TextFormField(
@@ -160,9 +161,9 @@ class _HealthCardState extends State<HealthCard> {
                         ),
                         initialValue: widget.info.lastTestTime,
                         validator: (v) =>
-                        (v != null && v.isNotEmpty && v.length >= 10)
-                            ? null
-                            : "输入非法",
+                            (v != null && v.isNotEmpty && v.length >= 10)
+                                ? null
+                                : "输入非法",
                         onSaved: (e) => widget.info.lastTestTime = e!,
                       ),
                       TextFormField(
@@ -173,9 +174,9 @@ class _HealthCardState extends State<HealthCard> {
                         ),
                         initialValue: widget.info.testInfo,
                         validator: (v) =>
-                        (v != null && v.isNotEmpty && v.length >= 2)
-                            ? null
-                            : "输入非法",
+                            (v != null && v.isNotEmpty && v.length >= 2)
+                                ? null
+                                : "输入非法",
                         onSaved: (e) => widget.info.testInfo = e!,
                       ),
                       TextFormField(
@@ -186,9 +187,9 @@ class _HealthCardState extends State<HealthCard> {
                         ),
                         initialValue: widget.info.lastVaccineDate,
                         validator: (v) =>
-                        (v != null && v.isNotEmpty && v.length >= 2)
-                            ? null
-                            : "输入非法",
+                            (v != null && v.isNotEmpty && v.length >= 2)
+                                ? null
+                                : "输入非法",
                         onSaved: (e) => widget.info.lastVaccineDate = e!,
                       ),
                       TextFormField(
@@ -198,14 +199,13 @@ class _HealthCardState extends State<HealthCard> {
                           hintStyle: TextStyle(color: Colors.grey),
                         ),
                         initialValue: widget.info.vaccineTimes.toString(),
-                        validator: (v) =>
-                        (v != null &&
-                            v.isNotEmpty &&
-                            int.tryParse(v) != null)
+                        validator: (v) => (v != null &&
+                                v.isNotEmpty &&
+                                int.tryParse(v) != null)
                             ? null
                             : "输入一个整数",
                         onSaved: (e) =>
-                        widget.info.vaccineTimes = int.parse(e!),
+                            widget.info.vaccineTimes = int.parse(e!),
                       ),
                       TextFormField(
                         decoration: const InputDecoration(
@@ -215,7 +215,7 @@ class _HealthCardState extends State<HealthCard> {
                         ),
                         initialValue: widget.info.checkPlace.toString(),
                         validator: (v) =>
-                        (v != null && v.isNotEmpty) ? null : "输入一个地址",
+                            (v != null && v.isNotEmpty) ? null : "输入一个地址",
                         onSaved: (e) => widget.info.checkPlace = e!,
                       )
                     ],
@@ -285,7 +285,7 @@ class _HealthCardState extends State<HealthCard> {
                   color: const Color.fromRGBO(78, 118, 207, 1)),
               child: Padding(
                 padding:
-                const EdgeInsets.only(left: 8, right: 8, top: 3, bottom: 3),
+                    const EdgeInsets.only(left: 8, right: 8, top: 3, bottom: 3),
                 child: Row(
                   children: [
                     GestureDetector(
@@ -323,8 +323,7 @@ class _HealthCardState extends State<HealthCard> {
                 ),
               ),
             ))
-      ]
-      ,
+      ],
     );
   }
 }
@@ -407,7 +406,7 @@ class _HealthInfoState extends State<HealthInfo> {
             ),
             Container(
               padding:
-              const EdgeInsets.only(left: 15, right: 15, top: 8, bottom: 8),
+                  const EdgeInsets.only(left: 15, right: 15, top: 8, bottom: 8),
               decoration: BoxDecoration(
                   color: blue,
                   borderRadius: const BorderRadius.all(Radius.circular(7)),
@@ -440,19 +439,19 @@ class _HealthInfoState extends State<HealthInfo> {
               decoration: BoxDecoration(
                   gradient: widget.info.testInfo.contains("48")
                       ? const LinearGradient(
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                      colors: [
-                        Color.fromRGBO(116, 186, 130, 1),
-                        Color.fromRGBO(158, 224, 138, 0.95)
-                      ])
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                          colors: [
+                              Color.fromRGBO(116, 186, 130, 1),
+                              Color.fromRGBO(158, 224, 138, 0.95)
+                            ])
                       : const LinearGradient(
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                      colors: [
-                        Color.fromRGBO(90, 136, 248, 1),
-                        Color.fromRGBO(129, 178, 247, 0.95)
-                      ]),
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                          colors: [
+                              Color.fromRGBO(90, 136, 248, 1),
+                              Color.fromRGBO(129, 178, 247, 0.95)
+                            ]),
                   borderRadius: const BorderRadius.all(Radius.circular(10)),
                   boxShadow: const [
                     BoxShadow(
@@ -469,15 +468,15 @@ class _HealthInfoState extends State<HealthInfo> {
                         padding: const EdgeInsets.only(right: 3),
                         child: widget.info.testInfo.contains("48")
                             ? Image.asset(
-                          "images/health/refresh3.png",
-                          width: 19,
-                          height: 19,
-                        )
+                                "images/health/refresh3.png",
+                                width: 19,
+                                height: 19,
+                              )
                             : Image.asset(
-                          "images/health/refresh.png",
-                          width: 19,
-                          height: 19,
-                        ),
+                                "images/health/refresh.png",
+                                width: 19,
+                                height: 19,
+                              ),
                       ),
                       const Text(
                         "核酸检测",
@@ -645,7 +644,7 @@ class _HealthInfoState extends State<HealthInfo> {
         Text(
           text,
           style:
-          TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: blue),
+              TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: blue),
         )
       ],
     );
@@ -684,10 +683,10 @@ class _HealthInfoState extends State<HealthInfo> {
                         fontWeight: FontWeight.w600,
                         color: Colors.black),
                     children: [
-                      TextSpan(
-                          text: Util.clock(justSeconds: true),
-                          style: const TextStyle(fontSize: 27))
-                    ]))),
+                  TextSpan(
+                      text: Util.clock(justSeconds: true),
+                      style: const TextStyle(fontSize: 27))
+                ]))),
         Positioned(
             top: 54,
             child: Image.asset(
@@ -697,28 +696,28 @@ class _HealthInfoState extends State<HealthInfo> {
             )),
         pickTime != null
             ? Positioned(
-          top: 275,
-          child: RichText(
-              text: TextSpan(
-                  text: "核酸 ",
-                  style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w400,
-                      color: Color.fromRGBO(28, 148, 77, 1)),
-                  children: [
-                    const TextSpan(
-                        text: "已采样",
-                        style: TextStyle(
-                            fontSize: 23, fontWeight: FontWeight.w600)),
-                    TextSpan(
-                        text: " " + Util.clock(justDate: true),
+                top: 275,
+                child: RichText(
+                    text: TextSpan(
+                        text: "核酸 ",
                         style: const TextStyle(
-                            fontSize: 19, fontWeight: FontWeight.w400))
-                  ])),
-        )
+                            fontSize: 18,
+                            fontWeight: FontWeight.w400,
+                            color: Color.fromRGBO(28, 148, 77, 1)),
+                        children: [
+                      const TextSpan(
+                          text: "已采样",
+                          style: TextStyle(
+                              fontSize: 23, fontWeight: FontWeight.w600)),
+                      TextSpan(
+                          text: " " + Util.clock(justDate: true),
+                          style: const TextStyle(
+                              fontSize: 19, fontWeight: FontWeight.w400))
+                    ])),
+              )
             : const SizedBox(
-          height: 0,
-        )
+                height: 0,
+              )
       ],
     );
   }

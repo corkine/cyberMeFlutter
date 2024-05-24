@@ -24,13 +24,13 @@ class Diary {
   String get preview {
     var first = content.split("\n")[0];
     if (first.isEmpty) return "暂无内容";
-    if (first.length > 90) return first.substring(0,90) + "...";
+    if (first.length > 90) return first.substring(0, 90) + "...";
     return first;
   }
 
   String? get previewPicture {
     var res = RegExp("!\\[.*?\\]\\((.*?)\\)").firstMatch(content);
-    var find =  res?.group(1);
+    var find = res?.group(1);
     if (find != null) find = find + "?x-oss-process=style/fit";
     return find;
   }
@@ -87,7 +87,7 @@ class Diary {
     String? content,
     String? createAt,
     String? updateAt,
-    dynamic? info,
+    dynamic info,
   }) {
     return Diary(
       id: id ?? this.id,
@@ -129,8 +129,8 @@ class DiaryManager {
     if (kDebugMode) {
       print("Loading from Diary... from user: ${config.user}");
     }
-    final Response r =
-        await get(Uri.parse(Config.diariesUrl), headers: config.cyberBase64Header);
+    final Response r = await get(Uri.parse(Config.diariesUrl),
+        headers: config.cyberBase64Header);
     final data = jsonDecode(r.body)["data"] as List;
     return data.map((diaryJson) => Diary.fromMap(diaryJson)).toList();
   }

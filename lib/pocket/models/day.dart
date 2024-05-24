@@ -1,3 +1,5 @@
+// ignore_for_file: non_constant_identifier_names
+
 import 'package:cyberme_flutter/pocket/day.dart';
 import 'package:flutter/foundation.dart';
 import 'package:cyberme_flutter/pocket/models/diary.dart' as real_diary;
@@ -53,8 +55,7 @@ class Express {
 
   @override
   String toString() {
-    return 'Express{' +
-        ' id: $id,' +
+    return 'Express{' ' id: $id,' +
         ' name: $name,' +
         ' status: $status,' +
         ' last_update: $lastUpdate,' +
@@ -161,13 +162,13 @@ class Work {
 
   @override
   String toString() {
-    return 'Work{' +
-        ' NeedWork: $NeedWork,' +
-        ' OffWork: $OffWork,' +
-        ' NeedMorningCheck: $NeedMorningCheck,' +
-        ' WorkHour: $WorkHour,' +
-        ' SignIn: $SignIn,' +
-        ' Policy: $Policy,' +
+    return 'Work{'
+        ' NeedWork: $NeedWork,'
+        ' OffWork: $OffWork,'
+        ' NeedMorningCheck: $NeedMorningCheck,'
+        ' WorkHour: $WorkHour,'
+        ' SignIn: $SignIn,'
+        ' Policy: $Policy,'
         '}';
   }
 
@@ -176,8 +177,8 @@ class Work {
     bool? OffWork,
     bool? NeedMorningCheck,
     double? WorkHour,
-    dynamic? SignIn,
-    dynamic? Policy,
+    dynamic SignIn,
+    dynamic Policy,
   }) {
     return Work(
       NeedWork: NeedWork ?? this.NeedWork,
@@ -249,8 +250,7 @@ class Fitness {
 
   @override
   String toString() {
-    return 'Fitness{' +
-        ' active: $active,' +
+    return 'Fitness{' ' active: $active,' +
         ' rest: $rest,' +
         ' goal-active: $goal_active,' +
         ' goal-cut: $goal_cut,' +
@@ -348,8 +348,7 @@ class Todo {
 
   @override
   String toString() {
-    return 'Todo{' +
-        ' modified_at: $modified_at,' +
+    return 'Todo{' ' modified_at: $modified_at,' +
         ' time: $time,' +
         ' finish_at: $finish_at,' +
         ' title: $title,' +

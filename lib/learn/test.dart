@@ -2,7 +2,6 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 class HomeMe extends StatelessWidget {
   const HomeMe({Key? key}) : super(key: key);
@@ -57,8 +56,7 @@ class HomeMe extends StatelessWidget {
                   },
                 ),
               ),
-            )
-            ,
+            ),
             Opacity(
               opacity: 0.7,
               child: ShaderMask(
@@ -106,12 +104,15 @@ class HomeMe extends StatelessWidget {
 
 class MyClipper extends CustomClipper<Path> {
   @override
-  ui.Path getClip(Size size) => Path()..lineTo(0, size.height) //左上角到左下角
-        ..quadraticBezierTo(size.width / 8, size.height / 4 , size.width, size.height)
-        ..lineTo(size.width, 0) //右下角到右上角
-        ..close();
+  ui.Path getClip(Size size) => Path()
+    ..lineTo(0, size.height) //左上角到左下角
+    ..quadraticBezierTo(
+        size.width / 8, size.height / 4, size.width, size.height)
+    ..lineTo(size.width, 0) //右下角到右上角
+    ..close();
   //for debug
-  @override bool shouldReclip(covariant CustomClipper<Path> oldClipper) => true;
+  @override
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => true;
 }
 
 class TestApp extends StatelessWidget {

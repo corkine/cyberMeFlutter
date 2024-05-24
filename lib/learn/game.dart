@@ -93,6 +93,7 @@ class _GameState extends State<Game> {
   }
 }
 
+// ignore: must_be_immutable
 class Puzzle extends StatefulWidget {
   StreamController typedEvent;
   StreamController scoreEvent;

@@ -129,6 +129,7 @@ class _SNHState extends State<SNH> {
   }
 }
 
+// ignore: must_be_immutable
 class IdolDetail extends StatelessWidget {
   Idol p;
 
@@ -143,7 +144,9 @@ class IdolDetail extends StatelessWidget {
           SliverAppBar(
             stretch: true,
             pinned: true,
-            leading: const BackButton(color: Colors.black,),
+            leading: const BackButton(
+              color: Colors.black,
+            ),
             expandedHeight: 300,
             backgroundColor: Colors.pink[100],
             automaticallyImplyLeading: true,
@@ -153,7 +156,8 @@ class IdolDetail extends StatelessWidget {
                 StretchMode.zoomBackground
               ],
               collapseMode: CollapseMode.parallax,
-              titlePadding: const EdgeInsets.only(right: 10, bottom: 10, left: 10),
+              titlePadding:
+                  const EdgeInsets.only(right: 10, bottom: 10, left: 10),
               title: Container(
                 alignment: Alignment.bottomCenter,
                 child: Container(
@@ -161,7 +165,8 @@ class IdolDetail extends StatelessWidget {
                   decoration: BoxDecoration(
                       color: Colors.pink[100]!.withOpacity(0.3),
                       borderRadius: BorderRadius.circular(2)),
-                  padding: const EdgeInsets.only(left: 10, right: 10, bottom: 3),
+                  padding:
+                      const EdgeInsets.only(left: 10, right: 10, bottom: 3),
                   child: Text(
                     p.name,
                     style: const TextStyle(color: Colors.black),
@@ -230,7 +235,8 @@ class MySPH extends SliverPersistentHeaderDelegate {
   final String title;
   final Color color;
   MySPH(this.title, this.color);
-  @override Widget build(
+  @override
+  Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
         alignment: Alignment.center,
@@ -242,9 +248,13 @@ class MySPH extends SliverPersistentHeaderDelegate {
           style: const TextStyle(fontSize: 22, color: Colors.white),
         ));
   }
-  @override double get maxExtent => 40;
-  @override double get minExtent => 40;
-  @override bool shouldRebuild(covariant MySPH oldDelegate) {
+
+  @override
+  double get maxExtent => 40;
+  @override
+  double get minExtent => 40;
+  @override
+  bool shouldRebuild(covariant MySPH oldDelegate) {
     return oldDelegate.title != title;
   }
 }

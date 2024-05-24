@@ -74,6 +74,7 @@ class _BlueViewState extends ConsumerState<ScoreView> {
                 })),
             const SizedBox(height: 5),
             todayData == null && false
+                // ignore: dead_code
                 ? Padding(
                     padding: const EdgeInsets.only(top: 20),
                     child: Text("${now.day} 号暂无记录"),
