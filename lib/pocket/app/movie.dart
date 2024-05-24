@@ -231,7 +231,7 @@ class _MovieViewState extends ConsumerState<MovieView> {
             child: Text(isWatched ? "标记为未观看" : "标记为已观看"))
       ];
     }
-    final sm = ScaffoldMessenger.of(context);
+    ScaffoldMessenger.of(context);
     showDialog(
         context: context,
         builder: (context) => Theme(

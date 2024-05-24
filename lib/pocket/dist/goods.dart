@@ -372,6 +372,7 @@ class GoodAdd extends StatefulWidget {
 
 class _GoodAddState extends State<GoodAdd> {
   final formKey = GlobalKey<FormState>();
+  // ignore: unused_field
   final _picker = ImagePicker();
   late MultipartRequest request;
   File? _image;

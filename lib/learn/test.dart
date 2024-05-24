@@ -115,6 +115,7 @@ class MyClipper extends CustomClipper<Path> {
   bool shouldReclip(covariant CustomClipper<Path> oldClipper) => true;
 }
 
+// ignore: must_be_immutable
 class TestApp extends StatelessWidget {
   TestApp({Key? key}) : super(key: key);
 
@@ -615,6 +616,7 @@ class _TestState extends State<Test> {
                               return MaterialPageRoute(builder: page("404"));
                             })));
                     return;
+                    // ignore: dead_code
                     Builder(
                       builder: (context) => const Text("Hello World"),
                     );
