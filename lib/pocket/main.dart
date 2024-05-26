@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cyberme_flutter/learn/flame/main.dart';
 import 'package:cyberme_flutter/learn/game.dart';
 import 'package:cyberme_flutter/learn/snh.dart';
 import 'package:cyberme_flutter/pocket/app/body_mass.dart';
@@ -167,6 +168,13 @@ final apps = {
     "addToMenu": true,
     "addToContext": true,
     "icon": Icons.countertops
+  },
+  "brickbreaker": {
+    "name": "BrickBreaker",
+    "view": (c) => const GameApp(),
+    "addToMenu": true,
+    "addToContext": false,
+    "icon": Icons.gamepad
   }
 };
 
