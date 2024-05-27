@@ -1,6 +1,7 @@
 import 'dart:io';
 
-import 'package:cyberme_flutter/learn/flame/main.dart';
+import 'package:cyberme_flutter/learn/flame/angrybirds/main.dart';
+import 'package:cyberme_flutter/learn/flame/brickbreaker.dart';
 import 'package:cyberme_flutter/learn/game.dart';
 import 'package:cyberme_flutter/learn/snh.dart';
 import 'package:cyberme_flutter/pocket/app/body_mass.dart';
@@ -148,9 +149,23 @@ final apps = {
     "addToContext": false,
     "icon": Icons.medical_services_sharp
   },
-  "game": {
+  "calcgame": {
     "name": "健康游戏",
     "view": (c) => const Game(info: null),
+    "addToMenu": true,
+    "addToContext": false,
+    "icon": Icons.gamepad
+  },
+  "brickbreaker": {
+    "name": "打砖块",
+    "view": (c) => const BrickBreakerGame(),
+    "addToMenu": true,
+    "addToContext": false,
+    "icon": Icons.gamepad
+  },
+  "angrybirds": {
+    "name": "愤怒的小鸟",
+    "view": (c) => const AngryBirdsGameSimple(),
     "addToMenu": true,
     "addToContext": false,
     "icon": Icons.gamepad
@@ -168,13 +183,6 @@ final apps = {
     "addToMenu": true,
     "addToContext": true,
     "icon": Icons.countertops
-  },
-  "brickbreaker": {
-    "name": "BrickBreaker",
-    "view": (c) => const GameApp(),
-    "addToMenu": true,
-    "addToContext": false,
-    "icon": Icons.gamepad
   }
 };
 

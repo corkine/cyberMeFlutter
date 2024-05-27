@@ -318,14 +318,14 @@ class OverlayScreen extends StatelessWidget {
   }
 }
 
-class GameApp extends StatefulWidget {
-  const GameApp({super.key});
+class BrickBreakerGame extends StatefulWidget {
+  const BrickBreakerGame({super.key});
 
   @override
-  State<GameApp> createState() => _GameAppState();
+  State<BrickBreakerGame> createState() => _BrickBreakerGameState();
 }
 
-class _GameAppState extends State<GameApp> {
+class _BrickBreakerGameState extends State<BrickBreakerGame> {
   late final BrickBreaker game;
   @override
   void initState() {
