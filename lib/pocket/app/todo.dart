@@ -434,9 +434,9 @@ class _TodoViewState extends ConsumerState<TodoView>
                                 final selectedDate = await showDatePicker(
                                     context: context,
                                     firstDate:
-                                        date.add(const Duration(days: -3)),
+                                        date.add(const Duration(days: -300)),
                                     lastDate:
-                                        date.add(const Duration(days: 3)));
+                                        date.add(const Duration(days: 300)));
                                 if (selectedDate != null) {
                                   setState(() => date = selectedDate);
                                 }
