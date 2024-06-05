@@ -55,7 +55,7 @@ class _TodoViewState extends ConsumerState<TodoView>
     final item = listener.itemPositions.value.lastOrNull;
     final idx = item?.index ?? 0.0;
     if ((idx ~/ 2) >= todoLength - 1 && lastIdx != idx) {
-      print("bottom reached!");
+      debugPrint("bottom reached!");
       ref.read(todoDBProvider.notifier).fetchNext();
     }
     lastIdx = idx;
@@ -66,11 +66,14 @@ class _TodoViewState extends ConsumerState<TodoView>
 
   @override
   Widget build(BuildContext context) {
+    final lists = ref.watch(todoListsProvider);
+    if (selectLists.isEmpty) {
+      selectLists = Set.from(lists);
+    }
     final todos = (ref.watch(todoDBProvider).valueOrNull ?? [])
-        .where((todo) => selectLists.isEmpty || selectLists.contains(todo.list))
+        .where((todo) => selectLists.contains(todo.list))
         .toList();
     todoLength = todos.length;
-    final lists = ref.watch(todoListsProvider);
     return Scaffold(
         appBar: buildAppBar(todos, lists),
         body: Stack(children: [buildListView(todos), buildListNameBar(lists)]));
@@ -108,7 +111,7 @@ class _TodoViewState extends ConsumerState<TodoView>
             (todo.date?.year.toString() ?? "") +
             (todo.date?.month.toString() ?? ""),
         groupSeparatorBuilder: (todo) => Padding(
-            padding: const EdgeInsets.only(left: 15, top: 2, bottom: 2),
+            padding: const EdgeInsets.only(left: 13, top: 2, bottom: 2),
             child: Text(
                 DateFormat("yyyy年M月").format(todo.date ?? DateTime.now()),
                 style: const TextStyle(fontWeight: FontWeight.bold))),
@@ -125,18 +128,30 @@ class _TodoViewState extends ConsumerState<TodoView>
           const color = Colors.black;
           return Dismissible(
               key: ValueKey(t),
-              child: ListTile(
-                  title: Text(completed ? t.title ?? "" : "${t.title} ⚠",
-                      style: const TextStyle(fontSize: 15, color: color)),
-                  subtitle: Padding(
-                      padding: const EdgeInsets.only(top: 5),
-                      child: DefaultTextStyle(
-                          style: const TextStyle(fontSize: 12, color: color),
-                          child: Row(children: [
-                            Text(t.list ?? ""),
-                            const Spacer(),
-                            buildRichDate(t.date)
-                          ])))),
+              child: Padding(
+                  padding: const EdgeInsets.only(
+                      left: 13, right: 13, bottom: 7, top: 7),
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.max,
+                      children: [
+                        Text(completed ? t.title ?? "" : "${t.title} ⚠",
+                            style: const TextStyle(
+                                fontSize: 15,
+                                color: color,
+                                height: 1.3,
+                                overflow: TextOverflow.fade)),
+                        Padding(
+                            padding: const EdgeInsets.only(top: 2),
+                            child: DefaultTextStyle(
+                                style:
+                                    const TextStyle(fontSize: 12, color: color),
+                                child: Row(children: [
+                                  Text(t.list ?? ""),
+                                  const Spacer(),
+                                  buildRichDate(t.date)
+                                ])))
+                      ])),
               confirmDismiss: (direction) async {
                 final ans = direction == DismissDirection.endToStart
                     ? await ref.read(todoDBProvider.notifier).deleteTodo(
