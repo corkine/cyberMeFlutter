@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:clipboard/clipboard.dart';
 import 'package:cyberme_flutter/api/gpt.dart';
 import 'package:cyberme_flutter/api/todo.dart';
