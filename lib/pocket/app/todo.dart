@@ -259,6 +259,17 @@ class _TodoViewState extends ConsumerState<TodoView>
                 : lastWeek
                     ? Colors.blueGrey
                     : Colors.grey);
+    if (thisWeek) {
+      if (isToday) {
+        return Text("${df.format(date)} 今天", style: style);
+      } else if (date.year == today.year && date.month == today.month) {
+        if (date.day + 1 == today.day) {
+          return Text("${df.format(date)} 昨天", style: style);
+        } else if (date.day + 2 == today.day) {
+          return Text("${df.format(date)} 前天", style: style);
+        }
+      }
+    }
     switch (date.weekday) {
       case 1:
         return Text("${df.format(date)} 周一", style: style);
