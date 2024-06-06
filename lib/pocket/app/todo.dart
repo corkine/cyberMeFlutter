@@ -110,14 +110,25 @@ class _TodoViewState extends ConsumerState<TodoView>
         groupBy: (todo) =>
             (todo.date?.year.toString() ?? "") +
             (todo.date?.month.toString() ?? ""),
-        groupSeparatorBuilder: (todo) => Padding(
-            padding: const EdgeInsets.only(left: 13, top: 2, bottom: 2),
-            child: Text(
-                DateFormat("yyyy年M月").format(todo.date ?? DateTime.now()),
-                style: const TextStyle(fontWeight: FontWeight.bold))),
+        groupSeparatorBuilder: (todo) => Container(
+            color: Theme.of(context).colorScheme.surfaceContainer,
+            child: Padding(
+                padding: const EdgeInsets.only(left: 13, top: 2, bottom: 2),
+                child: Text(
+                    DateFormat("yyyy年M月").format(todo.date ?? DateTime.now()),
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.primary)))),
         order: StickyGroupedListOrder.DESC,
-        itemComparator: (a, b) =>
-            a.date?.compareTo(b.date ?? DateTime.now()) ?? 0,
+        itemComparator: (a, b) {
+          final ad = a.date ?? DateTime.now();
+          final bd = b.date ?? DateTime.now();
+          if (ad == bd) {
+            return b.list?.compareTo(a.list ?? "") ?? 0;
+          } else {
+            return ad.compareTo(bd);
+          }
+        },
         stickyHeaderBackgroundColor:
             Theme.of(context).colorScheme.surfaceContainer,
         itemPositionsListener: listener,
