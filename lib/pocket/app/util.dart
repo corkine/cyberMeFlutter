@@ -1,6 +1,15 @@
 import 'package:cyberme_flutter/main.dart';
 import 'package:flutter/material.dart';
 
+showModal(BuildContext context, Widget widget) {
+  showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+          initialChildSize: 0.8, builder: (context, sc) => widget));
+}
+
 showDebugBar(BuildContext context, dynamic e, {bool withPop = false}) {
   if (withPop) {
     Navigator.of(context).pop();

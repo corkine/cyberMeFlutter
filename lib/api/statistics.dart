@@ -61,13 +61,16 @@ Future<(List<ServiceStatus>, String)> getServiceStatus(
   return (data.$1 ?? [], data.$2);
 }
 
-Future<String> setServiceStatus(String svcPath, bool support) async {
+Future<String> setServiceStatus(String svcPath, bool support,
+    {String? msg}) async {
   try {
     const url = "$endpoint/cyber/service/change";
-    debugPrint("request from $url A$svcPath B$support");
+    debugPrint("request from $url A$svcPath B$support $msg");
     final r = await post(Uri.parse(url),
         headers: config.cyberBase64JsonContentHeader,
-        body: jsonEncode({"key": svcPath, "support": support}));
+        body: jsonEncode(msg == null
+            ? {"key": svcPath, "support": support}
+            : {"key": svcPath, "support": support, "message": msg}));
     final d = jsonDecode(r.body);
     debugPrint("request from $url, data: $d");
     return d["message"]?.toString() ?? "未知错误";

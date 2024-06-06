@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:clipboard/clipboard.dart';
 import 'package:cyberme_flutter/api/track.dart';
 import 'package:cyberme_flutter/main.dart';
+import 'package:cyberme_flutter/pocket/app/util.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -55,13 +56,11 @@ class _TrackViewState extends ConsumerState<TrackView> {
     final appBar =
         AppBar(centerTitle: false, title: const Text("Track!Me"), actions: [
       IconButton(
-          onPressed: () => showModalBottomSheet(
-              context: context,
-              builder: (context) => const ServiceView(useSheet: true)),
+          onPressed: () =>
+              showModal(context, const ServiceView(useSheet: true)),
           icon: const Icon(Icons.dashboard)),
       IconButton(
-          onPressed: () => showModalBottomSheet(
-              context: context, builder: (context) => const StatisticsView()),
+          onPressed: () => showModal(context, const StatisticsView()),
           icon: const Icon(Icons.leaderboard)),
       IconButton(
           onPressed: () =>
@@ -696,9 +695,7 @@ class ServiceView extends ConsumerWidget {
                 final item = s[i];
                 handleShowDetail() {
                   if (useSheet) {
-                    showModalBottomSheet(
-                        context: context,
-                        builder: (context) => ServiceDetails(item));
+                    showModal(context, ServiceDetails(item));
                   } else {
                     Navigator.of(context).push(MaterialPageRoute(
                         builder: (c) => ServiceDetails(item)));
@@ -766,7 +763,7 @@ class _ServiceDetailsState extends ConsumerState<ServiceDetails> {
       showDialog(
           context: context,
           builder: (c) => AlertDialog(
-                  backgroundColor: appThemeData.colorScheme.background,
+                  backgroundColor: appThemeData.colorScheme.surface,
                   title: Text("操作结果",
                       style: appThemeData.textTheme.headlineLarge
                           ?.copyWith(fontSize: 20)),
@@ -781,7 +778,7 @@ class _ServiceDetailsState extends ConsumerState<ServiceDetails> {
     showDialog(
         context: context,
         builder: (c) => AlertDialog(
-                backgroundColor: appThemeData.colorScheme.background,
+                backgroundColor: appThemeData.colorScheme.surface,
                 title: Text("确认操作",
                     style: appThemeData.textTheme.headlineLarge
                         ?.copyWith(fontSize: 20, color: Colors.red)),
@@ -796,12 +793,56 @@ class _ServiceDetailsState extends ConsumerState<ServiceDetails> {
                 ]));
   }
 
+  setNewMessage(BuildContext context, WidgetRef ref) async {
+    final tc = TextEditingController(text: status.endOfSupportMessage ?? "");
+    handleAction() async {
+      Navigator.of(context).pop();
+      if (tc.text.isEmpty) {
+        await showSimpleMessage(context,
+            content: "消息为空，已取消操作。", useSnackBar: true);
+      } else {
+        final msg = await setServiceStatus(status.path!, !status.endOfSupport,
+            msg: tc.text);
+        final s = await ref.refresh(getServiceStatusProvider.future);
+        for (var element in s.$1) {
+          if (element.path == status.path) {
+            status = element;
+            setState(() {});
+            break;
+          }
+        }
+        await showSimpleMessage(context, content: msg);
+      }
+    }
+
+    showDialog(
+        context: context,
+        builder: (c) => Theme(
+            data: appThemeData,
+            child: AlertDialog(
+                backgroundColor: appThemeData.colorScheme.surface,
+                content: TextField(
+                    controller: tc,
+                    maxLines: 10,
+                    decoration: const InputDecoration(label: Text("模板消息"))),
+                actions: [
+                  TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text("取消")),
+                  TextButton(onPressed: handleAction, child: const Text("确认"))
+                ])));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Theme(
         data: appThemeData,
         child: Scaffold(
             appBar: AppBar(title: Text(status.serviceName ?? "未知服务"), actions: [
+              IconButton(
+                  onPressed: () => setNewMessage(context, ref),
+                  icon:
+                      const Icon(Icons.message, color: Colors.white, size: 16)),
               IconButton(
                   onPressed: () => setStatusToggle(context, ref),
                   icon: status.endOfSupport
@@ -828,7 +869,8 @@ class _ServiceDetailsState extends ConsumerState<ServiceDetails> {
                           "当前版本 ${status.version}\n建议版本 ${status.suggestVersion}"),
                       Text("运行路径 ${status.path}"),
                       Text("支持状态 ${status.endOfSupport ? "已停止" : "运行中"}"),
-                      Text("模板消息 ${status.endOfSupportMessage ?? "无"}")
+                      Text("模板消息 ${status.endOfSupportMessage ?? "无"}"),
+                      const SizedBox(height: 20)
                     ])))));
   }
 }
