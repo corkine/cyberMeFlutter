@@ -1,5 +1,6 @@
 import 'package:cyberme_flutter/main.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 showModal(BuildContext context, Widget widget) {
   showModalBottomSheet(
@@ -76,5 +77,54 @@ Future<bool> showSimpleMessage(BuildContext context,
                   ),
                 )) ??
         false;
+  }
+}
+
+Widget buildRichDate(DateTime? date,
+    {required DateTime today,
+    required DateTime weekDayOne,
+    required DateTime lastWeekDayOne}) {
+  if (date == null) return const Text("未知日期");
+  final df = DateFormat("yyyy-MM-dd");
+  bool isToday = !today.isAfter(date);
+  bool thisWeek = !weekDayOne.isAfter(date);
+  bool lastWeek = !thisWeek && !lastWeekDayOne.isAfter(date);
+  final color = isToday
+      ? Colors.lightGreen
+      : thisWeek
+          ? Colors.lightGreen
+          : lastWeek
+              ? Colors.blueGrey
+              : Colors.grey;
+  final style = TextStyle(
+      decoration: isToday ? TextDecoration.underline : null,
+      decorationColor: color,
+      color: color);
+  if (thisWeek) {
+    if (isToday) {
+      return Text("${df.format(date)} 今天", style: style);
+    } else if (date.year == today.year && date.month == today.month) {
+      if (date.day + 1 == today.day) {
+        return Text("${df.format(date)} 昨天", style: style);
+      } else if (date.day + 2 == today.day) {
+        return Text("${df.format(date)} 前天", style: style);
+      }
+    }
+  }
+  switch (date.weekday) {
+    case 1:
+      return Text("${df.format(date)} 周一", style: style);
+    case 2:
+      return Text("${df.format(date)} 周二", style: style);
+    case 3:
+      return Text("${df.format(date)} 周三", style: style);
+    case 4:
+      return Text("${df.format(date)} 周四", style: style);
+    case 5:
+      return Text("${df.format(date)} 周五", style: style);
+    case 6:
+      return Text("${df.format(date)} 周六", style: style);
+    default:
+      return Text("${df.format(date)} 周日", style: style);
   }
 }

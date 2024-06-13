@@ -4,6 +4,7 @@ import 'package:cyberme_flutter/learn/flame/angrybirds/main.dart';
 import 'package:cyberme_flutter/learn/flame/brickbreaker.dart';
 import 'package:cyberme_flutter/learn/game.dart';
 import 'package:cyberme_flutter/learn/snh.dart';
+import 'package:cyberme_flutter/pocket/app/backup.dart';
 import 'package:cyberme_flutter/pocket/app/body_mass.dart';
 import 'package:cyberme_flutter/pocket/app/counter.dart';
 import 'package:cyberme_flutter/pocket/app/esxi.dart';
@@ -183,6 +184,13 @@ final apps = {
     "addToMenu": true,
     "addToContext": true,
     "icon": Icons.countertops
+  },
+  "backup": {
+    "name": "Backup",
+    "view": (c) => const BackupView(),
+    "addToMenu": true,
+    "addToContext": true,
+    "icon": Icons.backup
   }
 };
 
