@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:cyberme_flutter/api/basic.dart';
 import 'package:flutter/material.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:http/http.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -9,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../pocket/config.dart';
 import '../pocket/models/todo.dart';
 
+part 'todo.freezed.dart';
 part 'todo.g.dart';
 
 @riverpod
@@ -136,18 +138,29 @@ List<String> todoLists(TodoListsRef ref) {
       .toList(growable: false);
 }
 
+@freezed
+class TodoSetting with _$TodoSetting {
+  factory TodoSetting(
+      {@Default(false) bool useListSort,
+      @Default(false) bool useWeekGroup}) = _TodoSetting;
+
+  factory TodoSetting.fromJson(Map<String, dynamic> json) =>
+      _$TodoSettingFromJson(json);
+}
+
 @riverpod
-class TodoLocal extends _$TodoLocal {
+class TodoSettings extends _$TodoSettings {
+  final key = "todo-setting";
   @override
-  FutureOr<String> build() async {
+  FutureOr<TodoSetting> build() async {
     final s = await SharedPreferences.getInstance();
-    final url = s.getString("todo-script-path") ?? "";
-    return url;
+    return TodoSetting.fromJson(jsonDecode(s.getString(key) ?? "{}"));
   }
 
-  Future updatePath(String newPath) async {
+  Future save(TodoSetting Function(TodoSetting) trans) async {
     final s = await SharedPreferences.getInstance();
-    await s.setString("todo-script-path", newPath);
-    state = AsyncData(newPath);
+    final n = trans(state.valueOrNull ?? TodoSetting());
+    await s.setString(key, jsonEncode(n.toJson()));
+    state = AsyncData(n);
   }
 }

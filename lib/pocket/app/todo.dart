@@ -66,6 +66,7 @@ class _TodoViewState extends ConsumerState<TodoView>
 
   @override
   Widget build(BuildContext context) {
+    final s = ref.watch(todoSettingsProvider).valueOrNull ?? TodoSetting();
     final lists = ref.watch(todoListsProvider);
     if (selectLists.isEmpty) {
       selectLists = Set.from(lists);
@@ -75,11 +76,12 @@ class _TodoViewState extends ConsumerState<TodoView>
         .toList();
     todoLength = todos.length;
     return Scaffold(
-        appBar: buildAppBar(todos, lists),
-        body: Stack(children: [buildListView(todos), buildListNameBar(lists)]));
+        appBar: buildAppBar(s, todos, lists),
+        body: Stack(
+            children: [buildListView(s, todos), buildListNameBar(lists)]));
   }
 
-  AppBar buildAppBar(List<Todo> todos, List<String> lists) {
+  AppBar buildAppBar(TodoSetting s, List<Todo> todos, List<String> lists) {
     // final setting = IconButton(
     //     onPressed: handleSetting,
     //     icon: ref.read(todoLocalProvider).value?.isEmpty ?? true
@@ -92,20 +94,22 @@ class _TodoViewState extends ConsumerState<TodoView>
     //         onPressed: handleAddDayReport,
     //         icon: const Icon(Icons.description_outlined)));
     final sortByList = Tooltip(
-      waitDuration: const Duration(milliseconds: 400),
-      message: "提醒事项按照列表排序",
-      child: IconButton(
-          onPressed: () => setState(() => _sortByList = !_sortByList),
-          icon: Icon(_sortByList ? Icons.flag : Icons.flag_outlined)),
-    );
+        waitDuration: const Duration(milliseconds: 400),
+        message: "提醒事项按照列表排序",
+        child: IconButton(
+            onPressed: () => ref
+                .read(todoSettingsProvider.notifier)
+                .save((t) => t.copyWith(useListSort: !s.useListSort)),
+            icon: Icon(s.useListSort ? Icons.flag : Icons.flag_outlined)));
     final groupByMode = Tooltip(
-      waitDuration: const Duration(milliseconds: 400),
-      message: "按照周分组",
-      child: IconButton(
-          onPressed: () => setState(() => _useGroupByWeek = !_useGroupByWeek),
-          icon: Icon(
-              _useGroupByWeek ? Icons.view_week : Icons.view_week_outlined)),
-    );
+        waitDuration: const Duration(milliseconds: 400),
+        message: "按照周分组",
+        child: IconButton(
+            onPressed: () => ref
+                .read(todoSettingsProvider.notifier)
+                .save((t) => t.copyWith(useWeekGroup: !s.useWeekGroup)),
+            icon: Icon(
+                s.useWeekGroup ? Icons.view_week : Icons.view_week_outlined)));
     final reportBtn = Tooltip(
         waitDuration: const Duration(milliseconds: 400),
         message: "GPT编周报",
@@ -122,8 +126,6 @@ class _TodoViewState extends ConsumerState<TodoView>
 
   final _dfGroup = DateFormat("yyyyMM");
   final _dfDay = DateFormat("yyyy年M月");
-  var _sortByList = false;
-  var _useGroupByWeek = false;
 
   int _weekOfYear(DateTime date) {
     // 获取该日期的第一天
@@ -161,15 +163,16 @@ class _TodoViewState extends ConsumerState<TodoView>
                   fontWeight: FontWeight.bold,
                   color: Theme.of(context).colorScheme.primary))));
 
-  StickyGroupedListView<Todo, String> buildListView(List<Todo> todos) {
+  StickyGroupedListView<Todo, String> buildListView(
+      TodoSetting s, List<Todo> todos) {
     return StickyGroupedListView<Todo, String>(
         elements: todos,
-        groupBy: _useGroupByWeek ? _groupByWeek : _groupBy,
+        groupBy: s.useWeekGroup ? _groupByWeek : _groupBy,
         groupSeparatorBuilder:
-            _useGroupByWeek ? _groupBySeparatorWeek : _groupBySeparator,
+            s.useWeekGroup ? _groupBySeparatorWeek : _groupBySeparator,
         order: StickyGroupedListOrder.DESC,
         itemComparator: (a, b) {
-          if (_sortByList) {
+          if (s.useListSort) {
             final al = a.list ?? "";
             final bl = b.list ?? "";
             if (al != bl) {
@@ -503,39 +506,6 @@ class _TodoViewState extends ConsumerState<TodoView>
         builder: (context) {
           return GPTWeekPlanView(res);
         });
-  }
-
-  void handleAddDayReport() async {
-    final url = await ref.read(todoLocalProvider.future);
-    runScript(url);
-  }
-
-  void handleSetting() async {
-    final url = await ref.watch(todoLocalProvider.future);
-    final newUrl = TextEditingController(text: url);
-    final res = await showDialog<bool>(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-              title: const Text("设置脚本"),
-              content: TextField(
-                  decoration: const InputDecoration(helperText: "脚本路径"),
-                  controller: newUrl),
-              actions: [
-                TextButton(
-                    onPressed: () => Navigator.of(context).pop(false),
-                    child: const Text("取消")),
-                TextButton(
-                    onPressed: () => Navigator.of(context).pop(true),
-                    child: const Text("确定"))
-              ]);
-        });
-    if (res == true) {
-      await ref.read(todoLocalProvider.notifier).updatePath(newUrl.text);
-      await showSimpleMessage(context, content: "已更新脚本路径", useSnackBar: true);
-    } else {
-      await showSimpleMessage(context, content: "脚本未更新", useSnackBar: true);
-    }
   }
 }
 
