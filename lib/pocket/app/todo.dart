@@ -375,13 +375,14 @@ class _TodoViewState extends ConsumerState<TodoView>
     }
 
     final node = FocusNode();
-    await showDialog(
+    await showModalBottomSheet(
         context: context,
         builder: (context) {
           return StatefulBuilder(builder: (context, setState) {
-            return AlertDialog(
-                title: const Text("添加待办事项"),
-                content: Column(
+            return Padding(
+                padding: const EdgeInsets.only(
+                    top: 20, bottom: 20, left: 15, right: 15),
+                child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
@@ -395,42 +396,45 @@ class _TodoViewState extends ConsumerState<TodoView>
                         controller: title,
                       ),
                       const SizedBox(height: 10),
-                      PopupMenuButton(
-                          initialValue: selectList,
-                          tooltip: "",
-                          child: Text("添加到 $selectList"),
-                          itemBuilder: (context) => lists
-                              .map((e) =>
-                                  PopupMenuItem(child: Text(e), value: e))
-                              .toList(),
-                          onSelected: (v) => setState(() => selectList = v)),
-                      const SizedBox(height: 5),
-                      Row(
-                        children: [
-                          InkWell(
-                              onTap: () async {
-                                final selectedDate = await showDatePicker(
-                                    context: context,
-                                    firstDate:
-                                        date.add(const Duration(days: -30)),
-                                    lastDate:
-                                        date.add(const Duration(days: 300)));
-                                if (selectedDate != null) {
-                                  setState(() => date = selectedDate);
-                                }
-                              },
-                              child: Text(
-                                  "截止于 ${DateFormat("yyyy-MM-dd").format(date)}")),
-                          const SizedBox(width: 5),
-                          TextButton(
+                      Wrap(runSpacing: 5, spacing: 5, children: [
+                        for (var list in lists)
+                          RawChip(
+                              label: Text(list),
+                              selected: list == selectList,
                               onPressed: () {
-                                setState(() => date = DateTime.now()
-                                    .add(const Duration(days: -1)));
-                                FocusScope.of(context).requestFocus(node);
-                              },
-                              child: const Text("昨天")),
-                        ],
-                      ),
+                                if (list.contains("工作")) {
+                                  markFinished = true;
+                                } else {
+                                  markFinished = false;
+                                }
+                                setState(() => selectList = list);
+                              })
+                      ]),
+                      const SizedBox(height: 5),
+                      Row(children: [
+                        InkWell(
+                            onTap: () async {
+                              final selectedDate = await showDatePicker(
+                                  context: context,
+                                  firstDate:
+                                      date.add(const Duration(days: -30)),
+                                  lastDate:
+                                      date.add(const Duration(days: 300)));
+                              if (selectedDate != null) {
+                                setState(() => date = selectedDate);
+                              }
+                            },
+                            child: Text(
+                                "截止于 ${DateFormat("yyyy-MM-dd").format(date)}")),
+                        const SizedBox(width: 5),
+                        TextButton(
+                            onPressed: () {
+                              setState(() => date =
+                                  DateTime.now().add(const Duration(days: -1)));
+                              FocusScope.of(context).requestFocus(node);
+                            },
+                            child: const Text("昨天"))
+                      ]),
                       const SizedBox(height: 3),
                       Transform.translate(
                           offset: const Offset(-8, 0),
@@ -440,14 +444,12 @@ class _TodoViewState extends ConsumerState<TodoView>
                                 onChanged: (v) =>
                                     setState(() => markFinished = v!)),
                             const Text("标记为已完成")
-                          ]))
-                    ]),
-                actions: [
-                  TextButton(
-                      onPressed: () => Navigator.of(context).pop(false),
-                      child: const Text("取消")),
-                  TextButton(onPressed: handleAdd, child: const Text("确定"))
-                ]);
+                          ])),
+                      Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                        TextButton(
+                            onPressed: handleAdd, child: const Text("确定"))
+                      ])
+                    ]));
           });
         });
   }
