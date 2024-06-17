@@ -146,7 +146,7 @@ final apps = {
   "medic": {
     "name": "药物管理",
     "view": (c) => const MedicView(),
-    "addToMenu": true,
+    "addToMenu": false,
     "addToContext": false,
     "icon": Icons.medical_services_sharp
   },

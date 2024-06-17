@@ -80,17 +80,32 @@ class _TodoViewState extends ConsumerState<TodoView>
   }
 
   AppBar buildAppBar(List<Todo> todos, List<String> lists) {
-    final setting = IconButton(
-        onPressed: handleSetting,
-        icon: ref.read(todoLocalProvider).value?.isEmpty ?? true
-            ? const Icon(Icons.settings_outlined)
-            : const Icon(Icons.settings));
-    final dayReportBtn = Tooltip(
-        waitDuration: const Duration(milliseconds: 400),
-        message: "运行日报脚本",
-        child: IconButton(
-            onPressed: handleAddDayReport,
-            icon: const Icon(Icons.description_outlined)));
+    // final setting = IconButton(
+    //     onPressed: handleSetting,
+    //     icon: ref.read(todoLocalProvider).value?.isEmpty ?? true
+    //         ? const Icon(Icons.settings_outlined)
+    //         : const Icon(Icons.settings));
+    // final dayReportBtn = Tooltip(
+    //     waitDuration: const Duration(milliseconds: 400),
+    //     message: "运行日报脚本",
+    //     child: IconButton(
+    //         onPressed: handleAddDayReport,
+    //         icon: const Icon(Icons.description_outlined)));
+    final sortByList = Tooltip(
+      waitDuration: const Duration(milliseconds: 400),
+      message: "提醒事项按照列表排序",
+      child: IconButton(
+          onPressed: () => setState(() => _sortByList = !_sortByList),
+          icon: Icon(_sortByList ? Icons.flag : Icons.flag_outlined)),
+    );
+    final groupByMode = Tooltip(
+      waitDuration: const Duration(milliseconds: 400),
+      message: "按照周分组",
+      child: IconButton(
+          onPressed: () => setState(() => _useGroupByWeek = !_useGroupByWeek),
+          icon: Icon(
+              _useGroupByWeek ? Icons.view_week : Icons.view_week_outlined)),
+    );
     final reportBtn = Tooltip(
         waitDuration: const Duration(milliseconds: 400),
         message: "GPT编周报",
@@ -101,26 +116,66 @@ class _TodoViewState extends ConsumerState<TodoView>
         IconButton(onPressed: syncTodo, icon: const Icon(Icons.sync));
     final addTask = IconButton(
         onPressed: () => addNewTask(lists), icon: const Icon(Icons.add));
-    return AppBar(actions: [addTask, dayReportBtn, reportBtn, reload, setting]);
+    return AppBar(
+        actions: [addTask, reportBtn, reload, sortByList, groupByMode]);
   }
+
+  final _dfGroup = DateFormat("yyyyMM");
+  final _dfDay = DateFormat("yyyy年M月");
+  var _sortByList = false;
+  var _useGroupByWeek = false;
+
+  int _weekOfYear(DateTime date) {
+    // 获取该日期的第一天
+    DateTime firstDayOfYear = DateTime(date.year, 1, 1);
+    // 计算该日期是第几天
+    int dayOfYear = date.difference(firstDayOfYear).inDays + 1;
+    // 计算星期几
+    int dayOfWeek = date.weekday;
+    // 计算第几周
+    int weekOfYear = ((dayOfYear - dayOfWeek + 10) / 7).floor();
+    return weekOfYear;
+  }
+
+  String _groupBy(todo) => _dfGroup.format(todo.date ?? DateTime.now());
+
+  Widget _groupBySeparator(todo) => Container(
+      color: Theme.of(context).colorScheme.surfaceContainer,
+      child: Padding(
+          padding: const EdgeInsets.only(left: 13, top: 2, bottom: 2),
+          child: Text(_dfDay.format(todo.date ?? DateTime.now()),
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.primary))));
+
+  String _groupByWeek(todo) =>
+      _weekOfYear(todo.date ?? DateTime.now()).toString().padLeft(3, '0');
+
+  Widget _groupBySeparatorWeek(todo) => Container(
+      color: Theme.of(context).colorScheme.surfaceContainer,
+      child: Padding(
+          padding: const EdgeInsets.only(left: 13, top: 2, bottom: 2),
+          child: Text(
+              "${todo.date?.year ?? DateTime.now().year}年第${_weekOfYear(todo.date ?? DateTime.now())}周",
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.primary))));
 
   StickyGroupedListView<Todo, String> buildListView(List<Todo> todos) {
     return StickyGroupedListView<Todo, String>(
         elements: todos,
-        groupBy: (todo) =>
-            (todo.date?.year.toString() ?? "") +
-            (todo.date?.month.toString() ?? ""),
-        groupSeparatorBuilder: (todo) => Container(
-            color: Theme.of(context).colorScheme.surfaceContainer,
-            child: Padding(
-                padding: const EdgeInsets.only(left: 13, top: 2, bottom: 2),
-                child: Text(
-                    DateFormat("yyyy年M月").format(todo.date ?? DateTime.now()),
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.primary)))),
+        groupBy: _useGroupByWeek ? _groupByWeek : _groupBy,
+        groupSeparatorBuilder:
+            _useGroupByWeek ? _groupBySeparatorWeek : _groupBySeparator,
         order: StickyGroupedListOrder.DESC,
         itemComparator: (a, b) {
+          if (_sortByList) {
+            final al = a.list ?? "";
+            final bl = b.list ?? "";
+            if (al != bl) {
+              return bl.compareTo(al);
+            }
+          }
           final ad = a.date ?? DateTime.now();
           final bd = b.date ?? DateTime.now();
           if (ad == bd) {
@@ -146,10 +201,12 @@ class _TodoViewState extends ConsumerState<TodoView>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.max,
                       children: [
-                        Text(completed ? t.title ?? "" : "${t.title} ⚠",
-                            style: const TextStyle(
+                        Text(t.title ?? "",
+                            style: TextStyle(
                                 fontSize: 15,
-                                color: color,
+                                color: completed
+                                    ? color
+                                    : const Color.fromARGB(255, 163, 7, 7),
                                 height: 1.3,
                                 overflow: TextOverflow.fade)),
                         Padding(
