@@ -100,7 +100,8 @@ class _TodoViewState extends ConsumerState<TodoView>
             onPressed: () => ref
                 .read(todoSettingsProvider.notifier)
                 .save((t) => t.copyWith(useListSort: !s.useListSort)),
-            icon: Icon(s.useListSort ? Icons.flag : Icons.flag_outlined)));
+            icon:
+                Icon(s.useListSort ? Icons.reviews : Icons.reviews_outlined)));
     final groupByMode = Tooltip(
         waitDuration: const Duration(milliseconds: 400),
         message: "按照周分组",
@@ -173,18 +174,33 @@ class _TodoViewState extends ConsumerState<TodoView>
         order: StickyGroupedListOrder.DESC,
         itemComparator: (a, b) {
           if (s.useListSort) {
+            //分组回顾模式，直接按列表排，列表中按时间排
             final al = a.list ?? "";
             final bl = b.list ?? "";
             if (al != bl) {
               return bl.compareTo(al);
             }
-          }
-          final ad = a.date ?? DateTime.now();
-          final bd = b.date ?? DateTime.now();
-          if (ad == bd) {
-            return b.list?.compareTo(a.list ?? "") ?? 0;
-          } else {
+            final ad = a.date ?? DateTime.now();
+            final bd = b.date ?? DateTime.now();
             return ad.compareTo(bd);
+          } else {
+            //先按日期比较，再按完成与否比较，之后按列表比较，最后按时间比较(暂时没有时间)
+            final ad = DateTime(
+                a.date?.year ?? 0, a.date?.month ?? 0, a.date?.day ?? 0);
+            final bd = DateTime(
+                b.date?.year ?? 0, b.date?.month ?? 0, b.date?.day ?? 0);
+            if (ad == bd) {
+              final ac = a.isCompleted;
+              final bc = b.isCompleted;
+              if (ac == bc) {
+                //TODO 有时间按时间排
+                return b.list?.compareTo(a.list ?? "") ?? 0;
+              } else {
+                return ac ? -10 : 10;
+              }
+            } else {
+              return ad.compareTo(bd);
+            }
           }
         },
         stickyHeaderBackgroundColor:
@@ -208,8 +224,12 @@ class _TodoViewState extends ConsumerState<TodoView>
                     final newTitle = await showDialog<String?>(
                         context: context,
                         builder: (context) => AlertDialog(
-                                title: const Text("输入新标题"),
-                                content: TextField(controller: tc),
+                                content: TextField(
+                                    controller: tc,
+                                    maxLines: 3,
+                                    decoration: const InputDecoration(
+                                        border: InputBorder.none,
+                                        labelText: "标题")),
                                 actions: [
                                   TextButton(
                                       onPressed: () =>
