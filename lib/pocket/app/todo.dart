@@ -198,38 +198,70 @@ class _TodoViewState extends ConsumerState<TodoView>
           return Dismissible(
               key: ValueKey(t),
               child: InkWell(
-                onTap: () {
-                  Clipboard.setData(ClipboardData(text: t.title ?? ""));
-                  showSimpleMessage(context,
-                      content: "已复制到剪贴板", useSnackBar: true);
-                },
-                child: Padding(
-                    padding: const EdgeInsets.only(
-                        left: 13, right: 13, bottom: 7, top: 7),
-                    child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.max,
-                        children: [
-                          Text(t.title ?? "",
-                              style: TextStyle(
-                                  fontSize: 15,
-                                  color: completed
-                                      ? color
-                                      : const Color.fromARGB(255, 163, 7, 7),
-                                  height: 1.3,
-                                  overflow: TextOverflow.fade)),
-                          Padding(
-                              padding: const EdgeInsets.only(top: 2),
-                              child: DefaultTextStyle(
-                                  style: const TextStyle(
-                                      fontSize: 12, color: color),
-                                  child: Row(children: [
-                                    Text(t.list ?? ""),
-                                    const Spacer(),
-                                    buildRichDate(t.date)
-                                  ])))
-                        ])),
-              ),
+                  onTap: () {
+                    Clipboard.setData(ClipboardData(text: t.title ?? ""));
+                    showSimpleMessage(context,
+                        content: "已复制到剪贴板", useSnackBar: true);
+                  },
+                  onLongPress: () async {
+                    final tc = TextEditingController(text: t.title);
+                    final newTitle = await showDialog<String?>(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                                title: const Text("输入新标题"),
+                                content: TextField(controller: tc),
+                                actions: [
+                                  TextButton(
+                                      onPressed: () =>
+                                          Navigator.of(context).pop(null),
+                                      child: const Text("取消")),
+                                  TextButton(
+                                      onPressed: () =>
+                                          Navigator.of(context).pop(tc.text),
+                                      child: const Text("确定"))
+                                ]));
+                    if (newTitle != null) {
+                      final ans = await ref
+                          .read(todoDBProvider.notifier)
+                          .makeTodo(
+                              listId: t.listId ?? "",
+                              taskId: t.id ?? "",
+                              title: newTitle,
+                              completed: t.isCompleted,
+                              updateList: true);
+                      await showSimpleMessage(context,
+                          content: ans, useSnackBar: true);
+                    } else {
+                      await showSimpleMessage(context,
+                          content: "您已取消操作", useSnackBar: true);
+                    }
+                  },
+                  child: Padding(
+                      padding: const EdgeInsets.only(
+                          left: 13, right: 13, bottom: 7, top: 7),
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.max,
+                          children: [
+                            Text(t.title ?? "",
+                                style: TextStyle(
+                                    fontSize: 15,
+                                    color: completed
+                                        ? color
+                                        : const Color.fromARGB(255, 163, 7, 7),
+                                    height: 1.3,
+                                    overflow: TextOverflow.fade)),
+                            Padding(
+                                padding: const EdgeInsets.only(top: 2),
+                                child: DefaultTextStyle(
+                                    style: const TextStyle(
+                                        fontSize: 12, color: color),
+                                    child: Row(children: [
+                                      Text(t.list ?? ""),
+                                      const Spacer(),
+                                      buildRichDate(t.date)
+                                    ])))
+                          ]))),
               confirmDismiss: (direction) async {
                 final ans = direction == DismissDirection.endToStart
                     ? await ref.read(todoDBProvider.notifier).deleteTodo(
@@ -239,6 +271,7 @@ class _TodoViewState extends ConsumerState<TodoView>
                     : await ref.read(todoDBProvider.notifier).makeTodo(
                         listId: t.listId ?? "",
                         taskId: t.id ?? "",
+                        title: t.title ?? "",
                         completed: !t.isCompleted,
                         updateList: true);
                 await showSimpleMessage(context,

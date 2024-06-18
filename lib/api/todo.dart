@@ -113,13 +113,21 @@ class TodoDB extends _$TodoDB {
   Future<String> makeTodo(
       {required String listId,
       required String taskId,
-      required bool completed,
+      bool? completed,
+      String? title,
       bool updateList = false}) async {
     if (listId.isEmpty || taskId.isEmpty) {
       return "更新失败，列表和任务 Id 均不能为空";
     }
-    final (_, msg) = await patchFrom("/cyber/todo/ms-todo",
-        {"list": listId, "task": taskId, "completed": completed});
+    if (completed == null && title == null) {
+      return "更新失败，至少需要设置一个参数";
+    }
+    final (_, msg) = await patchFrom("/cyber/todo/ms-todo", {
+      "list": listId,
+      "task": taskId,
+      "title": title,
+      "completed": completed
+    });
     if (updateList) {
       await fetchUpdate(0, indent);
     }
