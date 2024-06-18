@@ -30,9 +30,15 @@ class _BackupViewState extends ConsumerState<BackupView> {
     lastWeekDayOne = weekDayOne.subtract(const Duration(days: 7));
   }
 
+  String? selectServer;
+
   @override
   Widget build(BuildContext context) {
-    final data = ref.watch(backupsProvider).value ?? [];
+    final servers = ["全部", ...ref.watch(backupServerProvider)];
+    if (selectServer == null && servers.isNotEmpty) {
+      selectServer = servers.first;
+    }
+    final data = ref.watch(backupFilterProvider.call(selectServer ?? ""));
     return Scaffold(
         appBar: AppBar(title: const Text("Backups"), actions: [
           IconButton(
@@ -40,48 +46,68 @@ class _BackupViewState extends ConsumerState<BackupView> {
                   await ref.read(backupsProvider.notifier).append(),
               icon: const Icon(Icons.add))
         ]),
-        body: ListView.builder(
-            itemBuilder: (context, index) {
-              final item = data[index];
-              final start = DateTime.fromMillisecondsSinceEpoch(item.start);
-              final cost = (item.cost / 60.0).toStringAsFixed(2);
-              return Dismissible(
-                  key: ValueKey(item.id),
-                  confirmDismiss: (direction) async {
-                    if (direction == DismissDirection.endToStart) {
-                      ref.read(backupsProvider.notifier).delete(item.id);
-                      return true;
-                    } else {
-                      return false;
-                    }
+        body: Column(children: [
+          Expanded(
+              child: ListView.builder(
+                  itemBuilder: (context, index) {
+                    final item = data[index];
+                    final start =
+                        DateTime.fromMillisecondsSinceEpoch(item.start);
+                    final cost = (item.cost / 60.0).toStringAsFixed(2);
+                    return Dismissible(
+                        key: ValueKey(item.id),
+                        confirmDismiss: (direction) async {
+                          if (direction == DismissDirection.endToStart) {
+                            ref.read(backupsProvider.notifier).delete(item.id);
+                            return true;
+                          } else {
+                            return false;
+                          }
+                        },
+                        background: Container(color: Colors.amber),
+                        secondaryBackground: Container(
+                            color: Colors.red,
+                            alignment: Alignment.centerRight,
+                            padding: const EdgeInsets.only(right: 20),
+                            child:
+                                const Icon(Icons.delete, color: Colors.white)),
+                        child: ListTile(
+                            dense: true,
+                            title: Text(item.from),
+                            onTap: () async {
+                              await showSimpleMessage(context,
+                                  content:
+                                      "[Message]\n${item.message}\n\n[Log]\n${item.log}");
+                            },
+                            subtitle: Row(children: [
+                              buildRichDate(start,
+                                  today: today,
+                                  weekDayOne: weekDayOne,
+                                  lastWeekDayOne: lastWeekDayOne),
+                              const SizedBox(width: 4),
+                              Text("耗时 $cost 分钟")
+                            ]),
+                            trailing: item.result == "success"
+                                ? const Icon(Icons.check, color: Colors.green)
+                                : const Icon(Icons.error, color: Colors.red)));
                   },
-                  background: Container(color: Colors.amber),
-                  secondaryBackground: Container(
-                      color: Colors.red,
-                      alignment: Alignment.centerRight,
-                      padding: const EdgeInsets.only(right: 20),
-                      child: const Icon(Icons.delete, color: Colors.white)),
-                  child: ListTile(
-                    dense: true,
-                    title: Text(item.from),
-                    onTap: () async {
-                      await showSimpleMessage(context,
-                          content:
-                              "[Message]\n${item.message}\n\n[Log]\n${item.log}");
-                    },
-                    subtitle: Row(children: [
-                      buildRichDate(start,
-                          today: today,
-                          weekDayOne: weekDayOne,
-                          lastWeekDayOne: lastWeekDayOne),
-                      const SizedBox(width: 4),
-                      Text("耗时 $cost 分钟")
-                    ]),
-                    trailing: item.result == "success"
-                        ? const Icon(Icons.check, color: Colors.green)
-                        : const Icon(Icons.error, color: Colors.red),
-                  ));
-            },
-            itemCount: data.length));
+                  itemCount: data.length)),
+          const SizedBox(height: 10),
+          Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+            const Text("服务器"),
+            const SizedBox(width: 10),
+            DropdownButton(
+                focusColor: Colors.transparent,
+                onChanged: (_) {},
+                value: selectServer,
+                icon: const Icon(Icons.arrow_drop_down),
+                items: servers
+                    .map((e) => DropdownMenuItem(
+                        value: e,
+                        child: Text(e),
+                        onTap: () => setState(() => selectServer = e)))
+                    .toList())
+          ])
+        ]));
   }
 }

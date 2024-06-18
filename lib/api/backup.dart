@@ -26,6 +26,19 @@ class BackupItem with _$BackupItem {
 }
 
 @riverpod
+List<BackupItem> backupFilter(BackupFilterRef ref, String server) {
+  final backups = ref.watch(backupsProvider).value ?? [];
+  if (server == "全部") return backups;
+  return backups.where((b) => b.name == server).toList();
+}
+
+@riverpod
+List<String> backupServer(BackupServerRef ref) {
+  final backups = ref.watch(backupsProvider).value ?? [];
+  return backups.map((b) => b.name).toSet().toList();
+}
+
+@riverpod
 class Backups extends _$Backups {
   @override
   FutureOr<List<BackupItem>> build() async {
