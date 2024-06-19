@@ -1,6 +1,7 @@
 import 'package:clipboard/clipboard.dart';
 import 'package:cyberme_flutter/api/gpt.dart';
 import 'package:cyberme_flutter/api/todo.dart';
+import 'package:cyberme_flutter/main.dart';
 import 'package:cyberme_flutter/pocket/app/util.dart';
 import 'package:cyberme_flutter/pocket/models/todo.dart';
 import 'package:flutter/material.dart';
@@ -82,17 +83,6 @@ class _TodoViewState extends ConsumerState<TodoView>
   }
 
   AppBar buildAppBar(TodoSetting s, List<Todo> todos, List<String> lists) {
-    // final setting = IconButton(
-    //     onPressed: handleSetting,
-    //     icon: ref.read(todoLocalProvider).value?.isEmpty ?? true
-    //         ? const Icon(Icons.settings_outlined)
-    //         : const Icon(Icons.settings));
-    // final dayReportBtn = Tooltip(
-    //     waitDuration: const Duration(milliseconds: 400),
-    //     message: "运行日报脚本",
-    //     child: IconButton(
-    //         onPressed: handleAddDayReport,
-    //         icon: const Icon(Icons.description_outlined)));
     final sortByList = Tooltip(
         waitDuration: const Duration(milliseconds: 400),
         message: "提醒事项按照列表排序",
@@ -118,9 +108,9 @@ class _TodoViewState extends ConsumerState<TodoView>
             onPressed: () => handleAddWeekReport(todos),
             icon: const Icon(Icons.android)));
     final reload =
-        IconButton(onPressed: syncTodo, icon: const Icon(Icons.sync));
+        IconButton(onPressed: handleSyncTodo, icon: const Icon(Icons.sync));
     final addTask = IconButton(
-        onPressed: () => addNewTask(lists), icon: const Icon(Icons.add));
+        onPressed: () => handleAddNewTask(lists), icon: const Icon(Icons.add));
     return AppBar(
         actions: [addTask, reportBtn, reload, sortByList, groupByMode]);
   }
@@ -164,6 +154,40 @@ class _TodoViewState extends ConsumerState<TodoView>
                   fontWeight: FontWeight.bold,
                   color: Theme.of(context).colorScheme.primary))));
 
+  _groupItemComparator(TodoSetting s) {
+    return (Todo a, Todo b) {
+      if (s.useListSort) {
+        //分组回顾模式，直接按列表排，列表中按时间排
+        final al = a.list ?? "";
+        final bl = b.list ?? "";
+        if (al != bl) {
+          return bl.compareTo(al);
+        }
+        final ad = a.date ?? DateTime.now();
+        final bd = b.date ?? DateTime.now();
+        return ad.compareTo(bd);
+      } else {
+        //先按日期比较，再按完成与否比较，之后按列表比较，最后按时间比较(暂时没有时间)
+        final ad =
+            DateTime(a.date?.year ?? 0, a.date?.month ?? 0, a.date?.day ?? 0);
+        final bd =
+            DateTime(b.date?.year ?? 0, b.date?.month ?? 0, b.date?.day ?? 0);
+        if (ad == bd) {
+          final ac = a.isCompleted;
+          final bc = b.isCompleted;
+          if (ac == bc) {
+            //TODO 有时间按时间排
+            return b.list?.compareTo(a.list ?? "") ?? 0;
+          } else {
+            return ac ? -10 : 10;
+          }
+        } else {
+          return ad.compareTo(bd);
+        }
+      }
+    };
+  }
+
   StickyGroupedListView<Todo, String> buildListView(
       TodoSetting s, List<Todo> todos) {
     return StickyGroupedListView<Todo, String>(
@@ -172,37 +196,7 @@ class _TodoViewState extends ConsumerState<TodoView>
         groupSeparatorBuilder:
             s.useWeekGroup ? _groupBySeparatorWeek : _groupBySeparator,
         order: StickyGroupedListOrder.DESC,
-        itemComparator: (a, b) {
-          if (s.useListSort) {
-            //分组回顾模式，直接按列表排，列表中按时间排
-            final al = a.list ?? "";
-            final bl = b.list ?? "";
-            if (al != bl) {
-              return bl.compareTo(al);
-            }
-            final ad = a.date ?? DateTime.now();
-            final bd = b.date ?? DateTime.now();
-            return ad.compareTo(bd);
-          } else {
-            //先按日期比较，再按完成与否比较，之后按列表比较，最后按时间比较(暂时没有时间)
-            final ad = DateTime(
-                a.date?.year ?? 0, a.date?.month ?? 0, a.date?.day ?? 0);
-            final bd = DateTime(
-                b.date?.year ?? 0, b.date?.month ?? 0, b.date?.day ?? 0);
-            if (ad == bd) {
-              final ac = a.isCompleted;
-              final bc = b.isCompleted;
-              if (ac == bc) {
-                //TODO 有时间按时间排
-                return b.list?.compareTo(a.list ?? "") ?? 0;
-              } else {
-                return ac ? -10 : 10;
-              }
-            } else {
-              return ad.compareTo(bd);
-            }
-          }
-        },
+        itemComparator: _groupItemComparator(s),
         stickyHeaderBackgroundColor:
             Theme.of(context).colorScheme.surfaceContainer,
         itemPositionsListener: listener,
@@ -210,71 +204,11 @@ class _TodoViewState extends ConsumerState<TodoView>
         elementIdentifier: (todo) => todo.id ?? "",
         itemBuilder: (c, t) {
           final completed = t.status == "completed";
-          const color = Colors.black;
+          final color = Theme.of(context).colorScheme.onSurface;
           return Dismissible(
               key: ValueKey(t),
               child: InkWell(
-                  onTap: () {
-                    showDialog(
-                        context: context,
-                        builder: (context) =>
-                            SimpleDialog(title: const Text("选项"), children: [
-                              SimpleDialogOption(
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                    Clipboard.setData(
-                                        ClipboardData(text: t.title ?? ""));
-                                    showSimpleMessage(context,
-                                        content: "已复制到剪贴板", useSnackBar: true);
-                                  },
-                                  child: const Text("复制到剪贴板")),
-                              SimpleDialogOption(
-                                  onPressed: () async {
-                                    Navigator.of(context).pop();
-                                    final tc =
-                                        TextEditingController(text: t.title);
-                                    final newTitle = await showDialog<String?>(
-                                        context: context,
-                                        builder: (context) => AlertDialog(
-                                                content: TextField(
-                                                    controller: tc,
-                                                    maxLines: 3,
-                                                    decoration:
-                                                        const InputDecoration(
-                                                            border: InputBorder
-                                                                .none,
-                                                            labelText: "标题")),
-                                                actions: [
-                                                  TextButton(
-                                                      onPressed: () =>
-                                                          Navigator.of(context)
-                                                              .pop(null),
-                                                      child: const Text("取消")),
-                                                  TextButton(
-                                                      onPressed: () =>
-                                                          Navigator.of(context)
-                                                              .pop(tc.text),
-                                                      child: const Text("确定"))
-                                                ]));
-                                    if (newTitle != null) {
-                                      final ans = await ref
-                                          .read(todoDBProvider.notifier)
-                                          .makeTodo(
-                                              listId: t.listId ?? "",
-                                              taskId: t.id ?? "",
-                                              title: newTitle,
-                                              completed: t.isCompleted,
-                                              updateList: true);
-                                      await showSimpleMessage(context,
-                                          content: ans, useSnackBar: true);
-                                    } else {
-                                      await showSimpleMessage(context,
-                                          content: "您已取消操作", useSnackBar: true);
-                                    }
-                                  },
-                                  child: const Text("修改"))
-                            ]));
-                  },
+                  onTap: () => handleTodoContextMenu(t),
                   child: Padding(
                       padding: const EdgeInsets.only(
                           left: 13, right: 13, bottom: 7, top: 7),
@@ -293,8 +227,8 @@ class _TodoViewState extends ConsumerState<TodoView>
                             Padding(
                                 padding: const EdgeInsets.only(top: 2),
                                 child: DefaultTextStyle(
-                                    style: const TextStyle(
-                                        fontSize: 12, color: color),
+                                    style:
+                                        TextStyle(fontSize: 12, color: color),
                                     child: Row(children: [
                                       Text(t.list ?? ""),
                                       const Spacer(),
@@ -347,43 +281,43 @@ class _TodoViewState extends ConsumerState<TodoView>
         left: 10,
         right: 10,
         child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-              mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: lists
-                  .map((list) => Padding(
-                        padding: const EdgeInsets.only(right: 5),
-                        child: RawChip(
-                            selected: selectLists.contains(list),
-                            showCheckmark: false,
-                            selectedColor:
-                                Theme.of(context).colorScheme.primaryContainer,
-                            backgroundColor: Theme.of(context)
-                                .colorScheme
-                                .surfaceContainerHighest,
-                            labelPadding:
-                                const EdgeInsets.only(left: 10, right: 10),
-                            padding: const EdgeInsets.only(left: 3, right: 3),
-                            shape: RoundedRectangleBorder(
-                                side:
-                                    const BorderSide(color: Colors.transparent),
-                                borderRadius: BorderRadius.circular(20)),
-                            label: Text(list),
-                            onPressed: () async {
-                              if (selectLists.contains(list)) {
-                                selectLists.remove(list);
-                              } else {
-                                selectLists.add(list);
-                              }
-                              await controller.scrollTo(
-                                  index: 0,
-                                  duration: const Duration(seconds: 1));
-                              setState(() {});
-                            }),
-                      ))
-                  .toList(growable: false)),
-        ));
+            scrollDirection: Axis.horizontal,
+            child: Row(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: lists
+                    .map((list) => Padding(
+                          padding: const EdgeInsets.only(right: 5),
+                          child: RawChip(
+                              selected: selectLists.contains(list),
+                              showCheckmark: false,
+                              selectedColor: Theme.of(context)
+                                  .colorScheme
+                                  .primaryContainer,
+                              backgroundColor: Theme.of(context)
+                                  .colorScheme
+                                  .surfaceContainerHighest,
+                              labelPadding:
+                                  const EdgeInsets.only(left: 10, right: 10),
+                              padding: const EdgeInsets.only(left: 3, right: 3),
+                              shape: RoundedRectangleBorder(
+                                  side: const BorderSide(
+                                      color: Colors.transparent),
+                                  borderRadius: BorderRadius.circular(20)),
+                              label: Text(list),
+                              onPressed: () async {
+                                if (selectLists.contains(list)) {
+                                  selectLists.remove(list);
+                                } else {
+                                  selectLists.add(list);
+                                }
+                                await controller.scrollTo(
+                                    index: 0,
+                                    duration: const Duration(seconds: 1));
+                                setState(() {});
+                              }),
+                        ))
+                    .toList(growable: false))));
   }
 
   Widget buildRichDate(DateTime? date) {
@@ -430,14 +364,86 @@ class _TodoViewState extends ConsumerState<TodoView>
     }
   }
 
-  syncTodo() async {
+  handleTodoContextMenu(Todo t) async {
+    copyToClipboard() {
+      Navigator.of(context).pop();
+      Clipboard.setData(ClipboardData(text: t.title ?? ""));
+      showSimpleMessage(context, content: "已复制到剪贴板", useSnackBar: true);
+    }
+
+    editTitle() async {
+      Navigator.of(context).pop();
+      final tc = TextEditingController(text: t.title);
+      final newTitle = await showDialog<String?>(
+          context: context,
+          builder: (context) => AlertDialog(
+                  content: TextField(
+                      controller: tc,
+                      maxLines: 3,
+                      decoration: const InputDecoration(
+                          border: InputBorder.none, labelText: "标题")),
+                  actions: [
+                    TextButton(
+                        onPressed: () => Navigator.of(context).pop(null),
+                        child: const Text("取消")),
+                    TextButton(
+                        onPressed: () => Navigator.of(context).pop(tc.text),
+                        child: const Text("确定"))
+                  ]));
+      if (newTitle != null) {
+        final ans = await ref.read(todoDBProvider.notifier).makeTodo(
+            listId: t.listId ?? "",
+            taskId: t.id ?? "",
+            title: newTitle,
+            completed: t.isCompleted,
+            updateList: true);
+        await showSimpleMessage(context, content: ans, useSnackBar: true);
+      } else {
+        await showSimpleMessage(context, content: "您已取消操作", useSnackBar: true);
+      }
+    }
+
+    doItTomorrow() async {
+      Navigator.of(context).pop();
+      if (!t.isCompleted) {
+        await ref.read(todoDBProvider.notifier).makeTodo(
+            listId: t.listId ?? "",
+            taskId: t.id ?? "",
+            title: t.title ?? "",
+            completed: true,
+            updateList: false);
+      }
+      final res = await ref.read(todoDBProvider.notifier).addTodo(
+          due: DateFormat("yyyy-MM-dd")
+              .format(today.add(const Duration(days: 1))),
+          title: (t.title ?? "") + " (续)",
+          finished: false,
+          listName: t.list ?? "",
+          updateList: true);
+      await showSimpleMessage(context, content: res, useSnackBar: true);
+    }
+
+    return await showDialog(
+        context: context,
+        builder: (context) => SimpleDialog(title: const Text("选项"), children: [
+              SimpleDialogOption(
+                  onPressed: copyToClipboard, child: const Text("复制到剪贴板")),
+              if (!t.isCompleted && t.date == today)
+                SimpleDialogOption(
+                    onPressed: doItTomorrow, child: const Text("标记明天继续")),
+              SimpleDialogOption(
+                  onPressed: editTitle, child: const Text("修改标题")),
+            ]));
+  }
+
+  handleSyncTodo() async {
     showWaitingBar(context, text: "正在同步");
     final res = await ref.read(todoDBProvider.notifier).sync(updateList: true);
     ScaffoldMessenger.of(context).clearMaterialBanners();
     await showSimpleMessage(context, content: res);
   }
 
-  addNewTask(List<String> lists) async {
+  handleAddNewTask(List<String> lists) async {
     final title = TextEditingController();
     var selectList = lists.first;
     var markFinished = false;

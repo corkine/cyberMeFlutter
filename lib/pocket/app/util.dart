@@ -50,7 +50,7 @@ Future<bool> showSimpleMessage(BuildContext context,
     required String content,
     bool withPopFirst = false,
     bool useSnackBar = false,
-    int duration = 200}) async {
+    int duration = 500}) async {
   if (withPopFirst) {
     Navigator.of(context).pop();
   }
