@@ -323,7 +323,7 @@ class _TodoViewState extends ConsumerState<TodoView>
   Widget buildRichDate(DateTime? date) {
     if (date == null) return const Text("未知日期");
     final df = DateFormat("yyyy-MM-dd");
-    bool isToday = !today.isAfter(date);
+    bool isToday = df.format(date) == df.format(today);
     bool thisWeek = !weekDayOne.isAfter(date);
     bool lastWeek = !thisWeek && !lastWeekDayOne.isAfter(date);
     final style = TextStyle(
