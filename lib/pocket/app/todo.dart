@@ -215,46 +215,65 @@ class _TodoViewState extends ConsumerState<TodoView>
               key: ValueKey(t),
               child: InkWell(
                   onTap: () {
-                    Clipboard.setData(ClipboardData(text: t.title ?? ""));
-                    showSimpleMessage(context,
-                        content: "已复制到剪贴板", useSnackBar: true);
-                  },
-                  onLongPress: () async {
-                    final tc = TextEditingController(text: t.title);
-                    final newTitle = await showDialog<String?>(
+                    showDialog(
                         context: context,
-                        builder: (context) => AlertDialog(
-                                content: TextField(
-                                    controller: tc,
-                                    maxLines: 3,
-                                    decoration: const InputDecoration(
-                                        border: InputBorder.none,
-                                        labelText: "标题")),
-                                actions: [
-                                  TextButton(
-                                      onPressed: () =>
-                                          Navigator.of(context).pop(null),
-                                      child: const Text("取消")),
-                                  TextButton(
-                                      onPressed: () =>
-                                          Navigator.of(context).pop(tc.text),
-                                      child: const Text("确定"))
-                                ]));
-                    if (newTitle != null) {
-                      final ans = await ref
-                          .read(todoDBProvider.notifier)
-                          .makeTodo(
-                              listId: t.listId ?? "",
-                              taskId: t.id ?? "",
-                              title: newTitle,
-                              completed: t.isCompleted,
-                              updateList: true);
-                      await showSimpleMessage(context,
-                          content: ans, useSnackBar: true);
-                    } else {
-                      await showSimpleMessage(context,
-                          content: "您已取消操作", useSnackBar: true);
-                    }
+                        builder: (context) =>
+                            SimpleDialog(title: const Text("选项"), children: [
+                              SimpleDialogOption(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                    Clipboard.setData(
+                                        ClipboardData(text: t.title ?? ""));
+                                    showSimpleMessage(context,
+                                        content: "已复制到剪贴板", useSnackBar: true);
+                                  },
+                                  child: const Text("复制到剪贴板")),
+                              SimpleDialogOption(
+                                  onPressed: () async {
+                                    Navigator.of(context).pop();
+                                    final tc =
+                                        TextEditingController(text: t.title);
+                                    final newTitle = await showDialog<String?>(
+                                        context: context,
+                                        builder: (context) => AlertDialog(
+                                                content: TextField(
+                                                    controller: tc,
+                                                    maxLines: 3,
+                                                    decoration:
+                                                        const InputDecoration(
+                                                            border: InputBorder
+                                                                .none,
+                                                            labelText: "标题")),
+                                                actions: [
+                                                  TextButton(
+                                                      onPressed: () =>
+                                                          Navigator.of(context)
+                                                              .pop(null),
+                                                      child: const Text("取消")),
+                                                  TextButton(
+                                                      onPressed: () =>
+                                                          Navigator.of(context)
+                                                              .pop(tc.text),
+                                                      child: const Text("确定"))
+                                                ]));
+                                    if (newTitle != null) {
+                                      final ans = await ref
+                                          .read(todoDBProvider.notifier)
+                                          .makeTodo(
+                                              listId: t.listId ?? "",
+                                              taskId: t.id ?? "",
+                                              title: newTitle,
+                                              completed: t.isCompleted,
+                                              updateList: true);
+                                      await showSimpleMessage(context,
+                                          content: ans, useSnackBar: true);
+                                    } else {
+                                      await showSimpleMessage(context,
+                                          content: "您已取消操作", useSnackBar: true);
+                                    }
+                                  },
+                                  child: const Text("修改"))
+                            ]));
                   },
                   child: Padding(
                       padding: const EdgeInsets.only(
@@ -283,6 +302,9 @@ class _TodoViewState extends ConsumerState<TodoView>
                                     ])))
                           ]))),
               confirmDismiss: (direction) async {
+                final confirm = await showSimpleMessage(context,
+                    content: "你确定执行此操作吗？", useSnackBar: false);
+                if (!confirm) return false;
                 final ans = direction == DismissDirection.endToStart
                     ? await ref.read(todoDBProvider.notifier).deleteTodo(
                         listId: t.listId ?? "",
