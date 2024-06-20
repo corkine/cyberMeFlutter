@@ -209,7 +209,10 @@ class _TodoViewState extends ConsumerState<TodoView>
               key: ValueKey(t),
               child: InkWell(
                   onTap: () => handleTodoContextMenu(t),
-                  child: Padding(
+                  child: Container(
+                      color: t.date == today
+                          ? Theme.of(context).colorScheme.surfaceContainer
+                          : null,
                       padding: const EdgeInsets.only(
                           left: 13, right: 13, bottom: 7, top: 7),
                       child: Column(
