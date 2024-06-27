@@ -78,8 +78,10 @@ class _TodoViewState extends ConsumerState<TodoView>
     todoLength = todos.length;
     return Scaffold(
         appBar: buildAppBar(s, todos, lists),
-        body: Stack(
-            children: [buildListView(s, todos), buildListNameBar(lists)]));
+        body: Stack(children: [
+          buildListView(s, todos, lists),
+          buildListNameBar(lists)
+        ]));
   }
 
   AppBar buildAppBar(TodoSetting s, List<Todo> todos, List<String> lists) {
@@ -189,7 +191,7 @@ class _TodoViewState extends ConsumerState<TodoView>
   }
 
   StickyGroupedListView<Todo, String> buildListView(
-      TodoSetting s, List<Todo> todos) {
+      TodoSetting s, List<Todo> todos, List<String> lists) {
     return StickyGroupedListView<Todo, String>(
         elements: todos,
         groupBy: s.useWeekGroup ? _groupByWeek : _groupBy,
@@ -208,7 +210,7 @@ class _TodoViewState extends ConsumerState<TodoView>
           return Dismissible(
               key: ValueKey(t),
               child: InkWell(
-                  onTap: () => handleTodoContextMenu(t),
+                  onTap: () => handleTodoContextMenu(t, lists),
                   child: Container(
                       color: t.date == today
                           ? Theme.of(context).colorScheme.surfaceContainer
@@ -367,7 +369,7 @@ class _TodoViewState extends ConsumerState<TodoView>
     }
   }
 
-  handleTodoContextMenu(Todo t) async {
+  handleTodoContextMenu(Todo t, List<String> lists) async {
     copyToClipboard() {
       Navigator.of(context).pop();
       Clipboard.setData(ClipboardData(text: t.title ?? ""));
@@ -423,7 +425,39 @@ class _TodoViewState extends ConsumerState<TodoView>
           finished: false,
           listName: t.list ?? "",
           updateList: true);
-      await showSimpleMessage(context, content: res, useSnackBar: true);
+      await showSimpleMessage(context, content: res.$1, useSnackBar: true);
+    }
+
+    changeList() async {
+      final list = await showDialog<String>(
+          context: context,
+          builder: (context) =>
+              SimpleDialog(title: const Text("更改列表"), children: [
+                for (var list in lists)
+                  if (list != t.list!)
+                    SimpleDialogOption(
+                        onPressed: () async => Navigator.of(context).pop(list),
+                        child: Text(list))
+              ]));
+      if (list != null) {
+        Navigator.of(context).pop();
+        final res = await ref.read(todoDBProvider.notifier).addTodo(
+            title: t.title!,
+            due: DateFormat("yyyy-MM-dd").format(t.date ?? DateTime.now()),
+            listName: list,
+            finished: t.isCompleted,
+            updateList: false);
+        final addSuccess = res.$3;
+        if (!addSuccess) {
+          await showSimpleMessage(context, content: res.$1);
+        } else {
+          await ref
+              .read(todoDBProvider.notifier)
+              .deleteTodo(listName: list, taskId: t.id!, updateList: true);
+          await showSimpleMessage(context,
+              content: "更改待办事项列表成功", useSnackBar: true);
+        }
+      }
     }
 
     return await showDialog(
@@ -436,6 +470,8 @@ class _TodoViewState extends ConsumerState<TodoView>
                     onPressed: doItTomorrow, child: const Text("标记明天继续")),
               SimpleDialogOption(
                   onPressed: editTitle, child: const Text("修改标题")),
+              SimpleDialogOption(
+                  onPressed: changeList, child: const Text("更改列表"))
             ]));
   }
 
@@ -462,7 +498,7 @@ class _TodoViewState extends ConsumerState<TodoView>
           listName: selectList,
           updateList: true);
       await showSimpleMessage(context,
-          content: res, useSnackBar: true, withPopFirst: true);
+          content: res.$1, useSnackBar: true, withPopFirst: true);
     }
 
     final node = FocusNode();

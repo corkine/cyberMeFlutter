@@ -66,40 +66,52 @@ class TodoDB extends _$TodoDB {
     return msg;
   }
 
-  Future<String> addTodo(
+  Future<(String, String, bool)> addTodo(
       {required String title,
       required String due,
       bool finished = false,
       required String listName,
       bool updateList = false}) async {
     if (listName.isEmpty) {
-      return "添加失败，列表名或列表 Id 不能为空";
+      return ("添加失败，列表名或列表 Id 不能为空", "", false);
     }
     final listId = (state.valueOrNull ?? [])
         .where((t) => t.list == listName)
         .firstOrNull
         ?.listId;
     if (listId == null) {
-      return "添加失败，列表 Id 找不到";
+      return ("添加失败，列表 Id 找不到", "", false);
     }
-    final (_, msg) = await postFrom("/cyber/todo/ms-todo", {
+    final (ok, msg, content) = await postFromData("/cyber/todo/ms-todo", {
       "list-id": listId,
       "list-name": listName,
       "title": title,
       "due": due,
       "finished": finished
     });
+    var taskId = "";
+    try {
+      taskId = ((content as Map<String, dynamic>)["id"]).toString();
+    } catch (_) {}
     if (updateList) {
       await fetchUpdate(0, indent);
     }
-    return msg;
+    return (msg, taskId, ok);
   }
 
   Future<String> deleteTodo(
-      {required String listId,
+      {String? listId,
+      String? listName,
       required String taskId,
       bool updateList = false}) async {
-    if (listId.isEmpty || taskId.isEmpty) {
+    if (listId == null) {
+      if (listName == null) return "需要传入列表 Id 或列表名";
+      listId = listId = (state.valueOrNull ?? [])
+          .where((t) => t.list == listName)
+          .firstOrNull
+          ?.listId;
+    }
+    if (listId == null || listId.isEmpty || taskId.isEmpty) {
       return "删除失败，列表和任务 Id 均不能为空";
     }
     final (_, msg) = await deleteFrom(
