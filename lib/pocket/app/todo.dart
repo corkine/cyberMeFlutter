@@ -1,7 +1,6 @@
 import 'package:clipboard/clipboard.dart';
 import 'package:cyberme_flutter/api/gpt.dart';
 import 'package:cyberme_flutter/api/todo.dart';
-import 'package:cyberme_flutter/main.dart';
 import 'package:cyberme_flutter/pocket/app/util.dart';
 import 'package:cyberme_flutter/pocket/models/todo.dart';
 import 'package:flutter/material.dart';
@@ -460,18 +459,37 @@ class _TodoViewState extends ConsumerState<TodoView>
       }
     }
 
+    addSame() async {
+      Navigator.of(context).pop();
+      final res = await ref.read(todoDBProvider.notifier).addTodo(
+          due: DateFormat("yyyy-MM-dd").format(today),
+          title: t.title ?? "未命名待办事项",
+          finished: false,
+          listName: t.list ?? "",
+          updateList: true);
+      await showSimpleMessage(context, content: res.$1, useSnackBar: true);
+    }
+
     return await showDialog(
         context: context,
         builder: (context) => SimpleDialog(title: const Text("选项"), children: [
-              SimpleDialogOption(
-                  onPressed: copyToClipboard, child: const Text("复制到剪贴板")),
               if (!t.isCompleted && t.date == today)
                 SimpleDialogOption(
                     onPressed: doItTomorrow, child: const Text("标记明天继续")),
+              SimpleDialogOption(onPressed: addSame, child: const Text("原样新建")),
               SimpleDialogOption(
-                  onPressed: editTitle, child: const Text("修改标题")),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    handleAddNewTask(lists,
+                        hintTitle: t.title, hintList: t.list ?? "");
+                  },
+                  child: const Text("基于此新建...")),
               SimpleDialogOption(
-                  onPressed: changeList, child: const Text("更改列表"))
+                  onPressed: changeList, child: const Text("更改列表...")),
+              SimpleDialogOption(
+                  onPressed: editTitle, child: const Text("修改标题...")),
+              SimpleDialogOption(
+                  onPressed: copyToClipboard, child: const Text("复制到剪贴板")),
             ]));
   }
 
@@ -482,9 +500,10 @@ class _TodoViewState extends ConsumerState<TodoView>
     await showSimpleMessage(context, content: res);
   }
 
-  handleAddNewTask(List<String> lists) async {
-    final title = TextEditingController();
-    var selectList = lists.first;
+  handleAddNewTask(List<String> lists,
+      {String? hintTitle, String? hintList}) async {
+    final title = TextEditingController(text: hintTitle ?? "");
+    var selectList = hintList ?? lists.first;
     var markFinished = false;
     var date = DateTime.now();
     handleAdd() async {
