@@ -207,8 +207,7 @@ void runScript(String scriptPath) async {
 void replaceCopyFormat() async {
   var words = await pb.Pasteboard.text;
   if (words != null && words.isNotEmpty) {
-    debugPrint("handling $words");
-    final n = words.replaceAll("\n", "");
+    final n = words.replaceAll("\r", "");
     FlutterClipboard.copy(n);
   }
 }
