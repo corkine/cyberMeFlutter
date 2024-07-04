@@ -73,6 +73,7 @@ class Util {
 late AppWindow appWindow;
 bool appHide = false;
 bool dockedOnWindows = true;
+final SystemTray systemTray = SystemTray();
 StreamController<String>? routeStream;
 
 Future<void> initSystemTray() async {
@@ -81,7 +82,6 @@ Future<void> initSystemTray() async {
       : 'images/tray/app_icon.png';
 
   appWindow = AppWindow();
-  final SystemTray systemTray = SystemTray();
 
   await systemTray.initSystemTray(iconPath: path);
 
@@ -111,6 +111,13 @@ Future<void> initSystemTray() async {
         onClicked: (a) => launchUrlString("https://cyber.mazhangjing.com")),
     MenuSeparator(),
     MenuItemLabel(
+        label: '更改点按动作',
+        onClicked: (a) {
+          final nextAction =
+              (clickAction.index + 1) % ClickAction.values.length;
+          registerClickAction(ClickAction.values[nextAction]);
+        }),
+    MenuItemLabel(
         label: '显示',
         onClicked: (_) {
           appHide = false;
@@ -129,19 +136,7 @@ Future<void> initSystemTray() async {
   await systemTray.setContextMenu(menu);
 
   // handle system tray event
-  systemTray.registerSystemTrayEventHandler((eventName) {
-    if (eventName == kSystemTrayEventClick) {
-      if (appHide) {
-        appHide = false;
-        appWindow.show();
-      } else {
-        appHide = true;
-        appWindow.hide();
-      }
-    } else if (eventName == kSystemTrayEventRightClick) {
-      systemTray.popUpContextMenu();
-    }
-  });
+  registerClickAction(ClickAction.showHideApp);
 
   await windowManager.ensureInitialized();
   await windowManager.waitUntilReadyToShow(
@@ -159,11 +154,63 @@ Future<void> initSystemTray() async {
   });
 }
 
+enum ClickAction {
+  showHideApp(desc: "显示/隐藏应用程序"),
+  copyPasteWord(desc: "复制剪贴板内容并格式化"),
+  uploadImage(desc: "上传剪贴板图片到图床");
+
+  const ClickAction({required this.desc});
+
+  final String desc;
+}
+
+var clickAction = ClickAction.showHideApp;
+
+void registerClickAction(ClickAction action) {
+  debugPrint("register click action: $action");
+  clickAction = action;
+  systemTray.setToolTip("点按${action.desc}");
+  systemTray.registerSystemTrayEventHandler((eventName) {
+    if (eventName == kSystemTrayEventClick) {
+      switch (action) {
+        case ClickAction.showHideApp:
+          if (appHide) {
+            appHide = false;
+            appWindow.show();
+          } else {
+            appHide = true;
+            appWindow.hide();
+          }
+          break;
+        case ClickAction.copyPasteWord:
+          debugPrint("copy paste word");
+          replaceCopyFormat();
+          break;
+        case ClickAction.uploadImage:
+          debugPrint("upload image action call");
+          readClipboardAndUploadImage();
+          break;
+      }
+    } else if (eventName == kSystemTrayEventRightClick) {
+      systemTray.popUpContextMenu();
+    }
+  });
+}
+
 void runScript(String scriptPath) async {
   var s = scriptPath.split(Platform.pathSeparator);
   s.removeLast();
   Process.run("cmd", ["/c", "start", "cmd.exe", "/k", scriptPath],
       environment: {}, workingDirectory: s.join(Platform.pathSeparator));
+}
+
+void replaceCopyFormat() async {
+  var words = await pb.Pasteboard.text;
+  if (words != null && words.isNotEmpty) {
+    debugPrint("handling $words");
+    final n = words.replaceAll("\n", "");
+    FlutterClipboard.copy(n);
+  }
 }
 
 void readClipboardAndUploadImage() async {
