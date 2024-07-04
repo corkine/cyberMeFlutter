@@ -76,14 +76,18 @@ bool dockedOnWindows = true;
 final SystemTray systemTray = SystemTray();
 StreamController<String>? routeStream;
 
-Future<void> initSystemTray() async {
-  String path = Platform.isWindows
-      ? 'images/tray/app_icon.ico'
-      : 'images/tray/app_icon.png';
+String icoPath = Platform.isWindows
+    ? 'images/tray/app_icon.ico'
+    : 'images/tray/app_icon.png';
 
+String checkPath = Platform.isWindows
+    ? 'images/tray/app_icon_check.ico'
+    : 'images/tray/app_icon_check.png';
+
+Future<void> initSystemTray() async {
   appWindow = AppWindow();
 
-  await systemTray.initSystemTray(iconPath: path);
+  await systemTray.initSystemTray(iconPath: icoPath);
 
   final Menu menu = Menu();
   await menu.buildFrom([
@@ -204,11 +208,20 @@ void runScript(String scriptPath) async {
       environment: {}, workingDirectory: s.join(Platform.pathSeparator));
 }
 
+Future<void> flashIcon() async {
+  systemTray.setImage(checkPath);
+  await Future.delayed(const Duration(milliseconds: 1000));
+  systemTray.setImage(icoPath);
+}
+
 void replaceCopyFormat() async {
   var words = await pb.Pasteboard.text;
   if (words != null && words.isNotEmpty) {
-    final n = words.replaceAll("\r", "");
-    FlutterClipboard.copy(n);
+    final n = words.replaceAll("\r", "").replaceAll("\n", "");
+    final res = await FlutterClipboard.controlC(n);
+    if (res) {
+      await flashIcon();
+    }
   }
 }
 
@@ -231,6 +244,7 @@ void readClipboardAndUploadImage() async {
     debugPrint(body.toString());
     var url = body["data"] as String;
     FlutterClipboard.copy(url);
+    await flashIcon();
   }
 }
 
