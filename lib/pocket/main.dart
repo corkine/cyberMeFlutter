@@ -8,6 +8,7 @@ import 'package:cyberme_flutter/pocket/app/backup.dart';
 import 'package:cyberme_flutter/pocket/app/body_mass.dart';
 import 'package:cyberme_flutter/pocket/app/counter.dart';
 import 'package:cyberme_flutter/pocket/app/esxi.dart';
+import 'package:cyberme_flutter/pocket/app/gallery.dart';
 import 'package:cyberme_flutter/pocket/app/gitea.dart';
 import 'package:cyberme_flutter/pocket/app/link.dart';
 import 'package:cyberme_flutter/pocket/app/location.dart';
@@ -191,6 +192,13 @@ final apps = {
     "addToMenu": true,
     "addToContext": true,
     "icon": Icons.backup
+  },
+  "gallery": {
+    "name": "Gallery",
+    "view": (c) => const GalleryManagerScreen(),
+    "addToMenu": true,
+    "addToContext": true,
+    "icon": Icons.image
   }
 };
 
