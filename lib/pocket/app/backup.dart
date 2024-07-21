@@ -44,7 +44,20 @@ class _BackupViewState extends ConsumerState<BackupView> {
           IconButton(
               onPressed: () async =>
                   await ref.read(backupsProvider.notifier).append(),
-              icon: const Icon(Icons.add))
+              icon: const Icon(Icons.add)),
+          const SizedBox(width: 7),
+          DropdownButton(
+              focusColor: Colors.transparent,
+              onChanged: (_) {},
+              value: selectServer,
+              icon: const Icon(Icons.arrow_drop_down),
+              items: servers
+                  .map((e) => DropdownMenuItem(
+                      value: e,
+                      child: Text(e),
+                      onTap: () => setState(() => selectServer = e)))
+                  .toList()),
+          const SizedBox(width: 7)
         ]),
         body: Column(children: [
           Expanded(
@@ -91,23 +104,7 @@ class _BackupViewState extends ConsumerState<BackupView> {
                                 ? const Icon(Icons.check, color: Colors.green)
                                 : const Icon(Icons.error, color: Colors.red)));
                   },
-                  itemCount: data.length)),
-          const SizedBox(height: 10),
-          Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            const Text("服务器"),
-            const SizedBox(width: 10),
-            DropdownButton(
-                focusColor: Colors.transparent,
-                onChanged: (_) {},
-                value: selectServer,
-                icon: const Icon(Icons.arrow_drop_down),
-                items: servers
-                    .map((e) => DropdownMenuItem(
-                        value: e,
-                        child: Text(e),
-                        onTap: () => setState(() => selectServer = e)))
-                    .toList())
-          ])
+                  itemCount: data.length))
         ]));
   }
 }

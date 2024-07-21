@@ -39,9 +39,14 @@ class _GalleryManagerScreenState extends ConsumerState<GalleryManagerScreen> {
   @override
   Widget build(BuildContext context) {
     final galleryAsyncValue = ref.watch(gallerysProvider);
-
     return Scaffold(
-        appBar: AppBar(title: const Text('Gallery Manager')),
+        appBar: AppBar(title: const Text('Gallery Manager'), actions: [
+          IconButton(
+              onPressed: galleryAsyncValue.value == null
+                  ? null
+                  : () => _saveChanges(galleryAsyncValue.value!),
+              icon: const Icon(Icons.save))
+        ]),
         body: galleryAsyncValue.when(
             data: (galleryData) {
               _blurOpacityController.text = galleryData.blurOpacity.toString();
@@ -102,12 +107,7 @@ class _GalleryManagerScreenState extends ConsumerState<GalleryManagerScreen> {
                               ...galleryData.images.map((imageUrl) =>
                                   _buildImagePreview(imageUrl, galleryData)),
                               _buildAddImageButton(galleryData),
-                            ]),
-                            const SizedBox(height: 20),
-                            ElevatedButton(
-                              onPressed: () => _saveChanges(galleryData),
-                              child: const Text('Save Changes'),
-                            )
+                            ])
                           ])));
             },
             loading: () => const Center(child: CircularProgressIndicator()),
@@ -118,7 +118,7 @@ class _GalleryManagerScreenState extends ConsumerState<GalleryManagerScreen> {
     return InkWell(
       onTap: () => _addImage(galleryData),
       child: Container(
-          width: 100,
+          width: (MediaQuery.maybeSizeOf(context)!.width) / 3.5,
           height: 200,
           color: Colors.grey[300],
           child: const Icon(Icons.add, size: 40)),
@@ -135,12 +135,7 @@ class _GalleryManagerScreenState extends ConsumerState<GalleryManagerScreen> {
               height: MediaQuery.of(context).size.height - 0,
               decoration: const BoxDecoration(color: Colors.black),
               child: Stack(fit: StackFit.expand, children: [
-                InteractiveViewer(
-                    panEnabled: true,
-                    boundaryMargin: const EdgeInsets.all(20),
-                    minScale: 0.5,
-                    maxScale: 4,
-                    child: Image.network(imageUrl, fit: BoxFit.contain)),
+                Image.network(imageUrl, fit: BoxFit.contain),
                 Positioned(
                     top: 10,
                     right: 10,
@@ -157,13 +152,17 @@ class _GalleryManagerScreenState extends ConsumerState<GalleryManagerScreen> {
       GestureDetector(
           onTap: () => _showFullScreenImage(context, imageUrl),
           child: Image.network(imageUrl,
-              width: 100, height: 200, fit: BoxFit.cover)),
+              width: (MediaQuery.maybeSizeOf(context)!.width) / 3.5,
+              height: 200,
+              fit: BoxFit.cover)),
       Positioned(
           top: 0,
           right: 0,
-          child: IconButton(
-              icon: const Icon(Icons.delete, color: Colors.red),
-              onPressed: () => _removeImage(imageUrl, galleryData)))
+          child: Transform.rotate(
+              angle: 0.75,
+              child: IconButton(
+                  icon: const Icon(Icons.add, color: Colors.white),
+                  onPressed: () => _removeImage(imageUrl, galleryData))))
     ]);
   }
 

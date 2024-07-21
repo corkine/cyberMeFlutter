@@ -47,7 +47,7 @@ class Backups extends _$Backups {
     if (res.$2.isNotEmpty) {
       debugPrint(res.$2);
     }
-    return (res.$1 ?? [])..sort((a, b) => a.start.compareTo(b.start));
+    return (res.$1 ?? [])..sort((b, a) => a.start.compareTo(b.start));
   }
 
   Future<String> delete(String id) async {
