@@ -17,6 +17,7 @@ class GalleryData with _$GalleryData {
     @Default(0.7) double blurOpacity,
     @Default(25) double borderRadius,
     @Default(5) int imageRepeatEachMinutes,
+    @Default(0.3) double blurOpacityInBgMode,
     @Default([]) List<String> images,
   }) = _GalleryData;
 

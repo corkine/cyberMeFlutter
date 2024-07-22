@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import '../../api/cert.dart';
 
@@ -22,7 +21,7 @@ class _CertConfigViewState extends ConsumerState<CertConfigView> {
           data: (certConfigs) => ListView(children: [
             for (var entry in certConfigs.certs.entries)
               ListTile(
-                  title: Text(entry.key),
+                  title: Text(entry.value.name),
                   subtitle: Text(entry.value.domain),
                   trailing: Row(mainAxisSize: MainAxisSize.min, children: [
                     IconButton(
@@ -42,8 +41,8 @@ class _CertConfigViewState extends ConsumerState<CertConfigView> {
   }
 
   void _showCertDetails(BuildContext context, WidgetRef ref, CertConfig cert) {
-    Navigator.of(context).push(MaterialPageRoute<void>(
-        builder: (context) => CertDetailView(cert.name)));
+    Navigator.of(context).push(
+        MaterialPageRoute<void>(builder: (context) => CertDetailView(cert.id)));
   }
 
   void _addCert(BuildContext context) async {
@@ -224,19 +223,19 @@ class _CertConfigViewState extends ConsumerState<CertConfigView> {
 }
 
 class CertDetailView extends ConsumerStatefulWidget {
-  final String cert;
-  const CertDetailView(this.cert, {super.key});
+  final String certId;
+  const CertDetailView(this.certId, {super.key});
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _CertDetailViewState();
 }
 
 class _CertDetailViewState extends ConsumerState<CertDetailView> {
-  late String certName = widget.cert;
+  late String certId = widget.certId;
   late CertConfig cert;
   @override
   Widget build(BuildContext context) {
-    cert = ref.watch(certsProvider).value?.certs[certName] ?? CertConfig();
+    cert = ref.watch(certsProvider).value?.certs[certId] ?? CertConfig();
     return Scaffold(
         appBar: AppBar(title: const Text('证书详情')),
         floatingActionButton: FloatingActionButton(
@@ -246,6 +245,7 @@ class _CertDetailViewState extends ConsumerState<CertDetailView> {
             padding: const EdgeInsets.all(16),
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              _buildDetailItem('Id', cert.id),
               _buildDetailItem('Name', cert.name),
               _buildDetailItem('Domain', cert.domain),
               _buildDetailItem('Expired', _formatDate(cert.expired)),
@@ -264,7 +264,7 @@ class _CertDetailViewState extends ConsumerState<CertDetailView> {
 
   Widget _buildDeployItem(BuildContext context, CertDeploy deploy) {
     return Tooltip(
-      message: deploy.address,
+      message: deploy.address + "\n" + deploy.id,
       waitDuration: const Duration(seconds: 1),
       child: ListTile(
           dense: true,

@@ -17,6 +17,7 @@ class GalleryManagerScreen extends ConsumerStatefulWidget {
 class _GalleryManagerScreenState extends ConsumerState<GalleryManagerScreen> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _blurOpacityController;
+  late TextEditingController _blurOpacityController2;
   late TextEditingController _borderRadiusController;
   late TextEditingController _imageRepeatController;
 
@@ -24,6 +25,7 @@ class _GalleryManagerScreenState extends ConsumerState<GalleryManagerScreen> {
   void initState() {
     super.initState();
     _blurOpacityController = TextEditingController();
+    _blurOpacityController2 = TextEditingController();
     _borderRadiusController = TextEditingController();
     _imageRepeatController = TextEditingController();
   }
@@ -31,6 +33,7 @@ class _GalleryManagerScreenState extends ConsumerState<GalleryManagerScreen> {
   @override
   void dispose() {
     _blurOpacityController.dispose();
+    _blurOpacityController2.dispose();
     _borderRadiusController.dispose();
     _imageRepeatController.dispose();
     super.dispose();
@@ -53,6 +56,8 @@ class _GalleryManagerScreenState extends ConsumerState<GalleryManagerScreen> {
         body: galleryAsyncValue.when(
             data: (galleryData) {
               _blurOpacityController.text = galleryData.blurOpacity.toString();
+              _blurOpacityController2.text =
+                  galleryData.blurOpacityInBgMode.toString();
               _borderRadiusController.text =
                   galleryData.borderRadius.toString();
               _imageRepeatController.text =
@@ -66,29 +71,38 @@ class _GalleryManagerScreenState extends ConsumerState<GalleryManagerScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             TextFormField(
-                              controller: _blurOpacityController,
-                              decoration: const InputDecoration(
-                                  labelText: 'Blur Opacity'),
-                              keyboardType: TextInputType.number,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter a value';
-                                }
-                                return null;
-                              },
-                            ),
+                                controller: _blurOpacityController,
+                                decoration: const InputDecoration(
+                                    labelText: 'Blur Opacity'),
+                                keyboardType: TextInputType.number,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter a value';
+                                  }
+                                  return null;
+                                }),
                             TextFormField(
-                              controller: _borderRadiusController,
-                              decoration: const InputDecoration(
-                                  labelText: 'Border Radius'),
-                              keyboardType: TextInputType.number,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter a value';
-                                }
-                                return null;
-                              },
-                            ),
+                                controller: _blurOpacityController2,
+                                decoration: const InputDecoration(
+                                    labelText: 'Blur Opacity (Bg Mode)'),
+                                keyboardType: TextInputType.number,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter a value';
+                                  }
+                                  return null;
+                                }),
+                            TextFormField(
+                                controller: _borderRadiusController,
+                                decoration: const InputDecoration(
+                                    labelText: 'Border Radius'),
+                                keyboardType: TextInputType.number,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter a value';
+                                  }
+                                  return null;
+                                }),
                             TextFormField(
                                 controller: _imageRepeatController,
                                 decoration: const InputDecoration(
@@ -201,6 +215,7 @@ class _GalleryManagerScreenState extends ConsumerState<GalleryManagerScreen> {
     if (_formKey.currentState!.validate()) {
       final updatedGalleryData = galleryData.copyWith(
         blurOpacity: double.parse(_blurOpacityController.text),
+        blurOpacityInBgMode: double.parse(_blurOpacityController2.text),
         borderRadius: double.parse(_borderRadiusController.text),
         imageRepeatEachMinutes: int.parse(_imageRepeatController.text),
       );
