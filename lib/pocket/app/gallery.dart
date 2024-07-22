@@ -40,13 +40,16 @@ class _GalleryManagerScreenState extends ConsumerState<GalleryManagerScreen> {
   Widget build(BuildContext context) {
     final galleryAsyncValue = ref.watch(gallerysProvider);
     return Scaffold(
-        appBar: AppBar(title: const Text('Gallery Manager'), actions: [
-          IconButton(
-              onPressed: galleryAsyncValue.value == null
-                  ? null
-                  : () => _saveChanges(galleryAsyncValue.value!),
-              icon: const Icon(Icons.save))
-        ]),
+        appBar: AppBar(
+            title: const Text('Gallery Manager'),
+            centerTitle: true,
+            actions: [
+              IconButton(
+                  onPressed: galleryAsyncValue.value == null
+                      ? null
+                      : () => _saveChanges(galleryAsyncValue.value!),
+                  icon: const Icon(Icons.save))
+            ]),
         body: galleryAsyncValue.when(
             data: (galleryData) {
               _blurOpacityController.text = galleryData.blurOpacity.toString();
@@ -118,7 +121,7 @@ class _GalleryManagerScreenState extends ConsumerState<GalleryManagerScreen> {
     return InkWell(
       onTap: () => _addImage(galleryData),
       child: Container(
-          width: (MediaQuery.maybeSizeOf(context)!.width) / 3.5,
+          width: width,
           height: 200,
           color: Colors.grey[300],
           child: const Icon(Icons.add, size: 40)),
@@ -147,14 +150,14 @@ class _GalleryManagerScreenState extends ConsumerState<GalleryManagerScreen> {
         });
   }
 
+  double width = 93;
+
   Widget _buildImagePreview(String imageUrl, GalleryData galleryData) {
     return Stack(children: [
       GestureDetector(
           onTap: () => _showFullScreenImage(context, imageUrl),
           child: Image.network(imageUrl,
-              width: (MediaQuery.maybeSizeOf(context)!.width) / 3.5,
-              height: 200,
-              fit: BoxFit.cover)),
+              width: width, height: 200, fit: BoxFit.cover)),
       Positioned(
           top: 0,
           right: 0,
