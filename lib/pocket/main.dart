@@ -6,6 +6,7 @@ import 'package:cyberme_flutter/learn/game.dart';
 import 'package:cyberme_flutter/learn/snh.dart';
 import 'package:cyberme_flutter/pocket/app/backup.dart';
 import 'package:cyberme_flutter/pocket/app/body_mass.dart';
+import 'package:cyberme_flutter/pocket/app/cert.dart';
 import 'package:cyberme_flutter/pocket/app/counter.dart';
 import 'package:cyberme_flutter/pocket/app/esxi.dart';
 import 'package:cyberme_flutter/pocket/app/gallery.dart';
@@ -199,6 +200,13 @@ final apps = {
     "addToMenu": true,
     "addToContext": true,
     "icon": Icons.image
+  },
+  "cert-manager": {
+    "name": "证书管理",
+    "view": (c) => const CertConfigView(),
+    "addToMenu": true,
+    "addToContext": true,
+    "icon": Icons.security
   }
 };
 
