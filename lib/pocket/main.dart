@@ -13,6 +13,9 @@ import 'package:cyberme_flutter/pocket/app/gallery.dart';
 import 'package:cyberme_flutter/pocket/app/gitea.dart';
 import 'package:cyberme_flutter/pocket/app/link.dart';
 import 'package:cyberme_flutter/pocket/app/location.dart';
+import 'package:cyberme_flutter/pocket/app/server/server.dart';
+import 'package:cyberme_flutter/pocket/app/server/service.dart';
+import 'package:cyberme_flutter/pocket/app/server/token.dart';
 import 'package:cyberme_flutter/pocket/app/story.dart';
 import 'app/blog.dart';
 import 'app/blue.dart';
@@ -207,6 +210,13 @@ final apps = {
     "addToMenu": true,
     "addToContext": true,
     "icon": Icons.security
+  },
+  "server": {
+    "name": "服务管理",
+    "view": (c) => const ServiceManageView(),
+    "addToMenu": true,
+    "addToContext": true,
+    "icon": Icons.computer
   }
 };
 
