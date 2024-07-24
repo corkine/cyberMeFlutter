@@ -7,10 +7,10 @@ part 'service.freezed.dart';
 part 'service.g.dart';
 
 enum ServiceType {
-  inside("内部服务", Icons.storage),
-  cron("后台定时任务", Icons.schedule),
   http("HTTP 服务", Icons.public),
-  socket("Socket 服务", Icons.api);
+  socket("Socket 服务", Icons.api),
+  cron("定时任务", Icons.schedule),
+  inside("内部服务", Icons.storage);
 
   final String desc;
   final IconData icon;
@@ -59,7 +59,9 @@ class OAuthToken with _$OAuthToken {
       @Default("") String secret,
       @Default(0) int expired,
       @Default("") String note,
-      @Default("") String manageUrl}) = _OAuthToken;
+      @Default("") String implDetails,
+      @Default("") String manageUrl,
+      @Default(0) int update}) = _OAuthToken;
 
   factory OAuthToken.fromJson(Map<String, dynamic> json) =>
       _$OAuthTokenFromJson(json);

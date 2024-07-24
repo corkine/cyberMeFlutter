@@ -12,6 +12,7 @@ class TokenEmbededView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final tokens =
         ref.watch(serviceDbProvider).value?.tokens.values.toList() ?? [];
+    tokens.sort((a, b) => a.update.compareTo(b.update));
     return ListView.builder(
         padding: const EdgeInsets.only(bottom: 80),
         itemCount: tokens.length,
@@ -66,6 +67,7 @@ class _TokenEditorViewState extends ConsumerState<TokenEditorView> {
   late DateTime _expired;
   late TextEditingController _noteController;
   late TextEditingController _manageUrlController;
+  late TextEditingController _implController;
 
   @override
   void initState() {
@@ -80,6 +82,7 @@ class _TokenEditorViewState extends ConsumerState<TokenEditorView> {
     }
     _manageUrlController = TextEditingController(text: widget.token?.manageUrl);
     _noteController = TextEditingController(text: widget.token?.note);
+    _implController = TextEditingController(text: widget.token?.implDetails);
   }
 
   @override
@@ -94,9 +97,10 @@ class _TokenEditorViewState extends ConsumerState<TokenEditorView> {
     _secretController.clear();
     _manageUrlController.clear();
     _noteController.clear();
+    _implController.clear();
   }
 
-  void _addOrUpdateToken() {
+  void _addOrUpdateToken([bool updateTime = true]) {
     if (_formKey.currentState!.validate()) {
       final newToken = (widget.token ?? OAuthToken(id: const Uuid().v4()))
           .copyWith(
@@ -105,7 +109,9 @@ class _TokenEditorViewState extends ConsumerState<TokenEditorView> {
               secret: _secretController.text,
               expired: _expired.millisecondsSinceEpoch ~/ 1000,
               manageUrl: _manageUrlController.text,
-              note: _noteController.text);
+              note: _noteController.text,
+              implDetails: _implController.text,
+              update: DateTime.now().millisecondsSinceEpoch ~/ 1000);
       ref.read(serviceDbProvider.notifier).makeMemchangeOfToken(newToken);
       _clearForm();
       Navigator.of(context).pop();
@@ -123,35 +129,24 @@ class _TokenEditorViewState extends ConsumerState<TokenEditorView> {
                 padding: const EdgeInsets.only(left: 16, right: 16),
                 children: [
                   TextFormField(
-                    controller: _nameController,
-                    decoration: const InputDecoration(labelText: 'Name*'),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter a name';
-                      }
-                      return null;
-                    },
-                  ),
+                      controller: _nameController,
+                      decoration: const InputDecoration(labelText: 'Name*'),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter a name';
+                        }
+                        return null;
+                      }),
                   TextFormField(
-                    controller: _clientIdController,
-                    decoration: const InputDecoration(labelText: 'Client ID'),
-                    validator: (value) {
-                      // if (value == null || value.isEmpty) {
-                      //   return 'Please enter a client ID';
-                      // }
-                      return null;
-                    },
-                  ),
+                      controller: _noteController,
+                      decoration: const InputDecoration(labelText: 'Note')),
                   TextFormField(
-                    controller: _secretController,
-                    decoration: const InputDecoration(labelText: 'Secret'),
-                    validator: (value) {
-                      // if (value == null || value.isEmpty) {
-                      //   return 'Please enter a secret';
-                      // }
-                      return null;
-                    },
-                  ),
+                      controller: _clientIdController,
+                      decoration:
+                          const InputDecoration(labelText: 'Client ID')),
+                  TextFormField(
+                      controller: _secretController,
+                      decoration: const InputDecoration(labelText: 'Secret')),
                   Padding(
                       padding: const EdgeInsets.only(top: 15, bottom: 10),
                       child: Row(
@@ -190,12 +185,14 @@ class _TokenEditorViewState extends ConsumerState<TokenEditorView> {
                         return null;
                       }),
                   TextFormField(
-                      controller: _noteController,
-                      decoration: const InputDecoration(labelText: 'Note'),
+                      controller: _implController,
+                      decoration:
+                          const InputDecoration(labelText: 'Impl Details'),
                       maxLines: null)
                 ])),
         floatingActionButton: FloatingActionButton.extended(
             onPressed: _addOrUpdateToken,
+            isExtended: true,
             label: Text(isAdd ? "添加密钥" : "更新密钥"),
             icon: Icon(isAdd ? Icons.add : Icons.save)));
   }
