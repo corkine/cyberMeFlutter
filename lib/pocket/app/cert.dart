@@ -47,7 +47,7 @@ class _CertConfigViewState extends ConsumerState<CertConfigView> {
 
   void _addCert(BuildContext context) async {
     final newCert = await _showCertForm(context);
-    if (newCert != null) {
+    if (newCert != null && newCert.id.isNotEmpty) {
       try {
         await ref.read(certsProvider.notifier).set(newCert);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -127,98 +127,103 @@ class _CertConfigViewState extends ConsumerState<CertConfigView> {
     return showModalBottomSheet<CertConfig>(
         context: context,
         isScrollControlled: true,
-        builder: (context) => StatefulBuilder(
-            builder: (context, setState) => Scaffold(
-                appBar: AppBar(title: const Text("编辑证书")),
-                body: SingleChildScrollView(
-                    child: Padding(
-                        padding: const EdgeInsets.only(left: 10, right: 10),
-                        child: ListBody(children: [
-                          TextField(
-                              controller: nameController,
-                              decoration:
-                                  const InputDecoration(labelText: 'Name')),
-                          TextField(
-                              controller: domainController,
-                              decoration:
-                                  const InputDecoration(labelText: 'Domain')),
-                          Padding(
+        builder: (context) => SafeArea(
+              child: StatefulBuilder(
+                  builder: (context, setState) => Scaffold(
+                      appBar: AppBar(
+                          title: Text(existingCert != null ? "编辑证书" : "添加证书")),
+                      body: SingleChildScrollView(
+                          child: Padding(
                               padding:
-                                  const EdgeInsets.only(top: 15, bottom: 0),
-                              child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                  const EdgeInsets.only(left: 10, right: 10),
+                              child: ListBody(children: [
+                                TextField(
+                                    controller: nameController,
+                                    decoration: const InputDecoration(
+                                        labelText: 'Name')),
+                                TextField(
+                                    controller: domainController,
+                                    decoration: const InputDecoration(
+                                        labelText: 'Domain')),
+                                Padding(
+                                    padding: const EdgeInsets.only(
+                                        top: 15, bottom: 0),
+                                    child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
                                         children: [
-                                          const Text('Expiry Date'),
-                                          Text(selectedDate != null
-                                              ? '${selectedDate!.year}-${selectedDate!.month.toString().padLeft(2, '0')}-${selectedDate!.day.toString().padLeft(2, '0')}'
-                                              : 'Not set')
-                                        ]),
-                                    IconButton(
-                                        icon: const Icon(Icons.calendar_today),
-                                        onPressed: () async {
-                                          final DateTime? picked =
-                                              await showDatePicker(
-                                            context: context,
-                                            initialDate:
-                                                selectedDate ?? DateTime.now(),
-                                            firstDate: DateTime.now(),
-                                            lastDate: DateTime(2101),
-                                          );
-                                          if (picked != null &&
-                                              picked != selectedDate) {
-                                            setState(() {
-                                              selectedDate = picked;
-                                            });
-                                          }
-                                        })
-                                  ])),
-                          TextField(
-                              controller: noteController,
-                              decoration:
-                                  const InputDecoration(labelText: 'Note')),
-                          TextField(
-                            controller: publicKeyController,
-                            decoration:
-                                const InputDecoration(labelText: 'Public Key'),
-                            maxLines: 3,
-                          ),
-                          TextField(
-                            controller: privateKeyController,
-                            decoration:
-                                const InputDecoration(labelText: 'Private Key'),
-                            maxLines: 3,
-                          ),
-                          const SizedBox(height: 15),
-                          TextButton(
-                              child: const Text('Save'),
-                              onPressed: () {
-                                final cert = CertConfig(
-                                  name: nameController.text,
-                                  domain: domainController.text,
-                                  expired: selectedDate != null
-                                      ? DateTime(
-                                                  selectedDate!.year,
-                                                  selectedDate!.month,
-                                                  selectedDate!.day)
-                                              .millisecondsSinceEpoch ~/
-                                          1000
-                                      : 0,
-                                  note: noteController.text,
-                                  publicKey: publicKeyController.text,
-                                  privateKey: privateKeyController.text,
-                                  deploys: existingCert?.deploys ?? [],
-                                  updateAt:
-                                      DateTime.now().millisecondsSinceEpoch ~/
-                                          1000,
-                                );
-                                Navigator.of(context).pop(cert);
-                              })
-                        ]))))));
+                                          Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                const Text('Expiry Date'),
+                                                Text(selectedDate != null
+                                                    ? '${selectedDate!.year}-${selectedDate!.month.toString().padLeft(2, '0')}-${selectedDate!.day.toString().padLeft(2, '0')}'
+                                                    : 'Not set')
+                                              ]),
+                                          IconButton(
+                                              icon: const Icon(
+                                                  Icons.calendar_today),
+                                              onPressed: () async {
+                                                final DateTime? picked =
+                                                    await showDatePicker(
+                                                  context: context,
+                                                  initialDate: selectedDate ??
+                                                      DateTime.now(),
+                                                  firstDate: DateTime.now(),
+                                                  lastDate: DateTime(2101),
+                                                );
+                                                if (picked != null &&
+                                                    picked != selectedDate) {
+                                                  setState(() {
+                                                    selectedDate = picked;
+                                                  });
+                                                }
+                                              })
+                                        ])),
+                                TextField(
+                                    controller: noteController,
+                                    decoration: const InputDecoration(
+                                        labelText: 'Note')),
+                                TextField(
+                                  controller: publicKeyController,
+                                  decoration: const InputDecoration(
+                                      labelText: 'Public Key'),
+                                  maxLines: 3,
+                                ),
+                                TextField(
+                                  controller: privateKeyController,
+                                  decoration: const InputDecoration(
+                                      labelText: 'Private Key'),
+                                  maxLines: 3,
+                                ),
+                                const SizedBox(height: 15),
+                                TextButton(
+                                    child: const Text('Save'),
+                                    onPressed: () {
+                                      final cert = CertConfig(
+                                        name: nameController.text,
+                                        domain: domainController.text,
+                                        expired: selectedDate != null
+                                            ? DateTime(
+                                                        selectedDate!.year,
+                                                        selectedDate!.month,
+                                                        selectedDate!.day)
+                                                    .millisecondsSinceEpoch ~/
+                                                1000
+                                            : 0,
+                                        note: noteController.text,
+                                        publicKey: publicKeyController.text,
+                                        privateKey: privateKeyController.text,
+                                        deploys: existingCert?.deploys ?? [],
+                                        updateAt: DateTime.now()
+                                                .millisecondsSinceEpoch ~/
+                                            1000,
+                                      );
+                                      Navigator.of(context).pop(cert);
+                                    })
+                              ]))))),
+            ));
   }
 }
 

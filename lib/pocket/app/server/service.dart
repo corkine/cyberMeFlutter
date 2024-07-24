@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sticky_grouped_list/sticky_grouped_list.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:uuid/uuid.dart';
 
@@ -100,27 +101,26 @@ class _ServiceEmbededViewState extends ConsumerState<ServiceEmbededView> {
       }
     });
     return Stack(children: [
-      ListView.builder(
+      StickyGroupedListView<ServerService, String>(
+          elements: services,
           padding: const EdgeInsets.only(bottom: 80),
-          itemCount: services.length,
-          itemBuilder: (context, index) {
-            final service = services[index];
+          reverse: true,
+          groupBy: (element) => element.serverId,
+          indexedItemBuilder: (context, service, index) {
             return ListTile(
-                onTap: () {
-                  showDialog(
-                      context: context,
-                      builder: (context) => SimpleDialog(
-                          title: const Text("可用端点"),
-                          children: service.endpoints.isEmpty
-                              ? [const SimpleDialogOption(child: Text("无可用端点"))]
-                              : [
-                                  for (var e in service.endpoints)
-                                    SimpleDialogOption(
-                                        child: Text(e),
-                                        onPressed: () =>
-                                            launchUrlString("https://" + e))
-                                ]));
-                },
+                onTap: () => showDialog(
+                    context: context,
+                    builder: (context) => SimpleDialog(
+                        title: const Text("可用端点"),
+                        children: service.endpoints.isEmpty
+                            ? [const SimpleDialogOption(child: Text("无可用端点"))]
+                            : [
+                                for (var e in service.endpoints)
+                                  SimpleDialogOption(
+                                      child: Text(e),
+                                      onPressed: () =>
+                                          launchUrlString("https://" + e))
+                              ])),
                 dense: true,
                 title: Row(children: [
                   Transform.translate(
@@ -131,13 +131,10 @@ class _ServiceEmbededViewState extends ConsumerState<ServiceEmbededView> {
                       style: const TextStyle(
                           fontWeight: FontWeight.bold, fontSize: 16))
                 ]),
-                contentPadding: const EdgeInsets.only(left: 20, right: 5),
+                contentPadding: const EdgeInsets.only(left: 13, right: 5),
                 subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(hostMap[service.serverId]?.name ?? "无服务器",
-                          style: TextStyle(
-                              color: Theme.of(context).colorScheme.tertiary)),
                       if (!_showEndpoints) Text(service.note),
                       if (_showEndpoints)
                         Text(service.endpoints.join("\n"),
@@ -159,6 +156,13 @@ class _ServiceEmbededViewState extends ConsumerState<ServiceEmbededView> {
                           .read(serviceDbProvider.notifier)
                           .deleteService(service.id))
                 ]));
+          },
+          groupSeparatorBuilder: (element) {
+            return Container(
+                color: Theme.of(context).colorScheme.primaryContainer,
+                child: Padding(
+                    padding: const EdgeInsets.only(left: 13, top: 2, bottom: 2),
+                    child: Text(hostMap[element.serverId]?.name ?? "无服务器")));
           }),
       Positioned(
           child: Wrap(spacing: 5, runSpacing: 5, children: [
@@ -172,22 +176,21 @@ class _ServiceEmbededViewState extends ConsumerState<ServiceEmbededView> {
                   onPressed: () {
                     setState(() => _showEndpoints = !_showEndpoints);
                   }),
-            if (_showFilter)
-              ...hosts.map((h) => ActionChip(
-                  label: Text(h.name),
-                  color: _selectHost.contains(h.id)
-                      ? WidgetStatePropertyAll(
-                          Theme.of(context).colorScheme.primaryContainer)
-                      : null,
-                  onPressed: () {
-                    setState(() {
-                      if (_selectHost.contains(h.id)) {
-                        _selectHost.remove(h.id);
-                      } else {
-                        _selectHost.add(h.id);
-                      }
-                    });
-                  })),
+            // if (_showFilter)
+            //   ...hosts.map((h) => ActionChip(
+            //       label: Text(h.name),
+            //       color: _selectHost.contains(h.id)
+            //           ? WidgetStatePropertyAll(
+            //               Theme.of(context).colorScheme.primaryContainer)
+            //           : null,
+            //       onPressed: () {
+            //         if (_selectHost.contains(h.id)) {
+            //           _selectHost.remove(h.id);
+            //         } else {
+            //           _selectHost.add(h.id);
+            //         }
+            //         setState(() {});
+            //       })),
             IconButton(
                 onPressed: () => setState(() => _showFilter = !_showFilter),
                 icon: Icon(Icons.filter_alt,
