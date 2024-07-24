@@ -13,13 +13,14 @@ part 'gallery.g.dart';
 
 @freezed
 class GalleryData with _$GalleryData {
-  factory GalleryData({
-    @Default(0.7) double blurOpacity,
-    @Default(25) double borderRadius,
-    @Default(5) int imageRepeatEachMinutes,
-    @Default(0.3) double blurOpacityInBgMode,
-    @Default([]) List<String> images,
-  }) = _GalleryData;
+  factory GalleryData(
+      {@Default(0.7) double blurOpacity,
+      @Default(25) double borderRadius,
+      @Default(5) int imageRepeatEachMinutes,
+      @Default(0.3) double blurOpacityInBgMode,
+      @Default([]) List<String> images, //已选择的图片
+      @Default([]) List<String> imagesAll //所有的图片
+      }) = _GalleryData;
 
   factory GalleryData.fromJson(Map<String, dynamic> json) =>
       _$GalleryDataFromJson(json);

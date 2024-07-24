@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
@@ -21,6 +22,11 @@ class _GalleryManagerScreenState extends ConsumerState<GalleryManagerScreen> {
   late TextEditingController _borderRadiusController;
   late TextEditingController _imageRepeatController;
 
+  double width = 93;
+  Set<String> selectImages = {};
+  List<String> allImages = [];
+  GalleryData? galleryData;
+
   @override
   void initState() {
     super.initState();
@@ -28,6 +34,15 @@ class _GalleryManagerScreenState extends ConsumerState<GalleryManagerScreen> {
     _blurOpacityController2 = TextEditingController();
     _borderRadiusController = TextEditingController();
     _imageRepeatController = TextEditingController();
+    ref.read(gallerysProvider.future).then((galleryData) {
+      _blurOpacityController.text = galleryData.blurOpacity.toString();
+      _blurOpacityController2.text = galleryData.blurOpacityInBgMode.toString();
+      _borderRadiusController.text = galleryData.borderRadius.toString();
+      _imageRepeatController.text =
+          galleryData.imageRepeatEachMinutes.toString();
+      selectImages = {...galleryData.images.toSet()};
+      allImages = [...galleryData.imagesAll];
+    });
   }
 
   @override
@@ -41,105 +56,87 @@ class _GalleryManagerScreenState extends ConsumerState<GalleryManagerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final galleryAsyncValue = ref.watch(gallerysProvider);
+    galleryData = ref.watch(gallerysProvider).value;
     return Scaffold(
         appBar: AppBar(
             title: const Text('Gallery Manager'),
             centerTitle: true,
             actions: [
               IconButton(
-                  onPressed: galleryAsyncValue.value == null
-                      ? null
-                      : () => _saveChanges(galleryAsyncValue.value!),
-                  icon: const Icon(Icons.save))
+                  onPressed: galleryData == null ? null : _saveChanges,
+                  icon: const Icon(Icons.save)),
+              const SizedBox(width: 10)
             ]),
-        body: galleryAsyncValue.when(
-            data: (galleryData) {
-              _blurOpacityController.text = galleryData.blurOpacity.toString();
-              _blurOpacityController2.text =
-                  galleryData.blurOpacityInBgMode.toString();
-              _borderRadiusController.text =
-                  galleryData.borderRadius.toString();
-              _imageRepeatController.text =
-                  galleryData.imageRepeatEachMinutes.toString();
-
-              return SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
-                  child: Form(
-                      key: _formKey,
-                      child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            TextFormField(
-                                controller: _blurOpacityController,
-                                decoration: const InputDecoration(
-                                    labelText: 'Blur Opacity'),
-                                keyboardType: TextInputType.number,
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please enter a value';
-                                  }
-                                  return null;
-                                }),
-                            TextFormField(
-                                controller: _blurOpacityController2,
-                                decoration: const InputDecoration(
-                                    labelText: 'Blur Opacity (Bg Mode)'),
-                                keyboardType: TextInputType.number,
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please enter a value';
-                                  }
-                                  return null;
-                                }),
-                            TextFormField(
-                                controller: _borderRadiusController,
-                                decoration: const InputDecoration(
-                                    labelText: 'Border Radius'),
-                                keyboardType: TextInputType.number,
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please enter a value';
-                                  }
-                                  return null;
-                                }),
-                            TextFormField(
-                                controller: _imageRepeatController,
-                                decoration: const InputDecoration(
-                                    labelText: 'Image Change Each',
-                                    suffixText: "Minutes"),
-                                keyboardType: TextInputType.number,
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please enter a value';
-                                  }
-                                  return null;
-                                }),
-                            const SizedBox(height: 20),
-                            Text('Images',
-                                style:
-                                    Theme.of(context).textTheme.headlineSmall),
-                            const SizedBox(height: 10),
-                            Wrap(spacing: 8, runSpacing: 8, children: [
-                              ...galleryData.images.map((imageUrl) =>
-                                  _buildImagePreview(imageUrl, galleryData)),
-                              _buildAddImageButton(galleryData),
-                            ])
-                          ])));
-            },
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (error, stack) => Center(child: Text('Error: $error'))));
-  }
-
-  Widget _buildAddImageButton(GalleryData galleryData) {
-    return InkWell(
-      onTap: () => _addImage(galleryData),
-      child: Container(
-          width: width,
-          height: 200,
-          color: Colors.grey[300],
-          child: const Icon(Icons.add, size: 40)),
-    );
+        body: galleryData == null
+            ? const Center(child: CircularProgressIndicator())
+            : SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Form(
+                    key: _formKey,
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          TextFormField(
+                              controller: _blurOpacityController,
+                              decoration: const InputDecoration(
+                                  labelText: 'Blur Opacity'),
+                              keyboardType: TextInputType.number,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter a value';
+                                }
+                                return null;
+                              }),
+                          TextFormField(
+                              controller: _blurOpacityController2,
+                              decoration: const InputDecoration(
+                                  labelText: 'Blur Opacity (Bg Mode)'),
+                              keyboardType: TextInputType.number,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter a value';
+                                }
+                                return null;
+                              }),
+                          TextFormField(
+                              controller: _borderRadiusController,
+                              decoration: const InputDecoration(
+                                  labelText: 'Border Radius'),
+                              keyboardType: TextInputType.number,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter a value';
+                                }
+                                return null;
+                              }),
+                          TextFormField(
+                              controller: _imageRepeatController,
+                              decoration: const InputDecoration(
+                                  labelText: 'Image Change Each',
+                                  suffixText: "Minutes"),
+                              keyboardType: TextInputType.number,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter a value';
+                                }
+                                return null;
+                              }),
+                          const SizedBox(height: 20),
+                          Text('Images',
+                              style: Theme.of(context).textTheme.headlineSmall),
+                          const SizedBox(height: 10),
+                          Wrap(spacing: 8, runSpacing: 8, children: [
+                            ...allImages.map(
+                                (imageUrl) => _buildImagePreview(imageUrl)),
+                            InkWell(
+                                onTap: _addImage,
+                                child: Container(
+                                    width: width,
+                                    height: 200,
+                                    color: Colors.grey[300],
+                                    child: const Icon(Icons.add, size: 40)))
+                          ])
+                        ]))));
   }
 
   void _showFullScreenImage(BuildContext context, String imageUrl) {
@@ -164,9 +161,7 @@ class _GalleryManagerScreenState extends ConsumerState<GalleryManagerScreen> {
         });
   }
 
-  double width = 93;
-
-  Widget _buildImagePreview(String imageUrl, GalleryData galleryData) {
+  Widget _buildImagePreview(String imageUrl) {
     return Stack(children: [
       GestureDetector(
           onTap: () => _showFullScreenImage(context, imageUrl),
@@ -174,16 +169,56 @@ class _GalleryManagerScreenState extends ConsumerState<GalleryManagerScreen> {
               width: width, height: 200, fit: BoxFit.cover)),
       Positioned(
           top: 0,
-          right: 0,
+          left: 0,
+          child: Checkbox(
+              value: selectImages.contains(imageUrl),
+              onChanged: (v) {
+                setState(() {
+                  if (selectImages.contains(imageUrl)) {
+                    selectImages.remove(imageUrl);
+                  } else {
+                    selectImages.add(imageUrl);
+                  }
+                });
+              })),
+      Positioned(
+          bottom: -5,
+          left: -5,
+          child: IconButton(
+              icon: const Icon(Icons.arrow_left),
+              onPressed: () {
+                var index = allImages.indexOf(imageUrl);
+                if (index > 0) {
+                  allImages.removeAt(index);
+                  allImages.insert(index - 1, imageUrl);
+                  setState(() {});
+                }
+              })),
+      Positioned(
+          bottom: -5,
+          right: -5,
+          child: IconButton(
+              icon: const Icon(Icons.arrow_right),
+              onPressed: () {
+                var index = allImages.indexOf(imageUrl);
+                if (index < allImages.length - 1) {
+                  allImages.removeAt(index);
+                  allImages.insert(index + 1, imageUrl);
+                  setState(() {});
+                }
+              })),
+      Positioned(
+          top: -5,
+          right: -5,
           child: Transform.rotate(
               angle: 0.75,
               child: IconButton(
                   icon: const Icon(Icons.add, color: Colors.white),
-                  onPressed: () => _removeImage(imageUrl, galleryData))))
+                  onPressed: () => _removeImage(imageUrl))))
     ]);
   }
 
-  void _addImage(GalleryData galleryData) async {
+  void _addImage() async {
     final ImagePicker _picker = ImagePicker();
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
@@ -197,28 +232,29 @@ class _GalleryManagerScreenState extends ConsumerState<GalleryManagerScreen> {
       var body = jsonDecode(response.body);
       debugPrint(body.toString());
       var newImageUrl = body["data"] as String;
-      final updatedGalleryData = galleryData.copyWith(
-        images: [...galleryData.images, newImageUrl],
-      );
-      ref.read(gallerysProvider.notifier).makeMemchange(updatedGalleryData);
+      setState(() {
+        selectImages.add(newImageUrl);
+        allImages.add(newImageUrl);
+      });
     }
   }
 
-  void _removeImage(String imageUrl, GalleryData galleryData) async {
-    final updatedGalleryData = galleryData.copyWith(
-      images: galleryData.images.where((url) => url != imageUrl).toList(),
-    );
-    ref.read(gallerysProvider.notifier).makeMemchange(updatedGalleryData);
+  void _removeImage(String imageUrl) async {
+    setState(() {
+      selectImages.remove(imageUrl);
+      allImages.remove(imageUrl);
+    });
   }
 
-  void _saveChanges(GalleryData galleryData) async {
+  void _saveChanges() async {
     if (_formKey.currentState!.validate()) {
-      final updatedGalleryData = galleryData.copyWith(
-        blurOpacity: double.parse(_blurOpacityController.text),
-        blurOpacityInBgMode: double.parse(_blurOpacityController2.text),
-        borderRadius: double.parse(_borderRadiusController.text),
-        imageRepeatEachMinutes: int.parse(_imageRepeatController.text),
-      );
+      final updatedGalleryData = galleryData!.copyWith(
+          blurOpacity: double.parse(_blurOpacityController.text),
+          blurOpacityInBgMode: double.parse(_blurOpacityController2.text),
+          borderRadius: double.parse(_borderRadiusController.text),
+          imageRepeatEachMinutes: int.parse(_imageRepeatController.text),
+          images: allImages.where((i) => selectImages.contains(i)).toList(),
+          imagesAll: allImages);
       await ref.read(gallerysProvider.notifier).rewrite(updatedGalleryData);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Changes saved successfully')),
