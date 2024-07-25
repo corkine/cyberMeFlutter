@@ -31,6 +31,7 @@ dependencies:
   flutter_inappwebview: ^5.8.0
   cached_network_image: ^3.3.0
   health: ^8.0.0 #https://pub.dev/packages/health/example
+  health_kit_reporter: ^2.1.1
   hooks_riverpod: ^2.4.6
   flutter_hooks: ^0.20.3
   riverpod_annotation: ^2.3.1

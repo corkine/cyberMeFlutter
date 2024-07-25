@@ -536,6 +536,14 @@ packages:
       url: "https://mirrors.tuna.tsinghua.edu.cn/dart-pub/"
     source: hosted
     version: "8.1.0"
+  health_kit_reporter:
+    dependency: "direct main"
+    description:
+      name: health_kit_reporter
+      sha256: f6de33fa3cdadc9bf5785b7cdab48feba680d8f73c7a39e7181cca68b4f50f3c
+      url: "https://mirrors.tuna.tsinghua.edu.cn/dart-pub/"
+    source: hosted
+    version: "2.1.1"
   hooks_riverpod:
     dependency: "direct main"
     description:

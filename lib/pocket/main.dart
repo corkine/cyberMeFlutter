@@ -11,11 +11,10 @@ import 'package:cyberme_flutter/pocket/app/counter.dart';
 import 'package:cyberme_flutter/pocket/app/esxi.dart';
 import 'package:cyberme_flutter/pocket/app/gallery.dart';
 import 'package:cyberme_flutter/pocket/app/gitea.dart';
+import 'package:cyberme_flutter/pocket/app/health_blue.dart';
 import 'package:cyberme_flutter/pocket/app/link.dart';
 import 'package:cyberme_flutter/pocket/app/location.dart';
-import 'package:cyberme_flutter/pocket/app/server/server.dart';
 import 'package:cyberme_flutter/pocket/app/server/service.dart';
-import 'package:cyberme_flutter/pocket/app/server/token.dart';
 import 'package:cyberme_flutter/pocket/app/story.dart';
 import 'app/blog.dart';
 import 'app/blue.dart';
@@ -217,6 +216,13 @@ final apps = {
     "addToMenu": true,
     "addToContext": true,
     "icon": Icons.computer
+  },
+  "sexual": {
+    "name": "Sexual",
+    "view": (c) => const SexualActivityView(),
+    "addToMenu": true,
+    "addToContext": true,
+    "icon": Icons.people
   }
 };
 
