@@ -20,6 +20,7 @@ import 'app/blog.dart';
 import 'app/blue.dart';
 import 'app/gpt.dart';
 import 'app/medic.dart';
+import 'app/sticky.dart';
 import 'dashboard.dart' as dash;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -223,6 +224,13 @@ final apps = {
     "addToMenu": true,
     "addToContext": true,
     "icon": Icons.people
+  },
+  "sticky": {
+    "name": "Sticky",
+    "view": (c) => const StickyNoteView(),
+    "addToMenu": true,
+    "addToContext": true,
+    "icon": Icons.note
   }
 };
 

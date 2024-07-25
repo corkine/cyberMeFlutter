@@ -9,17 +9,13 @@ class SNHApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      theme: Theme.of(context).copyWith(
-          primaryColor: const Color(0xFFE87797),
-          appBarTheme:
-              AppBarTheme.of(context).copyWith(color: const Color(0xFFE87797))),
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text("SNH48 Pocket"),
-        ),
-        body: const SNH(),
-      ),
-    );
+        theme: Theme.of(context).copyWith(
+            primaryColor: const Color(0xFFE87797),
+            appBarTheme: AppBarTheme.of(context)
+                .copyWith(color: const Color(0xFFE87797))),
+        home: Scaffold(
+            appBar: AppBar(title: const Text("SNH48 Pocket")),
+            body: const SNH()));
   }
 }
 
@@ -42,20 +38,19 @@ class _SNHState extends State<SNH> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: future,
-      builder: (c, d) {
-        if (d.hasData) {
-          final List<Idol> data = d.data as List<Idol>;
-          return RefreshIndicator(
-            onRefresh: () async {
-              final res = await Bean.fetchData();
-              setState(() {
-                future = Future.value(res);
-              });
-            },
-            child: Scrollbar(
-              child: CustomScrollView(
-                slivers: [
+        future: future,
+        builder: (c, d) {
+          if (d.hasData) {
+            final List<Idol> data = d.data as List<Idol>;
+            return RefreshIndicator(
+                onRefresh: () async {
+                  final res = await Bean.fetchData();
+                  setState(() {
+                    future = Future.value(res);
+                  });
+                },
+                child: Scrollbar(
+                    child: CustomScrollView(slivers: [
                   const SliverToBoxAdapter(),
                   SliverPersistentHeader(
                     pinned: true,
@@ -77,55 +72,44 @@ class _SNHState extends State<SNH> {
                     delegate: MySPH("Team X", const Color(0xffa9cc29)),
                   ),
                   buildSliverList(data, "X")
-                ],
-              ),
-            ),
-          );
-        } else if (d.hasError) {
-          return Text("Oops: ${d.error}");
-        }
-        return const Center(child: CircularProgressIndicator());
-      },
-    );
+                ])));
+          } else if (d.hasError) {
+            return Text("Oops: ${d.error}");
+          }
+          return const Center(child: CircularProgressIndicator());
+        });
   }
 
   SliverPadding buildSliverList(List<Idol> data, String teamName) {
     data = data.where((element) => element.teamName == teamName).toList();
     return SliverPadding(
-      padding: const EdgeInsets.only(top: 5, bottom: 20),
-      sliver: SliverGrid(
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 4, childAspectRatio: 1 / 1.1),
-          delegate: SliverChildBuilderDelegate((c, index) {
-            Idol p = data[index];
-            return InkWell(
-              onTap: () {
-                Navigator.of(context).push(MaterialPageRoute(builder: (c) {
-                  return IdolDetail(p);
-                }));
-              },
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Hero(
-                    tag: p.avatarUrl,
-                    child: ClipOval(
-                      child: CircleAvatar(
-                        child: Image.network(p.avatarUrl),
-                        backgroundColor: Colors.white,
-                        radius: 32,
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 5, bottom: 5),
-                    child: Text(p.sname),
-                  )
-                ],
-              ),
-            );
-          }, childCount: data.length)),
-    );
+        padding: const EdgeInsets.only(top: 5, bottom: 20),
+        sliver: SliverGrid(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 4, childAspectRatio: 1 / 1.1),
+            delegate: SliverChildBuilderDelegate((c, index) {
+              Idol p = data[index];
+              return InkWell(
+                  onTap: () {
+                    Navigator.of(context).push(MaterialPageRoute(builder: (c) {
+                      return IdolDetail(p);
+                    }));
+                  },
+                  child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Hero(
+                            tag: p.avatarUrl,
+                            child: ClipOval(
+                                child: CircleAvatar(
+                                    child: Image.network(p.avatarUrl),
+                                    backgroundColor: Colors.white,
+                                    radius: 32))),
+                        Padding(
+                            padding: const EdgeInsets.only(top: 5, bottom: 5),
+                            child: Text(p.sname))
+                      ]));
+            }, childCount: data.length)));
   }
 }
 
@@ -144,9 +128,7 @@ class IdolDetail extends StatelessWidget {
           SliverAppBar(
             stretch: true,
             pinned: true,
-            leading: const BackButton(
-              color: Colors.black,
-            ),
+            leading: const BackButton(color: Colors.black),
             expandedHeight: 300,
             backgroundColor: Colors.pink[100],
             automaticallyImplyLeading: true,
