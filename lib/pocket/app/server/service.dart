@@ -108,6 +108,7 @@ class _ServiceEmbededViewState extends ConsumerState<ServiceEmbededView> {
           padding: const EdgeInsets.only(bottom: 80),
           groupBy: (element) => element.serverId,
           groupComparator: (b, a) => a.compareTo(b),
+          itemComparator: (a, b) => a.type.index.compareTo(b.type.index),
           indexedItemBuilder: (context, service, index) {
             return ListTile(
                 onTap: () => showDialog(
