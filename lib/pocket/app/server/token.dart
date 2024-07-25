@@ -1,5 +1,6 @@
 import 'package:cyberme_flutter/pocket/app/server/common.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
@@ -40,10 +41,12 @@ class TokenEmbededView extends ConsumerWidget {
                     }),
                 IconButton(
                     icon: const Icon(Icons.delete),
-                    onPressed: () {
-                      ref
-                          .read(serviceDbProvider.notifier)
-                          .deleteToken(token.id);
+                    onPressed: () async {
+                      if (await confirm(context, "确定删除 ${token.name} ?")) {
+                        ref
+                            .read(serviceDbProvider.notifier)
+                            .deleteToken(token.id);
+                      }
                     })
               ]));
         });
@@ -142,11 +145,30 @@ class _TokenEditorViewState extends ConsumerState<TokenEditorView> {
                       decoration: const InputDecoration(labelText: 'Note')),
                   TextFormField(
                       controller: _clientIdController,
-                      decoration:
-                          const InputDecoration(labelText: 'Client ID')),
+                      decoration: InputDecoration(
+                          labelText: 'Client ID',
+                          suffix: IconButton(
+                              onPressed: () {
+                                Clipboard.setData(ClipboardData(
+                                    text: _clientIdController.text));
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text('Client ID copied')));
+                              },
+                              icon: const Icon(Icons.copy)))),
                   TextFormField(
                       controller: _secretController,
-                      decoration: const InputDecoration(labelText: 'Secret')),
+                      decoration: InputDecoration(
+                          labelText: 'Secret',
+                          suffix: IconButton(
+                              onPressed: () {
+                                Clipboard.setData(ClipboardData(
+                                    text: _secretController.text));
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text('Client Secret copied')));
+                              },
+                              icon: const Icon(Icons.copy)))),
                   Padding(
                       padding: const EdgeInsets.only(top: 15, bottom: 10),
                       child: Row(

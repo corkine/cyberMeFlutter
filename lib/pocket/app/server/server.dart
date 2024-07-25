@@ -30,7 +30,7 @@ class ServerEmbededView extends ConsumerWidget {
           return ListTile(
               title: Text(server.name),
               subtitle: subtitle,
-              onTap: () => launchUrlString("https://" + server.manageUrl),
+              //onTap: () => launchUrlString("https://" + server.manageUrl),
               contentPadding: const EdgeInsets.only(left: 20, right: 5),
               trailing: Row(mainAxisSize: MainAxisSize.min, children: [
                 IconButton(
@@ -40,9 +40,13 @@ class ServerEmbededView extends ConsumerWidget {
                             builder: (context) => ServerEditorView(server)))),
                 IconButton(
                     icon: const Icon(Icons.delete),
-                    onPressed: () => ref
-                        .read(serviceDbProvider.notifier)
-                        .deleteServer(server.id))
+                    onPressed: () async {
+                      if (await confirm(context, "确定删除 ${server.name} ?")) {
+                        ref
+                            .read(serviceDbProvider.notifier)
+                            .deleteServer(server.id);
+                      }
+                    })
               ]));
         });
   }
@@ -205,8 +209,13 @@ class _ServerEditorViewState extends ConsumerState<ServerEditorView> {
                           ])),
                   TextFormField(
                       controller: _manageUrlController,
-                      decoration: const InputDecoration(
-                          labelText: 'Manage URL*', prefixText: "https://"),
+                      decoration: InputDecoration(
+                          labelText: 'Manage URL*',
+                          prefixText: "https://",
+                          suffix: IconButton(
+                              onPressed: () => launchUrlString(
+                                  "https://" + _manageUrlController.text),
+                              icon: const Icon(Icons.launch))),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter a manage URL';
@@ -215,17 +224,24 @@ class _ServerEditorViewState extends ConsumerState<ServerEditorView> {
                       }),
                   TextFormField(
                       controller: _sshUrlController,
-                      decoration: const InputDecoration(
-                          labelText: 'Endpoint URL*', prefixText: "https://"),
+                      decoration: InputDecoration(
+                          labelText: 'Endpoint URL*',
+                          prefixText: "https://",
+                          suffix: IconButton(
+                              onPressed: () => launchUrlString(
+                                  "https://" + _sshUrlController.text),
+                              icon: const Icon(Icons.launch))),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter a valid URL';
                         }
                         return null;
                       }),
+                  const SizedBox(height: 10),
                   TextFormField(
                       controller: _bandController,
                       decoration: const InputDecoration(labelText: 'Band')),
+                  const SizedBox(height: 10),
                   TextFormField(
                       controller: _noteController,
                       decoration: const InputDecoration(labelText: 'Note'),

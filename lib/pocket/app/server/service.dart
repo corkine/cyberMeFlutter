@@ -1,3 +1,4 @@
+import 'package:cyberme_flutter/pocket/app/server/common.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sticky_grouped_list/sticky_grouped_list.dart';
@@ -102,6 +103,7 @@ class _ServiceEmbededViewState extends ConsumerState<ServiceEmbededView> {
     });
     return Stack(children: [
       StickyGroupedListView<ServerService, String>(
+          key: ValueKey(services.length),
           elements: services,
           padding: const EdgeInsets.only(bottom: 80),
           reverse: true,
@@ -152,9 +154,14 @@ class _ServiceEmbededViewState extends ConsumerState<ServiceEmbededView> {
                                   ServiceEditorView(service)))),
                   IconButton(
                       icon: const Icon(Icons.delete),
-                      onPressed: () => ref
-                          .read(serviceDbProvider.notifier)
-                          .deleteService(service.id))
+                      onPressed: () async {
+                        if (await confirm(
+                            context, "确定删除服务 ${service.name} 吗？")) {
+                          ref
+                              .read(serviceDbProvider.notifier)
+                              .deleteService(service.id);
+                        }
+                      })
                 ]));
           },
           groupSeparatorBuilder: (element) {
@@ -176,21 +183,21 @@ class _ServiceEmbededViewState extends ConsumerState<ServiceEmbededView> {
                   onPressed: () {
                     setState(() => _showEndpoints = !_showEndpoints);
                   }),
-            // if (_showFilter)
-            //   ...hosts.map((h) => ActionChip(
-            //       label: Text(h.name),
-            //       color: _selectHost.contains(h.id)
-            //           ? WidgetStatePropertyAll(
-            //               Theme.of(context).colorScheme.primaryContainer)
-            //           : null,
-            //       onPressed: () {
-            //         if (_selectHost.contains(h.id)) {
-            //           _selectHost.remove(h.id);
-            //         } else {
-            //           _selectHost.add(h.id);
-            //         }
-            //         setState(() {});
-            //       })),
+            if (_showFilter)
+              ...hosts.map((h) => ActionChip(
+                  label: Text(h.name),
+                  color: _selectHost.contains(h.id)
+                      ? WidgetStatePropertyAll(
+                          Theme.of(context).colorScheme.primaryContainer)
+                      : null,
+                  onPressed: () {
+                    if (_selectHost.contains(h.id)) {
+                      _selectHost.remove(h.id);
+                    } else {
+                      _selectHost.add(h.id);
+                    }
+                    setState(() {});
+                  })),
             IconButton(
                 onPressed: () => setState(() => _showFilter = !_showFilter),
                 icon: Icon(Icons.filter_alt,

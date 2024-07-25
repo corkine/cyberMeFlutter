@@ -75,4 +75,12 @@ class Certs extends _$Certs {
         tag, CertConfigsB(certs: newState.certs.values.toList()).toJson());
     state = AsyncData(newState);
   }
+
+  Future<void> remove(String id) async {
+    final newState = {...state.value!.certs};
+    newState.remove(id);
+    await settingUpload(
+        tag, CertConfigsB(certs: newState.values.toList()).toJson());
+    state = AsyncData(CertConfigs(certs: newState));
+  }
 }
