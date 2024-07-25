@@ -410,8 +410,7 @@ class _ServiceEditorViewState extends ConsumerState<ServiceEditorView> {
                                       .textTheme
                                       .bodySmall
                                       ?.copyWith(color: Colors.black87)),
-                              onTap: () =>
-                                  launchUrlString("https://" + token.manageUrl),
+                              //onTap: () => launchUrlString("https://" + token.manageUrl),
                               contentPadding: const EdgeInsets.only(),
                               trailing: Row(
                                   mainAxisSize: MainAxisSize.min,
