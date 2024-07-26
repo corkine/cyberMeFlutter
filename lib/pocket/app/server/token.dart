@@ -13,7 +13,7 @@ class TokenEmbededView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final tokens =
         ref.watch(serviceDbProvider).value?.tokens.values.toList() ?? [];
-    tokens.sort((a, b) => a.update.compareTo(b.update));
+    tokens.sort((a, b) => a.name.compareTo(b.name));
     return ListView.builder(
         padding: const EdgeInsets.only(bottom: 80),
         itemCount: tokens.length,
