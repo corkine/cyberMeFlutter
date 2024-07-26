@@ -50,7 +50,9 @@ class _SexualActivityViewState extends ConsumerState<SexualActivityView> {
     try {
       final activities = await HealthKitReporter.categoryQuery(
           CategoryType.sexualActivity, Predicate(threeMonthsAgo, now));
-      _activities = activities;
+      setState(() {
+        _activities = activities;
+      });
     } catch (e) {
       debugPrint('Error fetching sexual activities: $e');
     }

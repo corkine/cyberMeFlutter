@@ -1,4 +1,5 @@
 import 'package:cyberme_flutter/api/sticky.dart';
+import 'package:cyberme_flutter/pocket/app/server/common.dart';
 import 'package:cyberme_flutter/pocket/app/util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -31,6 +32,7 @@ class _StickyNoteViewState extends ConsumerState<StickyNoteView> {
                     StretchMode.zoomBackground
                   ],
                   collapseMode: CollapseMode.parallax,
+                  centerTitle: false,
                   title: GestureDetector(
                       onTap: () => Navigator.of(context).pop(),
                       onLongPress: () async {
@@ -45,33 +47,53 @@ class _StickyNoteViewState extends ConsumerState<StickyNoteView> {
                       child: const Padding(
                           padding: EdgeInsets.only(left: 10),
                           child: Text("Sticky Note",
-                              style: TextStyle(color: Colors.white, shadows: [
-                                Shadow(color: Colors.grey, blurRadius: 8)
-                              ])))),
+                              style: TextStyle(color: Colors.white)))),
                   background:
                       Image.asset("images/wood.jpg", fit: BoxFit.cover))),
           SliverList.builder(
               itemCount: data.length,
               itemBuilder: (context, index) {
                 final item = data[index];
-                return ListTile(
-                    title: Text(item.title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(color: Colors.black)),
-                    subtitle: Text(item.update,
-                        style:
-                            const TextStyle(color: Colors.grey, fontSize: 12)),
-                    // onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                    //     builder: (context) => NoteView(item))),
-                    onTap: () => showModalBottomSheet(
-                        context: context,
-                        isScrollControlled: true,
-                        builder: (context) => SizedBox(
-                            height:
-                                MediaQuery.maybeSizeOf(context)!.height - 100,
-                            child: NoteView(item))),
-                    onLongPress: () => launchUrlString(item.url));
+                return Dismissible(
+                    key: ValueKey(item.id),
+                    confirmDismiss: (direction) async {
+                      if (direction == DismissDirection.endToStart) {
+                        if (await confirm(context, "确定删除此条笔记吗?")) {
+                          final data = await ref
+                              .read(stickyNotesProvider.notifier)
+                              .delete(item.id);
+                          showSimpleMessage(context, content: data.$2);
+                          return data.$1;
+                        } else {
+                          return false;
+                        }
+                      } else {
+                        return false;
+                      }
+                    },
+                    background: Container(color: Colors.amber),
+                    secondaryBackground: Container(
+                        color: Colors.red,
+                        alignment: Alignment.centerRight,
+                        padding: const EdgeInsets.only(right: 20),
+                        child: const Icon(Icons.delete, color: Colors.white)),
+                    child: ListTile(
+                        title: Text(item.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(color: Colors.black)),
+                        subtitle: Text(item.update,
+                            style: const TextStyle(
+                                color: Colors.grey, fontSize: 12)),
+                        onTap: () => showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            builder: (context) => SizedBox(
+                                height:
+                                    MediaQuery.maybeSizeOf(context)!.height -
+                                        100,
+                                child: NoteView(item))),
+                        onLongPress: () => launchUrlString(item.url)));
               })
         ]));
   }
@@ -102,8 +124,7 @@ class NoteView extends ConsumerWidget {
             ]),
         body: SingleChildScrollView(
             child: Padding(
-          padding: const EdgeInsets.only(left: 10, right: 10, bottom: 30),
-          child: HtmlWidget(item.body),
-        )));
+                padding: const EdgeInsets.only(left: 10, right: 10, bottom: 30),
+                child: HtmlWidget(item.body))));
   }
 }

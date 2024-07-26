@@ -107,7 +107,10 @@ class _ServiceEmbededViewState extends ConsumerState<ServiceEmbededView> {
           elements: services,
           padding: const EdgeInsets.only(bottom: 80),
           groupBy: (element) => element.serverId,
-          groupComparator: (b, a) => a.compareTo(b),
+          groupComparator: (a, b) {
+            if (a == b) return 0;
+            return hostMap[a]?.name.compareTo(hostMap[b]?.name ?? "") ?? 0;
+          },
           itemComparator: (a, b) => a.type.index.compareTo(b.type.index),
           indexedItemBuilder: (context, service, index) {
             return ListTile(
@@ -170,7 +173,8 @@ class _ServiceEmbededViewState extends ConsumerState<ServiceEmbededView> {
                 color: Theme.of(context).colorScheme.primaryContainer,
                 child: Padding(
                     padding: const EdgeInsets.only(left: 13, top: 2, bottom: 2),
-                    child: Text(hostMap[element.serverId]?.name ?? "无服务器")));
+                    child:
+                        Text(hostMap[element.serverId]?.name ?? "Serverless")));
           }),
       Positioned(
           child: Wrap(spacing: 5, runSpacing: 5, children: [

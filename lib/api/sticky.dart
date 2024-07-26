@@ -35,4 +35,12 @@ class StickyNotes extends _$StickyNotes {
     state = AsyncData(res.$1 ?? []);
     return "已同步最新数据";
   }
+
+  Future<(bool, String)> delete(String id) async {
+    final res = await deleteFrom("/cyber/todo/note?id=$id", {});
+    if (res.$1) {
+      state = AsyncData([...?state.value]..removeWhere((n) => n.id == id));
+    }
+    return res;
+  }
 }
