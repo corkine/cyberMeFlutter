@@ -32,7 +32,8 @@
 .pub-cache/
 .pub/
 /build/
-
+.clj-kondo
+.lsp
 # Web related
 
 # Symbolication related
