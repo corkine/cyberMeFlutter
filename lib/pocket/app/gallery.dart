@@ -20,6 +20,7 @@ class _GalleryManagerScreenState extends ConsumerState<GalleryManagerScreen> {
   late TextEditingController _blurOpacityController2;
   late TextEditingController _borderRadiusController;
   late TextEditingController _imageRepeatController;
+  late TextEditingController _configRefreshMinController;
 
   double width = 93;
   Set<String> selectImages = {};
@@ -33,12 +34,15 @@ class _GalleryManagerScreenState extends ConsumerState<GalleryManagerScreen> {
     _blurOpacityController2 = TextEditingController();
     _borderRadiusController = TextEditingController();
     _imageRepeatController = TextEditingController();
+    _configRefreshMinController = TextEditingController();
     ref.read(gallerysProvider.future).then((galleryData) {
       _blurOpacityController.text = galleryData.blurOpacity.toString();
       _blurOpacityController2.text = galleryData.blurOpacityInBgMode.toString();
       _borderRadiusController.text = galleryData.borderRadius.toString();
       _imageRepeatController.text =
           galleryData.imageRepeatEachMinutes.toString();
+      _configRefreshMinController.text =
+          galleryData.configRefreshMinutes.toString();
       selectImages = {...galleryData.images.toSet()};
       allImages = [...galleryData.imagesAll];
     });
@@ -112,6 +116,18 @@ class _GalleryManagerScreenState extends ConsumerState<GalleryManagerScreen> {
                               controller: _imageRepeatController,
                               decoration: const InputDecoration(
                                   labelText: 'Image Change Each',
+                                  suffixText: "Minutes"),
+                              keyboardType: TextInputType.number,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter a value';
+                                }
+                                return null;
+                              }),
+                          TextFormField(
+                              controller: _configRefreshMinController,
+                              decoration: const InputDecoration(
+                                  labelText: 'Config Refresh Each',
                                   suffixText: "Minutes"),
                               keyboardType: TextInputType.number,
                               validator: (value) {
@@ -251,6 +267,7 @@ class _GalleryManagerScreenState extends ConsumerState<GalleryManagerScreen> {
           blurOpacity: double.parse(_blurOpacityController.text),
           blurOpacityInBgMode: double.parse(_blurOpacityController2.text),
           borderRadius: double.parse(_borderRadiusController.text),
+          configRefreshMinutes: int.parse(_configRefreshMinController.text),
           imageRepeatEachMinutes: int.parse(_imageRepeatController.text),
           images: allImages.where((i) => selectImages.contains(i)).toList(),
           imagesAll: allImages);

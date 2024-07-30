@@ -15,9 +15,10 @@ part 'gallery.g.dart';
 class GalleryData with _$GalleryData {
   factory GalleryData(
       {@Default(0.7) double blurOpacity,
+      @Default(0.3) double blurOpacityInBgMode,
       @Default(25) double borderRadius,
       @Default(5) int imageRepeatEachMinutes,
-      @Default(0.3) double blurOpacityInBgMode,
+      @Default(5) int configRefreshMinutes,
       @Default([]) List<String> images, //已选择的图片
       @Default([]) List<String> imagesAll //所有的图片
       }) = _GalleryData;
