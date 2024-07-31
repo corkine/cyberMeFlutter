@@ -1,6 +1,7 @@
 import 'package:cyberme_flutter/api/basic.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:health_kit_reporter/model/payload/category.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'health_blue.freezed.dart';
@@ -50,8 +51,10 @@ class BluesDb extends _$BluesDb {
     return "success";
   }
 
-  Future<Set<BlueData>> sync(Set<int> fromHealthKit) async {
-    final c = fromHealthKit.toSet();
+  Future<Set<BlueData>> sync(List<Category> fromHealthKit) async {
+    final c = fromHealthKit.map((e) => e.startTimestamp as int).toSet();
+    final cm = Map.fromEntries(
+        fromHealthKit.map((f) => MapEntry(f.startTimestamp as int, f)));
     final cloudMiss =
         c.difference(state.value?.map((e) => e.time).toSet() ?? {});
     final healthMiss =
@@ -59,7 +62,16 @@ class BluesDb extends _$BluesDb {
     if (cloudMiss.isNotEmpty) {
       List<BlueData> newData = [
         ...(state.value ?? []),
-        ...cloudMiss.map((i) => BlueData(time: i))
+        ...cloudMiss.map((i) {
+          int? d;
+          try {
+            d = cm[i]?.harmonized.metadata?["double"]?["dictionary"]
+                ?["HKSexualActivityProtectionUsed"] as int?;
+          } catch (e) {
+            debugPrint("error parse: ${cm[i]}");
+          }
+          return BlueData(time: i, protected: d == null ? null : d == 1);
+        })
       ]..sort(sort);
       debugPrint("sync: $cloudMiss");
       await _set(Map.fromEntries(newData.map((e) => MapEntry(e.time, e))));

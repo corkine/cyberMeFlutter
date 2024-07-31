@@ -47,9 +47,7 @@ class _SexualActivityViewState extends ConsumerState<SexualActivityView> {
   doSync() async {
     await ref.read(bluesDbProvider.future);
     await _requestAuthorizationAndFetch((d) async {
-      final healthKitMiss = await ref
-          .read(bluesDbProvider.notifier)
-          .sync(d.map((e) => e.startTimestamp as int).toSet());
+      final healthKitMiss = await ref.read(bluesDbProvider.notifier).sync(d);
       if (healthKitMiss.isNotEmpty) {
         debugPrint('kit missed: ${healthKitMiss.length}');
         for (var e in healthKitMiss) {
@@ -72,6 +70,19 @@ class _SexualActivityViewState extends ConsumerState<SexualActivityView> {
         final threeMonthsAgo = now.subtract(const Duration(days: 90));
         final activities = await HealthKitReporter.categoryQuery(
             CategoryType.sexualActivity, Predicate(threeMonthsAgo, now));
+        // showSimpleMessage(context,
+        //     content: activities
+        //         .map((a) {
+        //           final m = jsonEncode(a.map);
+        //           final used = a.harmonized.metadata?["double"]?["dictionary"]
+        //               ?["HKSexualActivityProtectionUsed"];
+        //           final test = a.map["HKSexualActivityProtectionUsed"];
+        //           final dt = DateTime.fromMillisecondsSinceEpoch(
+        //               a.startTimestamp * 1000 as int);
+        //           return "$dt: $used ${used.runtimeType}, $test ${test.runtimeType}, ${prettyPrintJson(m)}\n";
+        //         })
+        //         .toList()
+        //         .toString());
         if (callback != null) {
           await callback(activities);
         }
@@ -95,8 +106,8 @@ class _SexualActivityViewState extends ConsumerState<SexualActivityView> {
         const _operatingSystem = OperatingSystem(1, 2, 3);
         const _sourceRevision =
             SourceRevision(_source, null, null, "1.0", _operatingSystem);
-        final harmonized = CategoryHarmonized(0, "", "",
-            {"HKMetadataKeySexualActivityProtectionUsed": protected});
+        final harmonized = CategoryHarmonized(
+            0, "", "", {"HKSexualActivityProtectionUsed": protected});
         final data = Category(
             const Uuid().v4(),
             CategoryType.sexualActivity.identifier,
