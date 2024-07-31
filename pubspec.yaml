@@ -49,6 +49,7 @@ dependencies:
   sticky_grouped_list: ^3.1.0
   flutter_widget_from_html: ^0.15.1
   html: ^0.15.4
+  json_pretty: ^1.0.4
 dev_dependencies:
   flutter_test:
     sdk: flutter

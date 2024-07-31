@@ -792,6 +792,14 @@ packages:
       url: "https://mirrors.tuna.tsinghua.edu.cn/dart-pub/"
     source: hosted
     version: "4.9.0"
+  json_pretty:
+    dependency: "direct main"
+    description:
+      name: json_pretty
+      sha256: "03795063131b8e4af00fb95a5b09cfa98abb710298f9a891a321fb7349d1f600"
+      url: "https://mirrors.tuna.tsinghua.edu.cn/dart-pub/"
+    source: hosted
+    version: "1.0.4"
   json_serializable:
     dependency: "direct dev"
     description:

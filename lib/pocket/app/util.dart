@@ -65,7 +65,7 @@ Future<bool> showSimpleMessage(BuildContext context,
                   data: appThemeData,
                   child: AlertDialog(
                     title: Text(title ?? "提示"),
-                    content: Text(content),
+                    content: SingleChildScrollView(child: Text(content)),
                     actions: [
                       TextButton(
                           onPressed: () => Navigator.of(context).pop(false),

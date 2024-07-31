@@ -91,7 +91,7 @@ class _StickyNoteViewState extends ConsumerState<StickyNoteView> {
                             builder: (context) => SizedBox(
                                 height:
                                     MediaQuery.maybeSizeOf(context)!.height -
-                                        100,
+                                        200,
                                 child: NoteView(item))),
                         onLongPress: () => launchUrlString(item.url)));
               })
