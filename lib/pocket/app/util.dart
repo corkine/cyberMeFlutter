@@ -1,6 +1,5 @@
 import 'package:cyberme_flutter/main.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:intl/intl.dart';
 
 showModal(BuildContext context, Widget widget) {
