@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:cyberme_flutter/api/health_blue.dart';
@@ -13,7 +12,6 @@ import 'package:health_kit_reporter/model/predicate.dart';
 import 'package:health_kit_reporter/model/type/category_type.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:json_pretty/json_pretty.dart';
 import 'package:uuid/uuid.dart';
 
 class SexualActivityView extends ConsumerStatefulWidget {
@@ -33,13 +31,7 @@ class _SexualActivityViewState extends ConsumerState<SexualActivityView> {
     super.initState();
     final now = DateTime.now();
     today = DateTime(now.year, now.month, now.day);
-    weekDayOne = now.subtract(Duration(
-        days: now.weekday - 1,
-        hours: now.hour,
-        minutes: now.minute,
-        seconds: now.second,
-        milliseconds: now.millisecond,
-        microseconds: now.microsecond));
+    weekDayOne = getThisWeekMonday();
     lastWeekDayOne = weekDayOne.subtract(const Duration(days: 7));
     if (!f.kIsWeb && Platform.isIOS) doSync();
   }
@@ -159,6 +151,9 @@ class _SexualActivityViewState extends ConsumerState<SexualActivityView> {
                         }
                         return true;
                       }
+                    } else {
+                      await _edit(activity);
+                      return false;
                     }
                     return false;
                   },
@@ -172,12 +167,12 @@ class _SexualActivityViewState extends ConsumerState<SexualActivityView> {
                                   style: TextStyle(
                                       color: Colors.white, fontSize: 15))))),
                   background: Container(
-                      color: Colors.green,
+                      color: Colors.blue,
                       child: const Align(
                           alignment: Alignment.centerLeft,
                           child: Padding(
                               padding: EdgeInsets.only(left: 20),
-                              child: Text("",
+                              child: Text("编辑",
                                   style: TextStyle(
                                       color: Colors.white, fontSize: 15))))),
                   child: ListTile(
@@ -211,10 +206,10 @@ class _SexualActivityViewState extends ConsumerState<SexualActivityView> {
             }));
   }
 
-  void _edit(BlueData data) {
+  Future<void> _edit(BlueData data) async {
     final noteController = TextEditingController(text: data.note);
     var useProtected = data.protected;
-    showDialog(
+    await showDialog(
         context: context,
         builder: (BuildContext context) {
           return StatefulBuilder(

@@ -320,13 +320,7 @@ class _TrackDetailViewState extends ConsumerState<TrackDetailView> {
     super.initState();
     final now = DateTime.now();
     today = DateTime(now.year, now.month, now.day);
-    weekDayOne = now.subtract(Duration(
-        days: now.weekday - 1,
-        hours: now.hour,
-        minutes: now.minute,
-        seconds: now.second,
-        milliseconds: now.millisecond,
-        microseconds: now.microsecond));
+    weekDayOne = getThisWeekMonday();
     monthDayOne = DateTime(now.year, now.month, 1);
     lastWeekDayOne = weekDayOne.subtract(const Duration(days: 7));
     fetchDetail().then((value) => setState(() {

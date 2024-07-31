@@ -31,13 +31,7 @@ class _TodoViewState extends ConsumerState<TodoView>
   void initState() {
     final now = DateTime.now();
     today = DateTime(now.year, now.month, now.day);
-    weekDayOne = now.subtract(Duration(
-        days: now.weekday - 1,
-        hours: now.hour,
-        minutes: now.minute,
-        seconds: now.second,
-        milliseconds: now.millisecond,
-        microseconds: now.microsecond));
+    weekDayOne = getThisWeekMonday();
     lastWeekDayOne = weekDayOne.subtract(const Duration(days: 7));
     controller = GroupedItemScrollController();
     listener = ItemPositionsListener.create();
@@ -158,33 +152,33 @@ class _TodoViewState extends ConsumerState<TodoView>
   _groupItemComparator(TodoSetting s) {
     return (Todo a, Todo b) {
       if (s.useListSort) {
-        //分组回顾模式，直接按列表排，列表中按时间排
+        //分组回顾模式，直接按列表排，列表中未完成的靠前，已完成的靠后，最后按字母顺序排
         final al = a.list ?? "";
         final bl = b.list ?? "";
         if (al != bl) {
           return bl.compareTo(al);
         }
-        final ad = a.date ?? DateTime.now();
-        final bd = b.date ?? DateTime.now();
-        return ad.compareTo(bd);
-      } else {
-        //先按日期比较，再按完成与否比较，之后按列表比较，最后按时间比较(暂时没有时间)
-        final ad =
-            DateTime(a.date?.year ?? 0, a.date?.month ?? 0, a.date?.day ?? 0);
-        final bd =
-            DateTime(b.date?.year ?? 0, b.date?.month ?? 0, b.date?.day ?? 0);
-        if (ad == bd) {
-          final ac = a.isCompleted;
-          final bc = b.isCompleted;
-          if (ac == bc) {
-            //TODO 有时间按时间排
-            return b.list?.compareTo(a.list ?? "") ?? 0;
+      }
+      //先按日期比较，再按完成与否比较，之后按列表比较，最后按字母顺序排序
+      final ad =
+          DateTime(a.date?.year ?? 0, a.date?.month ?? 0, a.date?.day ?? 0);
+      final bd =
+          DateTime(b.date?.year ?? 0, b.date?.month ?? 0, b.date?.day ?? 0);
+      if (ad == bd) {
+        final ac = a.isCompleted;
+        final bc = b.isCompleted;
+        if (ac == bc) {
+          final lc = b.list?.compareTo(a.list ?? "") ?? 0;
+          if (lc == 0) {
+            return b.title?.compareTo(a.title ?? "") ?? 0;
           } else {
-            return ac ? -10 : 10;
+            return lc;
           }
         } else {
-          return ad.compareTo(bd);
+          return ac ? -10 : 10;
         }
+      } else {
+        return ad.compareTo(bd);
       }
     };
   }
@@ -236,7 +230,10 @@ class _TodoViewState extends ConsumerState<TodoView>
                                     child: Row(children: [
                                       Text(t.list ?? ""),
                                       const Spacer(),
-                                      buildRichDate(t.date)
+                                      buildRichDate(t.date,
+                                          today: today,
+                                          weekDayOne: weekDayOne,
+                                          lastWeekDayOne: lastWeekDayOne)
                                     ])))
                           ]))),
               confirmDismiss: (direction) async {
@@ -322,50 +319,6 @@ class _TodoViewState extends ConsumerState<TodoView>
                               }),
                         ))
                     .toList(growable: false))));
-  }
-
-  Widget buildRichDate(DateTime? date) {
-    if (date == null) return const Text("未知日期");
-    final df = DateFormat("yyyy-MM-dd");
-    bool isToday = df.format(date) == df.format(today);
-    bool thisWeek = !weekDayOne.isAfter(date);
-    bool lastWeek = !thisWeek && !lastWeekDayOne.isAfter(date);
-    final style = TextStyle(
-        decoration: isToday ? TextDecoration.underline : null,
-        color: isToday
-            ? Colors.lightGreen
-            : thisWeek
-                ? Colors.lightGreen
-                : lastWeek
-                    ? Colors.blueGrey
-                    : Colors.grey);
-    if (thisWeek) {
-      if (isToday) {
-        return Text("${df.format(date)} 今天", style: style);
-      } else if (date.year == today.year && date.month == today.month) {
-        if (date.day + 1 == today.day) {
-          return Text("${df.format(date)} 昨天", style: style);
-        } else if (date.day + 2 == today.day) {
-          return Text("${df.format(date)} 前天", style: style);
-        }
-      }
-    }
-    switch (date.weekday) {
-      case 1:
-        return Text("${df.format(date)} 周一", style: style);
-      case 2:
-        return Text("${df.format(date)} 周二", style: style);
-      case 3:
-        return Text("${df.format(date)} 周三", style: style);
-      case 4:
-        return Text("${df.format(date)} 周四", style: style);
-      case 5:
-        return Text("${df.format(date)} 周五", style: style);
-      case 6:
-        return Text("${df.format(date)} 周六", style: style);
-      default:
-        return Text("${df.format(date)} 周日", style: style);
-    }
   }
 
   handleTodoContextMenu(Todo t, List<String> lists) async {

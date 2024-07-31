@@ -1,5 +1,6 @@
 import 'package:cyberme_flutter/main.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:intl/intl.dart';
 
 showModal(BuildContext context, Widget widget) {
@@ -80,6 +81,25 @@ Future<bool> showSimpleMessage(BuildContext context,
   }
 }
 
+DateTime getThisWeekMonday() {
+  DateTime now = DateTime.now();
+  int currentWeekday = now.weekday;
+
+  // 如果今天是周一，直接返回今天的日期
+  if (currentWeekday == DateTime.monday) {
+    return DateTime(now.year, now.month, now.day);
+  }
+
+  // 计算到最近的周一需要减去的天数
+  int daysToSubtract = currentWeekday - DateTime.monday;
+
+  // 使用 subtract 方法来获取本周的周一
+  DateTime monday = now.subtract(Duration(days: daysToSubtract));
+
+  // 返回时间设置为 00:00:00
+  return DateTime(monday.year, monday.month, monday.day);
+}
+
 Widget buildRichDate(DateTime? date,
     {required DateTime today,
     required DateTime weekDayOne,
@@ -103,12 +123,10 @@ Widget buildRichDate(DateTime? date,
   if (thisWeek) {
     if (isToday) {
       return Text("${df.format(date)} 今天", style: style);
-    } else if (date.year == today.year && date.month == today.month) {
-      if (date.day + 1 == today.day) {
-        return Text("${df.format(date)} 昨天", style: style);
-      } else if (date.day + 2 == today.day) {
-        return Text("${df.format(date)} 前天", style: style);
-      }
+    } else if (date.add(const Duration(days: 1)).day == today.day) {
+      return Text("${df.format(date)} 昨天", style: style);
+    } else if (date.add(const Duration(days: 2)).day == today.day) {
+      return Text("${df.format(date)} 前天", style: style);
     }
   }
   switch (date.weekday) {
