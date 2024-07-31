@@ -1,3 +1,7 @@
+import 'dart:io';
+
+import 'package:cyberme_flutter/pocket/app/util.dart';
+import 'package:flutter/foundation.dart' as f;
 import 'package:flutter/material.dart';
 import 'package:health_kit_reporter/health_kit_reporter.dart';
 import 'package:health_kit_reporter/model/payload/category.dart';
@@ -22,7 +26,9 @@ class _SexualActivityViewState extends ConsumerState<SexualActivityView> {
   @override
   void initState() {
     super.initState();
-    _requestAuthorizationAndFetch();
+    if (!f.kIsWeb && Platform.isIOS) {
+      _requestAuthorizationAndFetch();
+    }
   }
 
   Future<String> _requestAuthorizationAndFetch() async {
@@ -80,12 +86,60 @@ class _SexualActivityViewState extends ConsumerState<SexualActivityView> {
         debugPrint('try to save: ${data.map}');
         final saved = await HealthKitReporter.save(data);
         debugPrint('data saved: $saved');
+        _fetchSexualActivities();
       } else {
         debugPrint('error canWrite steps: $canWrite');
       }
     } catch (e) {
       debugPrint(e.toString());
     }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(title: const Text('Sexual Activity'), actions: [
+          IconButton(icon: const Icon(Icons.add), onPressed: _showAddDialog)
+        ]),
+        body: ListView.builder(
+            itemCount: _activities.length,
+            itemBuilder: (context, index) {
+              final activity = _activities[index];
+              return Dismissible(
+                  key: ValueKey(activity.uuid),
+                  confirmDismiss: (direction) async {
+                    if (direction == DismissDirection.endToStart) {
+                      if (await showSimpleMessage(context,
+                          content: "确定删除此纪录吗?")) {
+                        await HealthKitReporter.delete(activity);
+                        return true;
+                      }
+                    }
+                    return false;
+                  },
+                  secondaryBackground: Container(
+                      color: Colors.red,
+                      child: const Align(
+                          alignment: Alignment.centerRight,
+                          child: Padding(
+                              padding: EdgeInsets.only(right: 20),
+                              child: Text("删除",
+                                  style: TextStyle(
+                                      color: Colors.white, fontSize: 15))))),
+                  background: Container(
+                      color: Colors.green,
+                      child: const Align(
+                          alignment: Alignment.centerLeft,
+                          child: Padding(
+                              padding: EdgeInsets.only(left: 20),
+                              child: Text("",
+                                  style: TextStyle(
+                                      color: Colors.white, fontSize: 15))))),
+                  child: ListTile(
+                      title: Text(DateFormat('yyyy-MM-dd HH:mm').format(
+                          DateTime.fromMillisecondsSinceEpoch(
+                              activity.startTimestamp * 1000 as int)))));
+            }));
   }
 
   void _showAddDialog() {
@@ -101,7 +155,7 @@ class _SexualActivityViewState extends ConsumerState<SexualActivityView> {
               content: Column(mainAxisSize: MainAxisSize.min, children: [
                 const Text('Select date and time:'),
                 const SizedBox(height: 20),
-                ElevatedButton(
+                TextButton(
                     child: Text(
                         DateFormat('yyyy-MM-dd HH:mm').format(defaultDateTime)),
                     onPressed: () async {
@@ -118,12 +172,11 @@ class _SexualActivityViewState extends ConsumerState<SexualActivityView> {
                         );
                         if (timePicked != null) {
                           final DateTime selectedDateTime = DateTime(
-                            picked.year,
-                            picked.month,
-                            picked.day,
-                            timePicked.hour,
-                            timePicked.minute,
-                          );
+                              picked.year,
+                              picked.month,
+                              picked.day,
+                              timePicked.hour,
+                              timePicked.minute);
                           Navigator.of(context).pop();
                           _addSexualActivity(selectedDateTime);
                         }
@@ -131,22 +184,5 @@ class _SexualActivityViewState extends ConsumerState<SexualActivityView> {
                     })
               ]));
         });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(title: const Text('Sexual Activity'), actions: [
-          IconButton(icon: const Icon(Icons.add), onPressed: _showAddDialog)
-        ]),
-        body: ListView.builder(
-            itemCount: _activities.length,
-            itemBuilder: (context, index) {
-              final activity = _activities[index];
-              return ListTile(
-                  title: Text(DateFormat('yyyy-MM-dd HH:mm').format(
-                      DateTime.fromMillisecondsSinceEpoch(
-                          activity.startTimestamp as int))));
-            }));
   }
 }

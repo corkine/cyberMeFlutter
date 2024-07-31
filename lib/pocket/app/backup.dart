@@ -32,13 +32,16 @@ class _BackupViewState extends ConsumerState<BackupView> {
 
   String? selectServer;
 
+  List<String> servers = [];
+  List<BackupItem> data = [];
+
   @override
   Widget build(BuildContext context) {
-    final servers = ["全部", ...ref.watch(backupServerProvider)];
+    servers = ["全部", ...ref.watch(backupServerProvider)];
     if (selectServer == null && servers.isNotEmpty) {
       selectServer = servers.first;
     }
-    final data = ref.watch(backupFilterProvider.call(selectServer ?? ""));
+    data = ref.watch(backupFilterProvider.call(selectServer ?? ""));
     return Scaffold(
         appBar: AppBar(title: const Text("Backups"), actions: [
           IconButton(
