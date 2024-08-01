@@ -43,7 +43,7 @@ class _BackupViewState extends ConsumerState<BackupView> {
         isScrollControlled: true,
         builder: (context) => SizedBox(
             height: MediaQuery.of(context).size.height / 1.3,
-            child: const BackupCalView()));
+            child: BackupCalView(selectServer)));
   }
 
   @override
@@ -127,7 +127,8 @@ class _BackupViewState extends ConsumerState<BackupView> {
 }
 
 class BackupCalView extends ConsumerStatefulWidget {
-  const BackupCalView({super.key});
+  final String? nowSelect;
+  const BackupCalView(this.nowSelect, {super.key});
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _BlueCalViewState();
@@ -144,7 +145,10 @@ class _BlueCalViewState extends ConsumerState<BackupCalView> {
     Colors.green,
     Colors.blueGrey,
     Colors.purple,
-    Colors.pink
+    Colors.pink,
+    Colors.brown,
+    Colors.indigo,
+    Colors.teal
   ];
   @override
   void initState() {
@@ -161,7 +165,11 @@ class _BlueCalViewState extends ConsumerState<BackupCalView> {
           names.add(item.name);
         }
       }
-      selectNames = names.toSet();
+      if (widget.nowSelect != null && widget.nowSelect != "全部") {
+        selectNames = {widget.nowSelect!};
+      } else {
+        selectNames = names.toSet();
+      }
       setState(() {});
     });
   }
