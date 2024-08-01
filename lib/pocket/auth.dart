@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../health/data.dart';
+import '../learn/health/data.dart';
 import '../learn/game.dart';
 import '../learn/snh.dart';
 import 'config.dart';
@@ -61,8 +61,10 @@ Widget userMenuDrawer(Config config, BuildContext context) => Drawer(
                         backgroundColor:
                             MaterialStateProperty.all(Colors.green.shade300)),
                     onPressed: () => handleLogin(config, context),
-                    child: Text(config.user.isEmpty ? '验证秘钥' : '取消登录',
-                    style: const TextStyle(color: Colors.white),))),
+                    child: Text(
+                      config.user.isEmpty ? '验证秘钥' : '取消登录',
+                      style: const TextStyle(color: Colors.white),
+                    ))),
             const Padding(
                 padding: EdgeInsets.only(bottom: 15),
                 child: Text(

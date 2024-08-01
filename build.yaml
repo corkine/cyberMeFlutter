@@ -1,0 +1,13 @@
+targets:
+  $default:
+    builders:
+      json_serializable:
+        generate_for:
+          - lib/pocket/viewmodels/*.dart
+          - lib/pocket/models/ticket.dart
+      riverpod_generator:
+        generate_for:
+          - lib/pocket/viewmodels/*.dart
+      freezed:
+        generate_for:
+          - lib/pocket/viewmodels/*.dart

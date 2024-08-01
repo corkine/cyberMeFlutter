@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:cyberme_flutter/health/data.dart';
+import 'package:cyberme_flutter/learn/health/data.dart';
 
-import '../health/health_v2.dart';
+import 'health/health_v2.dart';
 
 class Game extends StatefulWidget {
   final Info? info;

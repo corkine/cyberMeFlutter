@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cyberme_flutter/pocket/app/note.dart';
-import 'package:cyberme_flutter/pocket/channel.dart';
+import 'package:cyberme_flutter/pocket/views/note.dart';
+import 'package:cyberme_flutter/interface/channel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
