@@ -66,6 +66,10 @@ class TodoDB extends _$TodoDB {
     return msg;
   }
 
+  Future<String> hcmAutoLogin() async {
+    return await requestSimple("/cyber/check/set_token_auto");
+  }
+
   Future<(String, String, bool)> addTodo(
       {required String title,
       required String due,

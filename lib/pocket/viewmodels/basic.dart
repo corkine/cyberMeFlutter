@@ -9,6 +9,19 @@ const endpoint = kDebugMode
     ? "https://cyber.mazhangjing.com"
     : "https://cyber.mazhangjing.com";
 
+Future<String> requestSimple(String path) async {
+  try {
+    final url = "$endpoint$path";
+    final r = await get(Uri.parse(url), headers: config.cyberBase64Header);
+    final d = jsonDecode(r.body);
+    final code = (d["status"] as int?) ?? -1;
+    return d["message"]?.toString() ?? "未知错误($code)";
+  } catch (e, st) {
+    debugPrintStack(stackTrace: st);
+    return e.toString();
+  }
+}
+
 Future<(T?, String)> requestFrom<T>(
     String path, T Function(Map<String, dynamic>) func) async {
   try {

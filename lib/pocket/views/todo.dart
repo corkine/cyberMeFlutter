@@ -27,6 +27,9 @@ class _TodoViewState extends ConsumerState<TodoView>
   late ItemPositionsListener listener;
   late GroupedItemScrollController controller;
 
+  int todoLength = 0;
+  num lastIdx = 0;
+
   @override
   void initState() {
     final now = DateTime.now();
@@ -54,9 +57,6 @@ class _TodoViewState extends ConsumerState<TodoView>
     }
     lastIdx = idx;
   }
-
-  int todoLength = 0;
-  num lastIdx = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -102,12 +102,18 @@ class _TodoViewState extends ConsumerState<TodoView>
         child: IconButton(
             onPressed: () => handleAddWeekReport(todos),
             icon: const Icon(Icons.android)));
+    final hcmBtn = Tooltip(
+        waitDuration: const Duration(milliseconds: 400),
+        message: "HCM 自动登录",
+        child: IconButton(
+            onPressed: handleAutoHCMLogin,
+            icon: const Icon(Icons.login_sharp)));
     final reload =
         IconButton(onPressed: handleSyncTodo, icon: const Icon(Icons.sync));
     final addTask = IconButton(
         onPressed: () => handleAddNewTask(lists), icon: const Icon(Icons.add));
     return AppBar(
-        actions: [addTask, reportBtn, reload, sortByList, groupByMode]);
+        actions: [addTask, hcmBtn, reportBtn, reload, sortByList, groupByMode]);
   }
 
   final _dfGroup = DateFormat("yyyyMM");
@@ -547,6 +553,13 @@ class _TodoViewState extends ConsumerState<TodoView>
                             onPressed: handleAdd, child: const Text("确定")))
                   ])));
     }));
+  }
+
+  void handleAutoHCMLogin() async {
+    await showWaitingBar(context, text: "正在执行 HCM 自动登录");
+    final res = await ref.read(todoDBProvider.notifier).hcmAutoLogin();
+    ScaffoldMessenger.of(context).clearMaterialBanners();
+    await showSimpleMessage(context, content: res);
   }
 
   void handleAddWeekReport(List<Todo> todo) async {
