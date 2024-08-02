@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 
-import '../viewmodels/gallery.dart';
+import '../../viewmodels/gallery.dart';
 
 class GalleryManagerScreen extends ConsumerStatefulWidget {
   const GalleryManagerScreen({super.key});

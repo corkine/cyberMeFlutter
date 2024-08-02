@@ -16,10 +16,10 @@ import 'package:http/http.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
-import '../viewmodels/tv.dart';
-import '../../main.dart';
-import '../config.dart';
-import '../models/movie.dart';
+import '../../viewmodels/tv.dart';
+import '../../../main.dart';
+import '../../config.dart';
+import '../../models/movie.dart';
 
 class MovieView extends ConsumerStatefulWidget {
   const MovieView({super.key});

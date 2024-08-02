@@ -15,7 +15,7 @@ import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../main.dart';
+import '../../../main.dart';
 
 class SexualActivityView extends ConsumerStatefulWidget {
   const SexualActivityView({super.key});

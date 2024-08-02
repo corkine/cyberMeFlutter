@@ -5,7 +5,7 @@ import 'package:cyberme_flutter/pocket/viewmodels/story.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart';
-import '../config.dart';
+import '../../config.dart';
 
 Map<String, String> cover = {
   "格林童话": "https://static2.mazhangjing.com/cyber/202310/753d1738_图片.png",

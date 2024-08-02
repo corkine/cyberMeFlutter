@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:uuid/uuid.dart';
-import '../viewmodels/cert.dart';
+import '../../viewmodels/cert.dart';
 
 class CertConfigView extends ConsumerStatefulWidget {
   const CertConfigView({super.key});

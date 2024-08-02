@@ -12,9 +12,9 @@ import 'package:intl/intl.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
-import '../viewmodels/statistics.dart';
-import '../config.dart';
-import '../models/track.dart';
+import '../../viewmodels/statistics.dart';
+import '../../config.dart';
+import '../../models/track.dart';
 
 class TrackView extends ConsumerStatefulWidget {
   const TrackView({super.key});

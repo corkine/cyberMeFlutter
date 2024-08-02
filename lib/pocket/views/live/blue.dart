@@ -4,7 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 
-import '../viewmodels/blue.dart';
+import '../../viewmodels/blue.dart';
 
 class ScoreView extends ConsumerStatefulWidget {
   const ScoreView({super.key});

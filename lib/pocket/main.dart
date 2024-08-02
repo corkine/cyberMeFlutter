@@ -4,28 +4,29 @@ import 'package:cyberme_flutter/learn/flame/angrybirds/main.dart';
 import 'package:cyberme_flutter/learn/flame/brickbreaker.dart';
 import 'package:cyberme_flutter/learn/game.dart';
 import 'package:cyberme_flutter/learn/snh.dart';
-import 'package:cyberme_flutter/pocket/views/backup.dart';
-import 'package:cyberme_flutter/pocket/views/body_mass.dart';
-import 'package:cyberme_flutter/pocket/views/cert.dart';
-import 'package:cyberme_flutter/pocket/views/counter.dart';
-import 'package:cyberme_flutter/pocket/views/esxi.dart';
-import 'package:cyberme_flutter/pocket/views/gallery.dart';
-import 'package:cyberme_flutter/pocket/views/gitea.dart';
-import 'package:cyberme_flutter/pocket/views/sex.dart';
-import 'package:cyberme_flutter/pocket/views/link.dart';
-import 'package:cyberme_flutter/pocket/views/location.dart';
+import 'package:cyberme_flutter/pocket/views/info/backup.dart';
+import 'package:cyberme_flutter/pocket/views/live/body_mass.dart';
+import 'package:cyberme_flutter/pocket/views/info/cert.dart';
+import 'package:cyberme_flutter/pocket/views/info/counter.dart';
+import 'package:cyberme_flutter/pocket/views/info/esxi.dart';
+import 'package:cyberme_flutter/pocket/views/info/gallery.dart';
+import 'package:cyberme_flutter/pocket/views/info/gitea.dart';
+import 'package:cyberme_flutter/pocket/views/live/sex.dart';
+import 'package:cyberme_flutter/pocket/views/info/link.dart';
+import 'package:cyberme_flutter/pocket/views/info/location.dart';
 import 'package:cyberme_flutter/pocket/views/server/service.dart';
-import 'package:cyberme_flutter/pocket/views/story.dart';
-import 'views/blog.dart';
-import 'views/blue.dart';
-import 'views/gpt.dart';
-import 'views/medic.dart';
-import 'views/sticky.dart';
+import 'package:cyberme_flutter/pocket/views/play/story.dart';
+import 'package:cyberme_flutter/pocket/views/think/block.dart';
+import 'views/info/blog.dart';
+import 'views/live/blue.dart';
+import 'views/think/gpt.dart';
+import 'views/live/medic.dart';
+import 'views/think/sticky.dart';
 import 'dashboard.dart' as dash;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'views/movie.dart';
-import 'views/tugua.dart';
+import 'views/play/movie.dart';
+import 'views/play/tugua.dart';
 import 'day.dart';
 import '../learn/goods.dart';
 import '../learn/link.dart';
@@ -33,10 +34,10 @@ import 'config.dart';
 import 'auth.dart' as auth;
 import '../learn/shortcut.dart' as short;
 import 'diary.dart' as diary;
-import 'views/ticket.dart';
-import 'views/express.dart';
-import 'views/todo.dart';
-import 'views/track.dart';
+import 'views/info/ticket.dart';
+import 'views/info/express.dart';
+import 'views/think/todo.dart';
+import 'views/info/track.dart';
 
 final apps = {
   "dashboard": {
@@ -231,6 +232,13 @@ final apps = {
     "addToMenu": true,
     "addToContext": true,
     "icon": Icons.note
+  },
+  "blocks": {
+    "name": "Blocks",
+    "view": (c) => const BlocksView(),
+    "addToMenu": true,
+    "addToContext": true,
+    "icon": Icons.bookmark
   }
 };
 

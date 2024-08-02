@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
-import 'util.dart';
+import '../util.dart';
 
 class GiteaView extends ConsumerStatefulWidget {
   const GiteaView({super.key});

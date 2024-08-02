@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../models/eatItem.dart';
+import '../../models/eatItem.dart';
 
 class EatView extends StatefulWidget {
   const EatView({super.key});

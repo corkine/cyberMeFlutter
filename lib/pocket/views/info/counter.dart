@@ -3,7 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
-import '../viewmodels/counter.dart';
+import '../../viewmodels/counter.dart';
 
 class FuckCounterView extends ConsumerStatefulWidget {
   const FuckCounterView({super.key});
