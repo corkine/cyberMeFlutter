@@ -22,12 +22,66 @@ final bgs = [
   "https://static2.mazhangjing.com/cyber/202408/da4ce823_Snipaste_2024-08-02_14-05-36.jpg"
 ];
 
+String urlOfDate(int date) {
+  return bgs[(date / 1000000).floor() % bgs.length];
+}
+
 class _BlocksViewState extends ConsumerState<BlocksView> {
   final Set<String> _selectTags = {};
+
+  handleFilter() async {
+    final tags = ref.watch(getBlockTagsProvider);
+    final _tags = <String>{..._selectTags};
+    await showDialog(
+        context: context,
+        builder: (context) => StatefulBuilder(
+            builder: (context, setState) => SimpleDialog(
+                title: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const Text("选择标签"),
+                      const Spacer(),
+                      InkWell(
+                          onTap: () => setState(() {
+                                if (_tags.isEmpty) {
+                                  _tags.addAll(tags);
+                                } else {
+                                  _tags.clear();
+                                }
+                              }),
+                          child: Text(_tags.isEmpty ? "全选" : "清空",
+                              style: const TextStyle(fontSize: 14)))
+                    ]),
+                children: (tags.toList()..sort())
+                    .map((tag) => SimpleDialogOption(
+                        onPressed: () {
+                          setState(() {
+                            if (_tags.contains(tag)) {
+                              _tags.remove(tag);
+                            } else {
+                              _tags.add(tag);
+                            }
+                          });
+                        },
+                        child: Row(children: [
+                          _tags.contains(tag)
+                              ? const Icon(Icons.check, color: Colors.green)
+                              : Icon(Icons.check,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .primaryContainer),
+                          const SizedBox(width: 10),
+                          Text(tag)
+                        ])))
+                    .toList())));
+    _selectTags.clear();
+    _selectTags.addAll(_tags);
+    ref.invalidate(getBlocksListProvider);
+  }
+
   @override
   Widget build(BuildContext context) {
     final data = ref.watch(getBlocksListProvider(_selectTags));
-    final tags = ref.watch(getBlockTagsProvider);
     return Scaffold(
         body: CustomScrollView(slivers: <Widget>[
       SliverAppBar(
@@ -39,56 +93,7 @@ class _BlocksViewState extends ConsumerState<BlocksView> {
           actions: [
             IconButton(
                 icon: const Icon(Icons.filter_list, color: Colors.white),
-                onPressed: () async {
-                  final _tags = <String>{..._selectTags};
-                  await showDialog(
-                      context: context,
-                      builder: (context) => StatefulBuilder(
-                          builder: (context, setState) => SimpleDialog(
-                              title: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    const Text("选择标签"),
-                                    const Spacer(),
-                                    InkWell(
-                                        onTap: () => setState(() {
-                                              if (_tags.isEmpty) {
-                                                _tags.addAll(tags);
-                                              } else {
-                                                _tags.clear();
-                                              }
-                                            }),
-                                        child: Text(_tags.isEmpty ? "全选" : "清空",
-                                            style:
-                                                const TextStyle(fontSize: 14)))
-                                  ]),
-                              children: (tags.toList()..sort())
-                                  .map((tag) => SimpleDialogOption(
-                                      onPressed: () {
-                                        setState(() {
-                                          if (_tags.contains(tag)) {
-                                            _tags.remove(tag);
-                                          } else {
-                                            _tags.add(tag);
-                                          }
-                                        });
-                                      },
-                                      child: Row(children: [
-                                        _tags.contains(tag)
-                                            ? const Icon(Icons.check,
-                                                color: Colors.green)
-                                            : Icon(Icons.check,
-                                                color: Theme.of(context)
-                                                    .colorScheme
-                                                    .primaryContainer),
-                                        const SizedBox(width: 10),
-                                        Text(tag)
-                                      ])))
-                                  .toList())));
-                  _selectTags.clear();
-                  _selectTags.addAll(_tags);
-                  ref.invalidate(getBlocksListProvider);
-                }),
+                onPressed: handleFilter),
             IconButton(
                 icon: const Icon(Icons.add, color: Colors.white),
                 onPressed: () {
@@ -104,69 +109,75 @@ class _BlocksViewState extends ConsumerState<BlocksView> {
               background: Image.network(
                   'https://static2.mazhangjing.com/cyber/202408/900c30de_Snipaste_2024-08-02_14-01-13.jpg',
                   fit: BoxFit.cover))),
-      const SliverToBoxAdapter(child: SizedBox(height: 3)),
+      const SliverToBoxAdapter(child: SizedBox(height: 2)),
       SliverList(
           delegate:
               SliverChildBuilderDelegate((BuildContext context, int index) {
         final item = data[index];
-        return Card(
-            elevation: 1,
-            child: InkWell(
-                onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => BlockDetailView(item))),
-                child: ClipRRect(
-                    borderRadius: BorderRadius.circular(5),
-                    child: Stack(children: [
-                      Image.network(bgs[item.id.hashCode % bgs.length],
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                          alignment: Alignment.topCenter,
-                          height: 130),
-                      Positioned(
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                          height: 50,
-                          child: Container(
-                              color: Colors.black54,
-                              child: Padding(
-                                  padding: const EdgeInsets.only(
-                                      left: 10, right: 10),
-                                  child: DefaultTextStyle(
-                                      style:
-                                          const TextStyle(color: Colors.white),
-                                      child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Text(item.title,
-                                                style: const TextStyle(
-                                                    fontWeight:
-                                                        FontWeight.bold)),
-                                            Row(children: [
-                                              Expanded(
-                                                child: DefaultTextStyle(
-                                                    style: const TextStyle(
-                                                        fontSize: 13),
-                                                    child: Wrap(
-                                                        spacing: 6,
-                                                        children: item.tags
-                                                            .map((e) =>
-                                                                Text("#$e"))
-                                                            .toList())),
-                                              ),
-                                              Text(DateFormat.yMd("zh_Hans")
-                                                  .format(DateTime
-                                                      .fromMillisecondsSinceEpoch(
-                                                          item.createDate))
-                                                  .toString()),
-                                            ])
-                                          ])))))
-                    ]))));
+        return buildCard(context, item);
       }, childCount: data.length))
     ]));
+  }
+
+  Widget buildCard(BuildContext context, BlockItem item) {
+    const height = 70.0;
+    return Card(
+      elevation: 1,
+      margin: const EdgeInsets.only(bottom: 2, top: 2, left: 4, right: 4),
+      child: InkWell(
+          onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => BlockDetailView(item))),
+          child: ClipRRect(
+              borderRadius: BorderRadius.circular(5),
+              child: Stack(children: [
+                Opacity(
+                    opacity: 0.9,
+                    child: Image.network(urlOfDate(item.createDate),
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        alignment: const Alignment(0.5, -0.5),
+                        height: height)),
+                Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    height: height,
+                    child: Container(
+                        color: Colors.black.withOpacity(0.2),
+                        child: Padding(
+                            padding: const EdgeInsets.only(left: 10, right: 10),
+                            child: DefaultTextStyle(
+                                style: const TextStyle(color: Colors.white),
+                                child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(item.title,
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 15)),
+                                      const SizedBox(height: 5),
+                                      Row(children: [
+                                        Expanded(
+                                          child: DefaultTextStyle(
+                                              style:
+                                                  const TextStyle(fontSize: 13),
+                                              child: Wrap(
+                                                  spacing: 6,
+                                                  children: item.tags
+                                                      .map((e) => Text("#$e"))
+                                                      .toList())),
+                                        ),
+                                        Text(DateFormat.yMd("zh_Hans")
+                                            .format(DateTime
+                                                .fromMillisecondsSinceEpoch(
+                                                    item.createDate))
+                                            .toString()),
+                                      ])
+                                    ])))))
+              ]))),
+    );
   }
 }
 
@@ -241,6 +252,33 @@ class _BlockDetailViewState extends ConsumerState<BlockDetailView> {
           actions: [
             if (_edit)
               IconButton(
+                  icon: const Icon(Icons.calendar_month, color: Colors.white),
+                  onPressed: () async {
+                    final createDate = item.createDate == 0
+                        ? DateTime.now()
+                        : DateTime.fromMillisecondsSinceEpoch(item.createDate);
+                    var date = await showDatePicker(
+                        context: context,
+                        firstDate:
+                            createDate.subtract(const Duration(days: 300)),
+                        lastDate: createDate.add(const Duration(days: 300)),
+                        currentDate: createDate);
+                    if (date != null) {
+                      final time = await showTimePicker(
+                          context: context, initialTime: TimeOfDay.now());
+                      if (time != null) {
+                        date = date.add(
+                            Duration(hours: time.hour, minutes: time.minute));
+                      }
+                      item = item.copyWith(
+                          createDate: date.millisecondsSinceEpoch);
+                      setState(() {});
+                      showSimpleMessage(context,
+                          content: "创建日期已更改，请注意保存", useSnackBar: true);
+                    }
+                  }),
+            if (_edit)
+              IconButton(
                   icon: Icon(_preview ? Icons.visibility_off : Icons.visibility,
                       color: Colors.white),
                   onPressed: () {
@@ -277,13 +315,26 @@ class _BlockDetailViewState extends ConsumerState<BlockDetailView> {
           flexibleSpace: FlexibleSpaceBar(
               titlePadding:
                   const EdgeInsets.only(left: 20, right: 0, bottom: 10),
-              title: Text(item.title,
-                  style: const TextStyle(color: Colors.white, shadows: [
-                    Shadow(
-                        color: Colors.grey, blurRadius: 7, offset: Offset(1, 1))
-                  ])),
+              title: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(item.title,
+                        style: const TextStyle(color: Colors.white, shadows: [
+                          Shadow(
+                              color: Colors.grey,
+                              blurRadius: 7,
+                              offset: Offset(1, 1))
+                        ])),
+                    Text(
+                        DateFormat("yy/M/d HH:mm").format(
+                            DateTime.fromMillisecondsSinceEpoch(
+                                item.createDate)),
+                        style:
+                            const TextStyle(color: Colors.white, fontSize: 9))
+                  ]),
               centerTitle: false,
-              background: Image.network(bgs[item.id.hashCode % bgs.length],
+              background: Image.network(urlOfDate(item.createDate),
                   fit: BoxFit.cover))),
       const SliverToBoxAdapter(child: SizedBox(height: 3)),
       SliverFillRemaining(
