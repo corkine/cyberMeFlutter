@@ -11,7 +11,7 @@ import 'package:cyberme_flutter/pocket/views/counter.dart';
 import 'package:cyberme_flutter/pocket/views/esxi.dart';
 import 'package:cyberme_flutter/pocket/views/gallery.dart';
 import 'package:cyberme_flutter/pocket/views/gitea.dart';
-import 'package:cyberme_flutter/pocket/views/health_blue.dart';
+import 'package:cyberme_flutter/pocket/views/sex.dart';
 import 'package:cyberme_flutter/pocket/views/link.dart';
 import 'package:cyberme_flutter/pocket/views/location.dart';
 import 'package:cyberme_flutter/pocket/views/server/service.dart';

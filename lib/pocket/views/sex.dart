@@ -133,7 +133,9 @@ class _SexualActivityViewState extends ConsumerState<SexualActivityView> {
         appBar: AppBar(title: const Text('Sexual Activity'), actions: [
           IconButton(icon: const Icon(Icons.add), onPressed: _showAddDialog),
           IconButton(
-              icon: const Icon(Icons.power_input), onPressed: _showDialog)
+              icon: const Icon(Icons.calendar_month, size: 19),
+              onPressed: _showDialog),
+          const SizedBox(width: 10)
         ]),
         body: buildList(data));
   }
