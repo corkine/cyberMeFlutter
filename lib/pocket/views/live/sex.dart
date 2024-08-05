@@ -17,6 +17,22 @@ import 'package:uuid/uuid.dart';
 
 import '../../../main.dart';
 
+Icon buildIcon(BlueData activity, {double opacity = 1}) {
+  return Icon(
+      activity.protected == null
+          ? Icons.handshake
+          : activity.protected == true
+              ? Icons.shield
+              : Icons.warning,
+      color: (activity.protected == null
+              ? Colors.orange
+              : activity.protected == true
+                  ? Colors.green
+                  : Colors.red)
+          .withOpacity(opacity),
+      size: 30);
+}
+
 class SexualActivityView extends ConsumerStatefulWidget {
   const SexualActivityView({super.key});
 
@@ -195,18 +211,7 @@ class _SexualActivityViewState extends ConsumerState<SexualActivityView> {
                   onLongPress: () => _edit(activity),
                   subtitle: Text(activity.note.isEmpty ? "--" : activity.note,
                       maxLines: 1, overflow: TextOverflow.ellipsis),
-                  leading: Icon(
-                      activity.protected == null
-                          ? Icons.handshake
-                          : activity.protected == true
-                              ? Icons.shield
-                              : Icons.warning,
-                      color: activity.protected == null
-                          ? Colors.orange
-                          : activity.protected == true
-                              ? Colors.green
-                              : Colors.red,
-                      size: 30),
+                  leading: buildIcon(activity),
                   trailing: Text(DateFormat('HH:mm').format(
                       DateTime.fromMillisecondsSinceEpoch(
                           activity.time * 1000)))));
@@ -409,9 +414,9 @@ class _BlueCalViewState extends ConsumerState<BlueCalView> {
                 titleCentered: true, formatButtonVisible: false),
             calendarBuilders:
                 CalendarBuilders(markerBuilder: (context, date, events) {
-              if (!_map.containsKey(DateFormat.yMd().format(date))) return null;
-              return Icon(Icons.stacked_line_chart_sharp,
-                  size: 50, color: Colors.redAccent.withOpacity(0.2));
+              final dateFmt = DateFormat.yMd().format(date);
+              if (!_map.containsKey(dateFmt)) return null;
+              return Center(child: buildIcon(_map[dateFmt]!, opacity: 0.6));
             })));
   }
 }
