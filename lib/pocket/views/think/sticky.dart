@@ -138,6 +138,8 @@ class ConcatTextVisitor extends TreeVisitor {
 
   @override
   void visitText(dom.Text node) {
+    final n = node.data;
+    if (n.trim().isEmpty) return;
     _str.write(node.data + "\n");
   }
 }
