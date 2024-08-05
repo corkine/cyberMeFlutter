@@ -4,6 +4,8 @@ import 'package:cyberme_flutter/pocket/views/util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:html/dom_parsing.dart';
+import 'package:html/dom.dart' as dom;
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:html/parser.dart';
@@ -113,8 +115,7 @@ class NoteView extends ConsumerWidget {
               IconButton(
                   onPressed: () {
                     final doc = parse(item.body);
-                    final String plainText =
-                        parse(doc.body!.text).documentElement!.text;
+                    final String plainText = doc.body!.textPretty;
                     Clipboard.setData(ClipboardData(text: plainText));
                     showSimpleMessage(context,
                         content: "已拷贝", useSnackBar: true);
@@ -127,4 +128,20 @@ class NoteView extends ConsumerWidget {
                 padding: const EdgeInsets.only(left: 10, right: 10, bottom: 30),
                 child: HtmlWidget(item.body))));
   }
+}
+
+class ConcatTextVisitor extends TreeVisitor {
+  final _str = StringBuffer();
+
+  @override
+  String toString() => _str.toString();
+
+  @override
+  void visitText(dom.Text node) {
+    _str.write(node.data + "\n");
+  }
+}
+
+extension on dom.Element {
+  String get textPretty => (ConcatTextVisitor()..visit(this)).toString();
 }
