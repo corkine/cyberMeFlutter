@@ -5,17 +5,18 @@ import 'package:cyberme_flutter/learn/flame/brickbreaker.dart';
 import 'package:cyberme_flutter/learn/game.dart';
 import 'package:cyberme_flutter/learn/snh.dart';
 import 'package:cyberme_flutter/pocket/views/info/backup.dart';
-import 'package:cyberme_flutter/pocket/views/live/body_mass.dart';
+import 'package:cyberme_flutter/pocket/views/live/mass/mass_add.dart';
 import 'package:cyberme_flutter/pocket/views/info/cert.dart';
 import 'package:cyberme_flutter/pocket/views/info/counter.dart';
 import 'package:cyberme_flutter/pocket/views/info/esxi.dart';
 import 'package:cyberme_flutter/pocket/views/info/gallery.dart';
 import 'package:cyberme_flutter/pocket/views/info/gitea.dart';
+import 'package:cyberme_flutter/pocket/views/live/mass/mass.dart';
 import 'package:cyberme_flutter/pocket/views/live/sex.dart';
 import 'package:cyberme_flutter/pocket/views/info/link.dart';
 import 'package:cyberme_flutter/pocket/views/info/location.dart';
 import 'package:cyberme_flutter/pocket/views/server/service.dart';
-import 'package:cyberme_flutter/pocket/views/play/story.dart';
+import 'package:cyberme_flutter/pocket/views/news/story.dart';
 import 'package:cyberme_flutter/pocket/views/think/block.dart';
 import 'views/info/blog.dart';
 import 'views/live/blue.dart';
@@ -25,8 +26,8 @@ import 'views/think/sticky.dart';
 import 'dashboard.dart' as dash;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'views/play/movie.dart';
-import 'views/play/tugua.dart';
+import 'views/news/movie.dart';
+import 'views/news/tugua.dart';
 import 'day.dart';
 import '../learn/goods.dart';
 import '../learn/link.dart';
@@ -59,24 +60,28 @@ final apps = {
     "name": "12306 车票",
     "view": (c) => const TicketShowPage(),
     "addToMenu": true,
+    "addToContext": true,
     "icon": Icons.airplane_ticket
   },
   "express": {
     "name": "快递追踪",
     "view": (c) => const ExpressView(),
     "addToMenu": true,
+    "addToContext": true,
     "icon": Icons.card_giftcard
   },
   "service": {
     "name": "服务追踪",
     "view": (c) => const TrackView(),
     "addToMenu": true,
+    "addToContext": true,
     "icon": Icons.dashboard
   },
   "todo": {
     "name": "待办事项",
     "view": (c) => const TodoView(),
     "addToMenu": true,
+    "addToContext": true,
     "icon": Icons.check_box
   },
   "score": {
@@ -88,46 +93,51 @@ final apps = {
   },
   "bodyMass": {
     "name": "体重记录",
-    "view": (c) => const BodyMassView(),
+    "view": (c) => const MassActivityView(),
     "addToMenu": true,
-    "addToContext": false,
+    "addToContext": true,
     "icon": Icons.fit_screen
   },
   "show": {
     "name": "影视热榜",
     "view": (c) => const MovieView(),
     "addToMenu": true,
+    "addToContext": false,
     "icon": Icons.movie
   },
   "dapenti": {
     "name": "喷嚏图卦",
     "view": (c) => const TuguaView(),
     "addToMenu": true,
-    "addToContext": false,
+    "addToContext": true,
     "icon": Icons.newspaper
   },
   "story": {
     "name": "故事社",
     "view": (c) => const StoryView(),
     "addToMenu": true,
+    "addToContext": false,
     "icon": Icons.bookmark_add
   },
   "esxi": {
     "name": "ESXi",
     "view": (c) => const EsxiView(),
     "addToMenu": true,
+    "addToContext": true,
     "icon": Icons.computer
   },
   "blog": {
     "name": "博客",
     "view": (c) => const BlogView(),
     "addToMenu": true,
+    "addToContext": false,
     "icon": Icons.article
   },
   "gitea": {
     "name": "Gitea",
     "view": (c) => const GiteaView(),
     "addToMenu": true,
+    "addToContext": false,
     "icon": Icons.source
   },
   "gpt": {
@@ -188,21 +198,21 @@ final apps = {
     "name": "Counter",
     "view": (c) => const FuckCounterView(),
     "addToMenu": true,
-    "addToContext": true,
+    "addToContext": false,
     "icon": Icons.countertops
   },
   "backup": {
     "name": "Backup",
     "view": (c) => const BackupView(),
     "addToMenu": true,
-    "addToContext": true,
+    "addToContext": false,
     "icon": Icons.backup
   },
   "gallery": {
     "name": "Gallery",
     "view": (c) => const GalleryManagerScreen(),
     "addToMenu": true,
-    "addToContext": true,
+    "addToContext": false,
     "icon": Icons.image
   },
   "cert-manager": {

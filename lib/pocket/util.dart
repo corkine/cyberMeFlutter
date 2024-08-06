@@ -13,6 +13,45 @@ import 'config.dart';
 
 const Map<String, dynamic> emptyMap = {};
 
+const animalBgs = [
+  "https://static2.mazhangjing.com/cyber/202408/061ec0f1_Snipaste_2024-08-02_14-04-41.jpg",
+  "https://static2.mazhangjing.com/cyber/202408/9d058a62_Snipaste_2024-08-02_14-04-48.jpg",
+  "https://static2.mazhangjing.com/cyber/202408/59cbf66d_Snipaste_2024-08-02_14-04-57.jpg",
+  "https://static2.mazhangjing.com/cyber/202408/1eba9b4c_Snipaste_2024-08-02_14-05-10.jpg",
+  "https://static2.mazhangjing.com/cyber/202408/ae3dea88_Snipaste_2024-08-02_14-05-23.jpg",
+  "https://static2.mazhangjing.com/cyber/202408/da4ce823_Snipaste_2024-08-02_14-05-36.jpg",
+  "https://static2.mazhangjing.com/cyber/202408/ae8cc35f_Snipaste_2024-08-06_13-36-42.jpg",
+  "https://static2.mazhangjing.com/cyber/202408/db804a00_Snipaste_2024-08-06_13-36-56.jpg",
+  "https://static2.mazhangjing.com/cyber/202408/d9c647d9_Snipaste_2024-08-06_13-37-12.jpg",
+  "https://static2.mazhangjing.com/cyber/202408/18c4fc85_Snipaste_2024-08-06_13-37-23.jpg",
+  "https://static2.mazhangjing.com/cyber/202408/f681ae63_Snipaste_2024-08-06_13-37-55.jpg",
+  "https://static2.mazhangjing.com/cyber/202408/0b0d5f50_Snipaste_2024-08-06_13-38-09.jpg",
+  "https://static2.mazhangjing.com/cyber/202408/da8ea1d8_Snipaste_2024-08-06_14-30-10.jpg",
+  "https://static2.mazhangjing.com/cyber/202408/2d92cd79_Snipaste_2024-08-06_14-30-28.jpg",
+  "https://static2.mazhangjing.com/cyber/202408/b9f56712_Snipaste_2024-08-06_14-30-38.jpg"
+];
+
+const Map<String, String> storyCover = {
+  "格林童话": "https://static2.mazhangjing.com/cyber/202310/753d1738_图片.png",
+  "伊索寓言": "https://static2.mazhangjing.com/cyber/202310/51472203_图片.png",
+  "一千零一夜": "https://static2.mazhangjing.com/cyber/202310/4ab8d597_图片.png",
+  "黑塞童话": "https://static2.mazhangjing.com/cyber/202310/f31ac1f5_图片.png",
+  "王尔德童话": "https://static2.mazhangjing.com/cyber/202310/627f2f86_图片.png",
+  "笨狼的故事": "https://static2.mazhangjing.com/cyber/202310/efde917f_图片.png",
+  "安徒生童话": "https://static2.mazhangjing.com/cyber/202310/efbd86c8_图片.png",
+  "佩罗童话": "https://static2.mazhangjing.com/cyber/202405/6c3de10b_image.png",
+  "恰佩克童话": "https://static2.mazhangjing.com/cyber/202405/1ab939ee_image.png",
+  "罗尔德童话": "https://static2.mazhangjing.com/cyber/202405/b081a67c_image.png",
+  "欧亨利短篇小说选": "https://static2.mazhangjing.com/cyber/202405/cf9d091c_image.png",
+  "阿瑟克拉克科幻小说选": "https://static2.mazhangjing.com/cyber/202310/d4461685_图片.png",
+  "银河系边缘的小失常": "https://static2.mazhangjing.com/cyber/202310/dc840e21_图片.png",
+  "伟大的短篇小说们": "https://static2.mazhangjing.com/cyber/202310/d6c77430_图片.png",
+  "日本民间童话故事": "https://static2.mazhangjing.com/cyber/202405/f8ef4c95_image.png"
+};
+
+String defaultStoryCover =
+    "https://static2.mazhangjing.com/cyber/202310/70b6426c_图片.png";
+
 /// 执行 Redis Lua 脚本，see taoensso.carmine/lua:
 ///
 /// (lua "redis.call('set', _:my-key, _:my-arg)" {:my-key "foo"} {:my-arg "bar"})

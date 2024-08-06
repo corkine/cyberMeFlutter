@@ -1,32 +1,12 @@
 import 'dart:convert';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cyberme_flutter/pocket/util.dart';
 import 'package:cyberme_flutter/pocket/viewmodels/story.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart';
 import '../../config.dart';
-
-Map<String, String> cover = {
-  "格林童话": "https://static2.mazhangjing.com/cyber/202310/753d1738_图片.png",
-  "伊索寓言": "https://static2.mazhangjing.com/cyber/202310/51472203_图片.png",
-  "一千零一夜": "https://static2.mazhangjing.com/cyber/202310/4ab8d597_图片.png",
-  "黑塞童话": "https://static2.mazhangjing.com/cyber/202310/f31ac1f5_图片.png",
-  "王尔德童话": "https://static2.mazhangjing.com/cyber/202310/627f2f86_图片.png",
-  "笨狼的故事": "https://static2.mazhangjing.com/cyber/202310/efde917f_图片.png",
-  "安徒生童话": "https://static2.mazhangjing.com/cyber/202310/efbd86c8_图片.png",
-  "佩罗童话": "https://static2.mazhangjing.com/cyber/202405/6c3de10b_image.png",
-  "恰佩克童话": "https://static2.mazhangjing.com/cyber/202405/1ab939ee_image.png",
-  "罗尔德童话": "https://static2.mazhangjing.com/cyber/202405/b081a67c_image.png",
-  "欧亨利短篇小说选": "https://static2.mazhangjing.com/cyber/202405/cf9d091c_image.png",
-  "阿瑟克拉克科幻小说选": "https://static2.mazhangjing.com/cyber/202310/d4461685_图片.png",
-  "银河系边缘的小失常": "https://static2.mazhangjing.com/cyber/202310/dc840e21_图片.png",
-  "伟大的短篇小说们": "https://static2.mazhangjing.com/cyber/202310/d6c77430_图片.png",
-  "日本民间童话故事": "https://static2.mazhangjing.com/cyber/202405/f8ef4c95_image.png"
-};
-
-String defaultCover =
-    "https://static2.mazhangjing.com/cyber/202310/70b6426c_图片.png";
 
 class StoryView extends StatefulWidget {
   const StoryView({super.key});
@@ -87,7 +67,8 @@ class _StoryViewState extends State<StoryView> {
                                       width: 100,
                                       height: 150,
                                       child: CachedNetworkImage(
-                                          imageUrl: cover[s.$1] ?? defaultCover,
+                                          imageUrl: storyCover[s.$1] ??
+                                              defaultStoryCover,
                                           fit: BoxFit.cover))),
                               const SizedBox(height: 5),
                               Text(s.$1,
@@ -164,7 +145,7 @@ class _BookStoryViewState extends ConsumerState<BookStoryView> {
           Positioned.fill(
               child: CachedNetworkImage(
                   fit: BoxFit.cover,
-                  imageUrl: cover[widget.bookName] ?? defaultCover)),
+                  imageUrl: storyCover[widget.bookName] ?? defaultStoryCover)),
           Positioned.fill(child: Container(color: Colors.black54)),
           SafeArea(
               child: Column(
@@ -199,8 +180,9 @@ class _BookStoryViewState extends ConsumerState<BookStoryView> {
                                       width: 50,
                                       child: CachedNetworkImage(
                                           fit: BoxFit.cover,
-                                          imageUrl: cover[widget.bookName] ??
-                                              defaultCover)))
+                                          imageUrl:
+                                              storyCover[widget.bookName] ??
+                                                  defaultStoryCover)))
                             ]))),
                 Expanded(
                     child: Material(
@@ -364,11 +346,11 @@ class _StoryReadViewState extends ConsumerState<StoryReadView> {
         body: CustomScrollView(controller: controller, slivers: [
           SliverAppBar(
               stretch: true,
-              title: Text(widget.storyName),
-              leading: const BackButton(color: Colors.white38),
+              //title: Text(widget.storyName),
+              leading: const BackButton(color: Colors.white),
               actions: [
                 Padding(
-                    padding: const EdgeInsets.only(right: 5),
+                    padding: const EdgeInsets.only(right: 15),
                     child: InkWell(
                         child: willRead
                             ? const Icon(Icons.bookmark,
@@ -377,7 +359,7 @@ class _StoryReadViewState extends ConsumerState<StoryReadView> {
                                 ? const Icon(Icons.bookmark_border,
                                     color: Colors.green)
                                 : const Icon(Icons.bookmark_add_outlined,
-                                    color: Colors.white24),
+                                    color: Colors.white),
                         onTap: () async {
                           //待读 vs. 未读
                           if (isReaded) {
@@ -396,14 +378,25 @@ class _StoryReadViewState extends ConsumerState<StoryReadView> {
                               read: !isReaded);
                         }))
               ],
-              expandedHeight: 350,
+              expandedHeight: 180,
               backgroundColor: Colors.black,
               foregroundColor: Colors.white,
               automaticallyImplyLeading: true,
               flexibleSpace: FlexibleSpaceBar(
-                  titlePadding: const EdgeInsets.only(bottom: 15),
-                  background:
-                      Image.asset("images/app_bg.jpg", fit: BoxFit.cover))),
+                  title: Text(widget.storyName,
+                      style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.white,
+                          shadows: [
+                            Shadow(color: Colors.black, blurRadius: 10)
+                          ])),
+                  titlePadding: const EdgeInsets.only(left: 15, bottom: 10),
+                  background: Image.network(
+                      animalBgs[widget.storyName.hashCode % animalBgs.length],
+                      fit: BoxFit.cover,
+                      alignment: const Alignment(0, 0.5))
+                  //Image.asset("images/app_bg.jpg", fit: BoxFit.cover)
+                  )),
           const SliverPadding(padding: EdgeInsets.only(top: 15)),
           SliverList.builder(
               itemCount: content.length,
@@ -423,10 +416,10 @@ class _StoryReadViewState extends ConsumerState<StoryReadView> {
                     padding: const EdgeInsets.all(8.0),
                     child: TextButton(
                         style: ButtonStyle(backgroundColor:
-                            MaterialStateProperty.resolveWith((states) {
-                          if (states.contains(MaterialState.pressed)) {
+                            WidgetStateProperty.resolveWith((states) {
+                          if (states.contains(WidgetState.pressed)) {
                             return const Color.fromARGB(62, 76, 175, 79);
-                          } else if (states.contains(MaterialState.hovered)) {
+                          } else if (states.contains(WidgetState.hovered)) {
                             return const Color.fromARGB(24, 76, 175, 79);
                           } else {
                             return Colors.transparent;

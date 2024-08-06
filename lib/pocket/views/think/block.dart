@@ -1,3 +1,4 @@
+import 'package:cyberme_flutter/pocket/util.dart';
 import 'package:cyberme_flutter/pocket/viewmodels/blocks.dart';
 import 'package:cyberme_flutter/pocket/views/util.dart';
 import 'package:flutter/material.dart';
@@ -13,17 +14,8 @@ class BlocksView extends ConsumerStatefulWidget {
   ConsumerState<ConsumerStatefulWidget> createState() => _BlocksViewState();
 }
 
-final bgs = [
-  "https://static2.mazhangjing.com/cyber/202408/061ec0f1_Snipaste_2024-08-02_14-04-41.jpg",
-  "https://static2.mazhangjing.com/cyber/202408/9d058a62_Snipaste_2024-08-02_14-04-48.jpg",
-  "https://static2.mazhangjing.com/cyber/202408/59cbf66d_Snipaste_2024-08-02_14-04-57.jpg",
-  "https://static2.mazhangjing.com/cyber/202408/1eba9b4c_Snipaste_2024-08-02_14-05-10.jpg",
-  "https://static2.mazhangjing.com/cyber/202408/ae3dea88_Snipaste_2024-08-02_14-05-23.jpg",
-  "https://static2.mazhangjing.com/cyber/202408/da4ce823_Snipaste_2024-08-02_14-05-36.jpg"
-];
-
-String urlOfDate(int date) {
-  return bgs[(date / 1000000).floor() % bgs.length];
+String urlOfDate(DateTime date) {
+  return animalBgs[(date.day).floor() % animalBgs.length];
 }
 
 class _BlocksViewState extends ConsumerState<BlocksView> {
@@ -72,12 +64,13 @@ class _BlocksViewState extends ConsumerState<BlocksView> {
             final item = data[index];
             return buildCard(context, item);
           }, childCount: data.length)),
-          const SliverToBoxAdapter(child: SizedBox(height: 3)),
+          const SliverToBoxAdapter(child: SizedBox(height: 3))
         ]));
   }
 
   Widget buildCard(BuildContext context, BlockItem item) {
     const height = 70.0;
+    final createDate = DateTime.fromMillisecondsSinceEpoch(item.createDate);
     return Card(
         elevation: 1,
         margin: const EdgeInsets.only(bottom: 2, top: 2, left: 4, right: 4),
@@ -89,7 +82,7 @@ class _BlocksViewState extends ConsumerState<BlocksView> {
                 child: Stack(children: [
                   Opacity(
                       opacity: 0.9,
-                      child: Image.network(urlOfDate(item.createDate),
+                      child: Image.network(urlOfDate(createDate),
                           width: double.infinity,
                           fit: BoxFit.cover,
                           alignment: const Alignment(0.5, -0.5),
@@ -137,9 +130,7 @@ class _BlocksViewState extends ConsumerState<BlocksView> {
                                                         .toList())),
                                           ),
                                           Text(DateFormat.yMd("zh_Hans")
-                                              .format(DateTime
-                                                  .fromMillisecondsSinceEpoch(
-                                                      item.createDate))
+                                              .format(createDate)
                                               .toString())
                                         ])
                                       ])))))
@@ -259,6 +250,7 @@ class _BlockDetailViewState extends ConsumerState<BlockDetailView> {
 
   @override
   Widget build(BuildContext context) {
+    final createDate = DateTime.fromMillisecondsSinceEpoch(item.createDate);
     return Scaffold(
         body: CustomScrollView(slivers: <Widget>[
       SliverAppBar(
@@ -351,16 +343,13 @@ class _BlockDetailViewState extends ConsumerState<BlockDetailView> {
                               blurRadius: 7,
                               offset: Offset(1, 1))
                         ])),
-                    Text(
-                        DateFormat("yy/M/d HH:mm").format(
-                            DateTime.fromMillisecondsSinceEpoch(
-                                item.createDate)),
+                    Text(DateFormat("yy/M/d HH:mm").format(createDate),
                         style:
                             const TextStyle(color: Colors.white, fontSize: 9))
                   ]),
               centerTitle: false,
-              background: Image.network(urlOfDate(item.createDate),
-                  fit: BoxFit.cover))),
+              background:
+                  Image.network(urlOfDate(createDate), fit: BoxFit.cover))),
       const SliverToBoxAdapter(child: SizedBox(height: 3)),
       SliverFillRemaining(
           child: _edit && !_preview

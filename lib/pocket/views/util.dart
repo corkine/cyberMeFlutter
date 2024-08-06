@@ -102,7 +102,8 @@ DateTime getThisWeekMonday() {
 Widget buildRichDate(DateTime? date,
     {required DateTime today,
     required DateTime weekDayOne,
-    required DateTime lastWeekDayOne}) {
+    required DateTime lastWeekDayOne,
+    double? fontSize}) {
   if (date == null) return const Text("未知日期");
   final df = DateFormat("yyyy-MM-dd");
   bool isToday = !today.isAfter(date);
@@ -118,7 +119,8 @@ Widget buildRichDate(DateTime? date,
   final style = TextStyle(
       decoration: isToday ? TextDecoration.underline : null,
       decorationColor: color,
-      color: color);
+      color: color,
+      fontSize: fontSize);
   if (thisWeek) {
     if (isToday) {
       return Text("${df.format(date)} 今天", style: style);

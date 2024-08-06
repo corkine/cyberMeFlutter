@@ -1,21 +1,18 @@
 import 'dart:io';
 
-import 'package:cyberme_flutter/pocket/viewmodels/health_blue.dart';
+import 'package:cyberme_flutter/pocket/viewmodels/sex.dart';
 import 'package:cyberme_flutter/pocket/views/util.dart';
 import 'package:flutter/foundation.dart' as f;
 import 'package:flutter/material.dart';
 import 'package:health_kit_reporter/health_kit_reporter.dart';
-import 'package:health_kit_reporter/model/payload/category.dart';
-import 'package:health_kit_reporter/model/payload/source.dart';
-import 'package:health_kit_reporter/model/payload/source_revision.dart';
 import 'package:health_kit_reporter/model/predicate.dart';
 import 'package:health_kit_reporter/model/type/category_type.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'package:uuid/uuid.dart';
 
 import '../../../main.dart';
+import 'health.dart';
 
 Icon buildIcon(BlueData activity, {double opacity = 1}) {
   return Icon(
@@ -52,94 +49,32 @@ class _SexualActivityViewState extends ConsumerState<SexualActivityView> {
     today = DateTime(now.year, now.month, now.day);
     weekDayOne = getThisWeekMonday();
     lastWeekDayOne = weekDayOne.subtract(const Duration(days: 7));
-    if (!f.kIsWeb && Platform.isIOS) doSync();
+    doSync();
   }
 
   doSync() async {
+    if (f.kIsWeb || !Platform.isIOS) return;
     await ref.read(bluesDbProvider.future);
-    await _requestAuthorizationAndFetch((d) async {
-      final healthKitMiss = await ref.read(bluesDbProvider.notifier).sync(d);
+    final ok = await requestAuthorization(
+        readTypes: [CategoryType.sexualActivity.identifier],
+        writeTypes: [CategoryType.sexualActivity.identifier]);
+    if (ok.$1) {
+      final now = DateTime.now();
+      final threeMonthsAgo = now.subtract(const Duration(days: 90));
+      final activities = await HealthKitReporter.categoryQuery(
+          CategoryType.sexualActivity, Predicate(threeMonthsAgo, now));
+      final healthKitMiss =
+          await ref.read(bluesDbProvider.notifier).sync(activities);
       if (healthKitMiss.isNotEmpty) {
         debugPrint('kit missed: ${healthKitMiss.length}');
         for (var e in healthKitMiss) {
-          _addSexualActivity(
+          addSexualActivity(
               DateTime.fromMillisecondsSinceEpoch(e.time * 1000), e.protected);
         }
       }
-    });
-  }
-
-  Future<String> _requestAuthorizationAndFetch(
-      Future Function(List<Category>)? callback) async {
-    try {
-      final readTypes = <String>[CategoryType.sexualActivity.identifier];
-      final writeTypes = <String>[CategoryType.sexualActivity.identifier];
-      final isRequested =
-          await HealthKitReporter.requestAuthorization(readTypes, writeTypes);
-      if (isRequested) {
-        final now = DateTime.now();
-        final threeMonthsAgo = now.subtract(const Duration(days: 90));
-        final activities = await HealthKitReporter.categoryQuery(
-            CategoryType.sexualActivity, Predicate(threeMonthsAgo, now));
-        // showSimpleMessage(context,
-        //     content: activities
-        //         .map((a) {
-        //           final m = jsonEncode(a.map);
-        //           final used = a.harmonized.metadata?["double"]?["dictionary"]
-        //               ?["HKSexualActivityProtectionUsed"];
-        //           final test = a.map["HKSexualActivityProtectionUsed"];
-        //           final dt = DateTime.fromMillisecondsSinceEpoch(
-        //               a.startTimestamp * 1000 as int);
-        //           return "$dt: $used ${used.runtimeType}, $test ${test.runtimeType}, ${prettyPrintJson(m)}\n";
-        //         })
-        //         .toList()
-        //         .toString());
-        if (callback != null) {
-          await callback(activities);
-        }
-        return "Done";
-      } else {
-        return "Authorization not requested";
-      }
-    } catch (e, st) {
-      debugPrintStack(stackTrace: st);
+    } else {
+      await showSimpleMessage(context, content: ok.$2);
     }
-    return "Error";
-  }
-
-  Future<void> _addSexualActivity(DateTime dateTime, bool? protected) async {
-    if (f.kIsWeb || !Platform.isIOS) return;
-    try {
-      final canWrite = await HealthKitReporter.isAuthorizedToWrite(
-          CategoryType.sexualActivity.identifier);
-      if (canWrite) {
-        const _source = Source('CyberMe', 'com.mazhangjing.cyberme');
-        const _operatingSystem = OperatingSystem(1, 2, 3);
-        const _sourceRevision =
-            SourceRevision(_source, null, null, "1.0", _operatingSystem);
-        final harmonized = CategoryHarmonized(
-            0, "", "", {"HKSexualActivityProtectionUsed": protected});
-        final data = Category(
-            const Uuid().v4(),
-            CategoryType.sexualActivity.identifier,
-            dateTime.millisecondsSinceEpoch,
-            dateTime.millisecondsSinceEpoch,
-            null,
-            _sourceRevision,
-            harmonized);
-        debugPrint('try to save: ${data.map}');
-        final saved = await HealthKitReporter.save(data);
-        debugPrint('data saved: $saved');
-      } else {
-        debugPrint('error canWrite steps: $canWrite');
-      }
-    } catch (e) {
-      debugPrint(e.toString());
-    }
-  }
-
-  DateTime ts2DateTime(num ts) {
-    return DateTime.fromMillisecondsSinceEpoch(ts * 1000 as int);
   }
 
   @override
@@ -165,16 +100,12 @@ class _SexualActivityViewState extends ConsumerState<SexualActivityView> {
               key: ValueKey(activity.time),
               confirmDismiss: (direction) async {
                 if (direction == DismissDirection.endToStart) {
-                  if (await showSimpleMessage(context, content: "确定删除此纪录吗?")) {
+                  if (await showSimpleMessage(context, content: "确定删除此记录吗?")) {
                     await ref
                         .read(bluesDbProvider.notifier)
                         .delete(activity.time);
-                    if (Platform.isIOS) {
-                      await HealthKitReporter.deleteObjects(
-                          CategoryType.sexualActivity.identifier,
-                          Predicate(ts2DateTime(activity.time),
-                              ts2DateTime(activity.time + 1)));
-                    }
+                    await deleteSample(
+                        CategoryType.sexualActivity.identifier, activity.time);
                     return true;
                   }
                 } else {
@@ -361,7 +292,7 @@ class _SexualActivityViewState extends ConsumerState<SexualActivityView> {
                                           1000,
                                       note: noteController.text,
                                       protected: useProtected));
-                              _addSexualActivity(dateTime, useProtected);
+                              addSexualActivity(dateTime, useProtected);
                               Navigator.of(context).pop(null);
                             },
                             child: const Text("确定"))

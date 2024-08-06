@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:clipboard/clipboard.dart';
 import 'package:cyberme_flutter/pocket/viewmodels/gpt.dart';
 import 'package:cyberme_flutter/pocket/viewmodels/todo.dart';
@@ -480,79 +482,89 @@ class _TodoViewState extends ConsumerState<TodoView>
     }
 
     final node = FocusNode();
-    await showModal(context, StatefulBuilder(builder: (context, setState) {
-      return Scaffold(
-          appBar: AppBar(title: const Text("添加待办事项")),
-          body: Padding(
-              padding: const EdgeInsets.only(
-                  top: 0, bottom: 10, left: 15, right: 15),
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextField(
-                        onSubmitted: (_) => handleAdd(),
-                        autofocus: true,
-                        focusNode: node,
-                        decoration: const InputDecoration(
-                            border: UnderlineInputBorder(), hintText: "标题"),
-                        controller: title),
-                    const SizedBox(height: 10),
-                    Wrap(runSpacing: 5, spacing: 5, children: [
-                      for (var list in lists)
-                        RawChip(
-                            label: Text(list),
-                            selected: list == selectList,
-                            onPressed: () {
-                              if (list.contains("工作")) {
-                                markFinished = true;
-                              } else {
-                                markFinished = false;
-                              }
-                              setState(() => selectList = list);
-                            })
-                    ]),
-                    const SizedBox(height: 5),
-                    Row(children: [
-                      InkWell(
-                          onTap: () async {
-                            final selectedDate = await showDatePicker(
-                                context: context,
-                                firstDate: date.add(const Duration(days: -30)),
-                                lastDate: date.add(const Duration(days: 300)));
-                            if (selectedDate != null) {
-                              setState(() => date = selectedDate);
-                            }
-                          },
-                          child: Text(
-                              "截止于 ${DateFormat("yyyy-MM-dd").format(date)}")),
-                      const SizedBox(width: 5),
-                      TextButton(
-                          onPressed: () {
-                            setState(() => date =
-                                DateTime.now().add(const Duration(days: -1)));
-                            FocusScope.of(context).requestFocus(node);
-                          },
-                          child: const Text("昨天"))
-                    ]),
-                    const SizedBox(height: 3),
-                    Transform.translate(
-                        offset: const Offset(-8, 0),
-                        child: Row(children: [
-                          Checkbox(
-                              value: markFinished,
-                              onChanged: (v) =>
-                                  setState(() => markFinished = v!)),
-                          const Text("标记为已完成")
-                        ])),
-                    const Spacer(),
-                    SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton(
-                            onPressed: handleAdd, child: const Text("确定")))
-                  ])));
-    }));
+    await showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        builder: (context) => SizedBox(
+              height: Platform.isWindows || Platform.isMacOS ? 260 : 450,
+              child: StatefulBuilder(builder: (context, setState) {
+                return Scaffold(
+                    backgroundColor: Colors.transparent,
+                    body: Padding(
+                        padding: const EdgeInsets.only(
+                            top: 20, bottom: 10, left: 15, right: 15),
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              TextField(
+                                  onSubmitted: (_) => handleAdd(),
+                                  autofocus: true,
+                                  focusNode: node,
+                                  decoration: const InputDecoration(
+                                      border: UnderlineInputBorder(),
+                                      hintText: "标题"),
+                                  controller: title),
+                              const SizedBox(height: 10),
+                              Wrap(runSpacing: 5, spacing: 5, children: [
+                                for (var list in lists)
+                                  RawChip(
+                                      label: Text(list),
+                                      selected: list == selectList,
+                                      onPressed: () {
+                                        if (list.contains("工作")) {
+                                          markFinished = true;
+                                        } else {
+                                          markFinished = false;
+                                        }
+                                        setState(() => selectList = list);
+                                      })
+                              ]),
+                              const SizedBox(height: 5),
+                              Row(children: [
+                                InkWell(
+                                    onTap: () async {
+                                      final selectedDate = await showDatePicker(
+                                          context: context,
+                                          firstDate: date
+                                              .add(const Duration(days: -30)),
+                                          lastDate: date
+                                              .add(const Duration(days: 300)));
+                                      if (selectedDate != null) {
+                                        setState(() => date = selectedDate);
+                                      }
+                                    },
+                                    child: Text(
+                                        "截止于 ${DateFormat("yyyy-MM-dd").format(date)}")),
+                                const SizedBox(width: 5),
+                                TextButton(
+                                    onPressed: () {
+                                      setState(() => date = DateTime.now()
+                                          .add(const Duration(days: -1)));
+                                      FocusScope.of(context).requestFocus(node);
+                                    },
+                                    child: const Text("昨天"))
+                              ]),
+                              const SizedBox(height: 3),
+                              Transform.translate(
+                                  offset: const Offset(-8, 0),
+                                  child: Row(children: [
+                                    Checkbox(
+                                        value: markFinished,
+                                        onChanged: (v) =>
+                                            setState(() => markFinished = v!)),
+                                    const Text("标记为已完成")
+                                  ])),
+                              const Spacer(),
+                              SizedBox(
+                                  width: double.infinity,
+                                  child: OutlinedButton(
+                                      onPressed: handleAdd,
+                                      child: const Text("确定")))
+                            ])));
+              }),
+            ));
   }
 
   void handleAutoHCMLogin() async {

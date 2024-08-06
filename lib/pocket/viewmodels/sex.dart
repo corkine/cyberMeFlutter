@@ -1,11 +1,12 @@
 import 'package:cyberme_flutter/pocket/viewmodels/basic.dart';
+import 'package:cyberme_flutter/pocket/views/live/health.dart';
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:health_kit_reporter/model/payload/category.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-part 'health_blue.freezed.dart';
-part 'health_blue.g.dart';
+part 'sex.freezed.dart';
+part 'sex.g.dart';
 
 @freezed
 class BlueData with _$BlueData {
@@ -63,14 +64,7 @@ class BluesDb extends _$BluesDb {
       List<BlueData> newData = [
         ...(state.value ?? []),
         ...cloudMiss.map((i) {
-          int? d;
-          try {
-            d = cm[i]?.harmonized.metadata?["double"]?["dictionary"]
-                ?["HKSexualActivityProtectionUsed"] as int?;
-          } catch (e) {
-            debugPrint("error parse: ${cm[i]}");
-          }
-          return BlueData(time: i, protected: d == null ? null : d == 1);
+          return BlueData(time: i, protected: sexualAcitvityProtected(cm[i]));
         })
       ]..sort(sort);
       debugPrint("sync: $cloudMiss");
