@@ -29,6 +29,123 @@ String urlOfDate(int date) {
 class _BlocksViewState extends ConsumerState<BlocksView> {
   final Set<String> _selectTags = {};
 
+  handleAdd() {
+    Navigator.of(context).push(
+        MaterialPageRoute(builder: (context) => BlockDetailView(BlockItem())));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final data = ref.watch(getBlocksListProvider(_selectTags));
+    return Scaffold(
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        // floatingActionButton: FloatingActionButton(
+        //     onPressed: handleAdd, child: const Icon(Icons.add)),
+        body: CustomScrollView(slivers: <Widget>[
+          SliverAppBar(
+              //title: const Text('Blocks', style: TextStyle(color: Colors.white)),
+              expandedHeight: 200.0,
+              floating: false,
+              pinned: true,
+              backgroundColor: Colors.blueGrey,
+              leading: const BackButton(color: Colors.white),
+              actions: [
+                IconButton(
+                    icon: const Icon(Icons.filter_list, color: Colors.white),
+                    onPressed: handleFilter),
+                IconButton(
+                    icon: const Icon(Icons.add, color: Colors.white),
+                    onPressed: handleAdd),
+                const SizedBox(width: 5)
+              ],
+              flexibleSpace: FlexibleSpaceBar(
+                  title: const Text('Blocks',
+                      style: TextStyle(color: Colors.white)),
+                  centerTitle: false,
+                  background: Image.network(
+                      'https://static2.mazhangjing.com/cyber/202408/900c30de_Snipaste_2024-08-02_14-01-13.jpg',
+                      fit: BoxFit.cover))),
+          const SliverToBoxAdapter(child: SizedBox(height: 2)),
+          SliverList(
+              delegate:
+                  SliverChildBuilderDelegate((BuildContext context, int index) {
+            final item = data[index];
+            return buildCard(context, item);
+          }, childCount: data.length)),
+          const SliverToBoxAdapter(child: SizedBox(height: 3)),
+        ]));
+  }
+
+  Widget buildCard(BuildContext context, BlockItem item) {
+    const height = 70.0;
+    return Card(
+        elevation: 1,
+        margin: const EdgeInsets.only(bottom: 2, top: 2, left: 4, right: 4),
+        child: InkWell(
+            onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => BlockDetailView(item))),
+            child: ClipRRect(
+                borderRadius: BorderRadius.circular(5),
+                child: Stack(children: [
+                  Opacity(
+                      opacity: 0.9,
+                      child: Image.network(urlOfDate(item.createDate),
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          alignment: const Alignment(0.5, -0.5),
+                          height: height)),
+                  Positioned(
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      height: height,
+                      child: Container(
+                          color: Colors.black.withOpacity(0.2),
+                          child: Padding(
+                              padding:
+                                  const EdgeInsets.only(left: 10, right: 10),
+                              child: DefaultTextStyle(
+                                  style: const TextStyle(color: Colors.white),
+                                  child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Row(children: [
+                                          Text(item.title,
+                                              style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 15)),
+                                          const Spacer(),
+                                          Icon(Icons.format_quote,
+                                              size: 17,
+                                              color: item.isReference
+                                                  ? Colors.white
+                                                  : Colors.transparent)
+                                        ]),
+                                        const SizedBox(height: 5),
+                                        Row(children: [
+                                          Expanded(
+                                            child: DefaultTextStyle(
+                                                style: const TextStyle(
+                                                    fontSize: 13),
+                                                child: Wrap(
+                                                    spacing: 6,
+                                                    children: item.tags
+                                                        .map((e) => Text("#$e"))
+                                                        .toList())),
+                                          ),
+                                          Text(DateFormat.yMd("zh_Hans")
+                                              .format(DateTime
+                                                  .fromMillisecondsSinceEpoch(
+                                                      item.createDate))
+                                              .toString())
+                                        ])
+                                      ])))))
+                ]))));
+  }
+
   handleFilter() async {
     final tags = ref.watch(getBlockTagsProvider);
     final _tags = <String>{..._selectTags};
@@ -77,107 +194,6 @@ class _BlocksViewState extends ConsumerState<BlocksView> {
     _selectTags.clear();
     _selectTags.addAll(_tags);
     ref.invalidate(getBlocksListProvider);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final data = ref.watch(getBlocksListProvider(_selectTags));
-    return Scaffold(
-        body: CustomScrollView(slivers: <Widget>[
-      SliverAppBar(
-          expandedHeight: 200.0,
-          floating: false,
-          pinned: true,
-          backgroundColor: Colors.blueGrey,
-          leading: const BackButton(color: Colors.white),
-          actions: [
-            IconButton(
-                icon: const Icon(Icons.filter_list, color: Colors.white),
-                onPressed: handleFilter),
-            IconButton(
-                icon: const Icon(Icons.add, color: Colors.white),
-                onPressed: () {
-                  Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => BlockDetailView(BlockItem())));
-                }),
-            const SizedBox(width: 10)
-          ],
-          flexibleSpace: FlexibleSpaceBar(
-              title:
-                  const Text('Blocks', style: TextStyle(color: Colors.white)),
-              centerTitle: false,
-              background: Image.network(
-                  'https://static2.mazhangjing.com/cyber/202408/900c30de_Snipaste_2024-08-02_14-01-13.jpg',
-                  fit: BoxFit.cover))),
-      const SliverToBoxAdapter(child: SizedBox(height: 2)),
-      SliverList(
-          delegate:
-              SliverChildBuilderDelegate((BuildContext context, int index) {
-        final item = data[index];
-        return buildCard(context, item);
-      }, childCount: data.length))
-    ]));
-  }
-
-  Widget buildCard(BuildContext context, BlockItem item) {
-    const height = 70.0;
-    return Card(
-      elevation: 1,
-      margin: const EdgeInsets.only(bottom: 2, top: 2, left: 4, right: 4),
-      child: InkWell(
-          onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (context) => BlockDetailView(item))),
-          child: ClipRRect(
-              borderRadius: BorderRadius.circular(5),
-              child: Stack(children: [
-                Opacity(
-                    opacity: 0.9,
-                    child: Image.network(urlOfDate(item.createDate),
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                        alignment: const Alignment(0.5, -0.5),
-                        height: height)),
-                Positioned(
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    height: height,
-                    child: Container(
-                        color: Colors.black.withOpacity(0.2),
-                        child: Padding(
-                            padding: const EdgeInsets.only(left: 10, right: 10),
-                            child: DefaultTextStyle(
-                                style: const TextStyle(color: Colors.white),
-                                child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(item.title,
-                                          style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 15)),
-                                      const SizedBox(height: 5),
-                                      Row(children: [
-                                        Expanded(
-                                          child: DefaultTextStyle(
-                                              style:
-                                                  const TextStyle(fontSize: 13),
-                                              child: Wrap(
-                                                  spacing: 6,
-                                                  children: item.tags
-                                                      .map((e) => Text("#$e"))
-                                                      .toList())),
-                                        ),
-                                        Text(DateFormat.yMd("zh_Hans")
-                                            .format(DateTime
-                                                .fromMillisecondsSinceEpoch(
-                                                    item.createDate))
-                                            .toString()),
-                                      ])
-                                    ])))))
-              ]))),
-    );
   }
 }
 
@@ -252,6 +268,17 @@ class _BlockDetailViewState extends ConsumerState<BlockDetailView> {
           actions: [
             if (_edit)
               IconButton(
+                  onPressed: () {
+                    item = item.copyWith(isReference: !item.isReference);
+                    setState(() {});
+                  },
+                  icon: Icon(
+                      item.isReference
+                          ? Icons.format_quote
+                          : Icons.format_quote_outlined,
+                      color: Colors.white)),
+            if (_edit)
+              IconButton(
                   icon: const Icon(Icons.calendar_month, color: Colors.white),
                   onPressed: () async {
                     final createDate = item.createDate == 0
@@ -273,8 +300,6 @@ class _BlockDetailViewState extends ConsumerState<BlockDetailView> {
                       item = item.copyWith(
                           createDate: date.millisecondsSinceEpoch);
                       setState(() {});
-                      showSimpleMessage(context,
-                          content: "创建日期已更改，请注意保存", useSnackBar: true);
                     }
                   }),
             if (_edit)
@@ -342,7 +367,7 @@ class _BlockDetailViewState extends ConsumerState<BlockDetailView> {
               ? Padding(
                   padding: const EdgeInsets.only(left: 8, right: 8, bottom: 8),
                   child: TextField(
-                    autofocus: true,
+                    //autofocus: true,
                     expands: true,
                     controller: _controller,
                     decoration: const InputDecoration(border: InputBorder.none),

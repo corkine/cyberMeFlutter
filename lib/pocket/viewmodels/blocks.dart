@@ -11,6 +11,7 @@ class BlockItem with _$BlockItem {
     @Default("") String id,
     @Default("") String title,
     @Default("") String content,
+    @Default(false) bool isReference,
     @Default([]) List<String> tags,
     @Default(0) int lastUpdate,
     @Default(0) int createDate,
