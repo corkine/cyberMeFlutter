@@ -139,10 +139,27 @@ class _MassActivityViewState extends ConsumerState<MassActivityView> {
               child: ListTile(
                   title: Text(activity.title.isEmpty ? "--" : activity.title,
                       maxLines: 1, overflow: TextOverflow.ellipsis),
-                  onTap: () => showSimpleMessage(context,
-                      title: "详情",
-                      content:
-                          "${activity.title}\n----\n${activity.description}"),
+                  onTap: () {
+                    showModalBottomSheet(
+                        context: context,
+                        builder: (context) {
+                          return SizedBox(
+                              width: double.infinity,
+                              child: Padding(
+                                  padding: const EdgeInsets.only(
+                                      left: 10, right: 10, top: 20),
+                                  child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(activity.title,
+                                            style: const TextStyle(
+                                                fontSize: 17,
+                                                fontWeight: FontWeight.bold)),
+                                        Text(activity.description)
+                                      ])));
+                        });
+                  },
                   subtitle: buildRichDate(ts2DateTime(activity.time),
                       today: today,
                       weekDayOne: weekDayOne,
