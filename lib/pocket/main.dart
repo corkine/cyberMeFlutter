@@ -84,12 +84,12 @@ final apps = {
     "addToContext": true,
     "icon": Icons.check_box
   },
-  "score": {
-    "name": "积分系统",
-    "view": (c) => const ScoreView(),
+  "sexual": {
+    "name": "Sexual",
+    "view": (c) => const SexualActivityView(),
     "addToMenu": true,
-    "addToContext": false,
-    "icon": Icons.margin
+    "addToContext": true,
+    "icon": Icons.people
   },
   "bodyMass": {
     "name": "体重记录",
@@ -97,6 +97,13 @@ final apps = {
     "addToMenu": true,
     "addToContext": true,
     "icon": Icons.fit_screen
+  },
+  "score": {
+    "name": "积分系统",
+    "view": (c) => const ScoreView(),
+    "addToMenu": true,
+    "addToContext": false,
+    "icon": Icons.margin
   },
   "show": {
     "name": "影视热榜",
@@ -228,13 +235,6 @@ final apps = {
     "addToMenu": true,
     "addToContext": true,
     "icon": Icons.computer
-  },
-  "sexual": {
-    "name": "Sexual",
-    "view": (c) => const SexualActivityView(),
-    "addToMenu": true,
-    "addToContext": true,
-    "icon": Icons.people
   },
   "sticky": {
     "name": "Sticky",

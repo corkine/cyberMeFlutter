@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cyberme_flutter/learn/sliver.dart';
 import 'package:cyberme_flutter/pocket/viewmodels/sex.dart';
 import 'package:cyberme_flutter/pocket/views/util.dart';
 import 'package:flutter/foundation.dart' as f;
@@ -81,14 +82,35 @@ class _SexualActivityViewState extends ConsumerState<SexualActivityView> {
   Widget build(BuildContext context) {
     final data = ref.watch(bluesDbProvider).value ?? [];
     return Scaffold(
-        appBar: AppBar(title: const Text('Sexual Activity'), actions: [
-          IconButton(icon: const Icon(Icons.add), onPressed: _showAddDialog),
-          IconButton(
-              icon: const Icon(Icons.calendar_month, size: 19),
-              onPressed: _showDialog),
-          const SizedBox(width: 10)
-        ]),
-        body: buildList(data));
+        floatingActionButton: FloatingActionButton(
+            onPressed: _showAddDialog, child: const Icon(Icons.add)),
+        backgroundColor: Colors.white,
+        body: CustomScrollView(slivers: [
+          SliverAppBar(
+              expandedHeight: 250,
+              flexibleSpace: FlexibleSpaceBar(
+                  title: const Text("Sexual Activity",
+                      style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          shadows: [
+                            Shadow(blurRadius: 10, color: Colors.black54)
+                          ],
+                          color: Colors.white,
+                          fontFamily: "Sank")),
+                  titlePadding: const EdgeInsets.only(left: 20, bottom: 10),
+                  background: Image.network(
+                      fit: BoxFit.cover,
+                      alignment: Alignment.center,
+                      "https://static2.mazhangjing.com/cyber/202408/d510fe8e_Snipaste_2024-08-06_17-07-00.jpg")),
+              actions: [
+                IconButton(
+                    icon: const Icon(Icons.calendar_month, size: 19),
+                    onPressed: _showDialog),
+                const SizedBox(width: 10)
+              ]),
+          SliverFillRemaining(child: buildList(data))
+        ]));
   }
 
   ListView buildList(List<BlueData> data) {
@@ -137,76 +159,42 @@ class _SexualActivityViewState extends ConsumerState<SexualActivityView> {
                       today: today,
                       weekDayOne: weekDayOne,
                       lastWeekDayOne: lastWeekDayOne),
-                  onTap: () => showSimpleMessage(context,
-                      content: activity.note.isEmpty ? "无备注" : activity.note),
+                  onTap: () {
+                    showModalBottomSheet(
+                        context: context,
+                        builder: (context) => SizedBox(
+                            height: 300,
+                            width: double.infinity,
+                            child: Padding(
+                              padding: const EdgeInsets.only(
+                                  left: 15, right: 15, top: 20),
+                              child: Text(activity.note),
+                            )));
+                  },
                   onLongPress: () => _edit(activity),
                   subtitle: Text(activity.note.isEmpty ? "--" : activity.note,
                       maxLines: 1, overflow: TextOverflow.ellipsis),
                   leading: buildIcon(activity),
-                  trailing: Text(DateFormat('HH:mm').format(
-                      DateTime.fromMillisecondsSinceEpoch(
-                          activity.time * 1000)))));
+                  trailing: Text(
+                      DateFormat('HH:mm').format(
+                          DateTime.fromMillisecondsSinceEpoch(
+                              activity.time * 1000)),
+                      style: const TextStyle(
+                          fontFamily: 'Sank',
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18))));
         });
   }
 
   Future<void> _edit(BlueData data) async {
-    final noteController = TextEditingController(text: data.note);
-    var useProtected = data.protected;
-    await showDialog(
+    await showModalBottomSheet<BlueData>(
         context: context,
         builder: (BuildContext context) {
-          return StatefulBuilder(
-              builder: (context, setState) => AlertDialog(
-                      title: const Text('Edit Sexual Activity'),
-                      content: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const SizedBox(height: 10),
-                            Row(children: [
-                              const Text("Protected"),
-                              const SizedBox(width: 5),
-                              IgnorePointer(
-                                  child: Checkbox(
-                                      tristate: true,
-                                      value: useProtected,
-                                      onChanged: (value) {
-                                        setState(() {
-                                          useProtected = value;
-                                        });
-                                      }))
-                            ]),
-                            const SizedBox(height: 10),
-                            TextField(
-                                autofocus: true,
-                                controller: noteController,
-                                maxLines: null,
-                                keyboardType: TextInputType.multiline,
-                                decoration:
-                                    const InputDecoration(labelText: 'Note'))
-                          ]),
-                      actions: [
-                        TextButton(
-                            onPressed: () => Navigator.of(context).pop(null),
-                            child: const Text("取消")),
-                        TextButton(
-                            onPressed: () async {
-                              await ref.read(bluesDbProvider.notifier).edit(
-                                  data.copyWith(
-                                      note: noteController.text,
-                                      protected: useProtected));
-                              Navigator.of(context).pop(null);
-                            },
-                            child: const Text("确定"))
-                      ]));
+          return SexualActivityEditView(data, false);
         });
   }
 
   void _showDialog() {
-    // Navigator.of(context).push(MaterialPageRoute(
-    //     builder: (context) => Scaffold(
-    //         appBar: AppBar(title: const Text("View")),
-    //         body: const BlueCalView())));
     showModalBottomSheet(
         context: context,
         isScrollControlled: true,
@@ -215,89 +203,104 @@ class _SexualActivityViewState extends ConsumerState<SexualActivityView> {
             child: const BlueCalView()));
   }
 
-  void _showAddDialog() {
+  void _showAddDialog() async {
     final yesterday = DateTime.now().subtract(const Duration(days: 1));
-    final noteController = TextEditingController();
     var dateTime =
         DateTime(yesterday.year, yesterday.month, yesterday.day, 23, 0);
-    bool? useProtected;
-
-    showDialog(
+    await showModalBottomSheet<BlueData>(
         context: context,
         builder: (BuildContext context) {
-          return StatefulBuilder(
-              builder: (context, setState) => AlertDialog(
-                      title: const Text('Add Sexual Activity'),
-                      content: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            TextButton(
-                                child: Text(DateFormat('yyyy-MM-dd HH:mm')
-                                    .format(dateTime)),
-                                onPressed: () async {
-                                  final DateTime? picked = await showDatePicker(
-                                    context: context,
-                                    initialDate: dateTime,
-                                    firstDate: DateTime(2000),
-                                    lastDate: DateTime.now(),
-                                  );
-                                  if (picked != null) {
-                                    final TimeOfDay? timePicked =
-                                        await showTimePicker(
-                                            context: context,
-                                            initialTime: TimeOfDay.fromDateTime(
-                                                dateTime));
-                                    if (timePicked != null) {
-                                      setState(() {
-                                        dateTime = DateTime(
-                                            picked.year,
-                                            picked.month,
-                                            picked.day,
-                                            timePicked.hour,
-                                            timePicked.minute);
-                                      });
-                                    }
-                                  }
-                                }),
-                            const SizedBox(height: 10),
-                            Row(children: [
-                              const Text("Protected"),
-                              const SizedBox(width: 5),
-                              Checkbox(
-                                  tristate: true,
-                                  value: useProtected,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      useProtected = value;
-                                    });
-                                  })
-                            ]),
-                            TextField(
-                                controller: noteController,
-                                maxLines: null,
-                                keyboardType: TextInputType.multiline,
-                                decoration:
-                                    const InputDecoration(labelText: 'Note'))
-                          ]),
-                      actions: [
-                        TextButton(
-                            onPressed: () => Navigator.of(context).pop(null),
-                            child: const Text("取消")),
-                        TextButton(
-                            onPressed: () async {
-                              await ref.read(bluesDbProvider.notifier).add(
-                                  BlueData(
-                                      time: dateTime.millisecondsSinceEpoch ~/
-                                          1000,
-                                      note: noteController.text,
-                                      protected: useProtected));
-                              addSexualActivity(dateTime, useProtected);
-                              Navigator.of(context).pop(null);
-                            },
-                            child: const Text("确定"))
-                      ]));
+          return SexualActivityEditView(
+              BlueData(time: dateTime.millisecondsSinceEpoch ~/ 1000, note: ""),
+              true);
         });
+  }
+}
+
+class SexualActivityEditView extends ConsumerStatefulWidget {
+  final BlueData data;
+  final bool isAdd;
+  const SexualActivityEditView(this.data, this.isAdd, {super.key});
+
+  @override
+  ConsumerState<ConsumerStatefulWidget> createState() =>
+      _SexualActivityEditViewState();
+}
+
+class _SexualActivityEditViewState
+    extends ConsumerState<SexualActivityEditView> {
+  late final BlueData data = widget.data;
+  late final noteController = TextEditingController(text: data.note);
+  late var useProtected = data.protected;
+  late var dateTime = DateTime.fromMillisecondsSinceEpoch(data.time * 1000);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+        padding:
+            const EdgeInsets.only(left: 10, right: 10, top: 20, bottom: 10),
+        child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(children: [
+                const Text("日期"),
+                TextButton(
+                    child:
+                        Text(DateFormat('yyyy-MM-dd HH:mm').format(dateTime)),
+                    onPressed: () async {
+                      final DateTime? picked = await showDatePicker(
+                        context: context,
+                        initialDate: dateTime,
+                        firstDate: DateTime(2000),
+                        lastDate: DateTime.now(),
+                      );
+                      if (picked != null) {
+                        final TimeOfDay? timePicked = await showTimePicker(
+                            context: context,
+                            initialTime: TimeOfDay.fromDateTime(dateTime));
+                        if (timePicked != null) {
+                          setState(() {
+                            dateTime = DateTime(picked.year, picked.month,
+                                picked.day, timePicked.hour, timePicked.minute);
+                          });
+                        }
+                      }
+                    })
+              ]),
+              Row(children: [
+                const Text("保护"),
+                const SizedBox(width: 5),
+                Checkbox(
+                    tristate: true,
+                    value: useProtected,
+                    onChanged: (value) {
+                      setState(() {
+                        useProtected = value;
+                      });
+                    })
+              ]),
+              TextField(
+                  controller: noteController,
+                  maxLines: null,
+                  keyboardType: TextInputType.multiline,
+                  decoration: const InputDecoration(labelText: 'Note')),
+              const Spacer(),
+              SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                      onPressed: () async {
+                        await ref.read(bluesDbProvider.notifier).edit(
+                            data.copyWith(
+                                note: noteController.text,
+                                protected: useProtected));
+                        if (widget.isAdd) {
+                          addSexualActivity(dateTime, useProtected);
+                        }
+                        Navigator.of(context).pop();
+                      },
+                      child: Text(widget.isAdd ? "添加" : "更新"))),
+            ]));
   }
 }
 
