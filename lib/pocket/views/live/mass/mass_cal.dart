@@ -101,7 +101,7 @@ class _BodyCalViewState extends ConsumerState<MassCalView> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const SizedBox(height: 5),
+                      if (deltaWidget != null) const SizedBox(height: 5),
                       Text(v.kgValue.toStringAsFixed(1),
                           style: const TextStyle(height: 1)),
                       if (deltaWidget != null) deltaWidget
