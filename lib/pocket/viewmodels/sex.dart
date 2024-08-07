@@ -11,7 +11,7 @@ part 'sex.g.dart';
 @freezed
 class BlueData with _$BlueData {
   factory BlueData({
-    @Default(0) int time,
+    @Default(0.0) double time,
     @Default("") String note,
     bool? protected,
   }) = _BlueData;
@@ -30,7 +30,7 @@ class BluesDb extends _$BluesDb {
     return res.values.toList()..sort(sort);
   }
 
-  Future<String> delete(int time) async {
+  Future<String> delete(double time) async {
     final newData = (state.value ?? []).where((d) => d.time != time).toList();
     state = AsyncData(newData);
     await _set(Map.fromEntries(newData.map((e) => MapEntry(e.time, e))));
@@ -53,9 +53,9 @@ class BluesDb extends _$BluesDb {
   }
 
   Future<Set<BlueData>> sync(List<Category> fromHealthKit) async {
-    final c = fromHealthKit.map((e) => e.startTimestamp as int).toSet();
+    final c = fromHealthKit.map((e) => e.startTimestamp).toSet();
     final cm = Map.fromEntries(
-        fromHealthKit.map((f) => MapEntry(f.startTimestamp as int, f)));
+        fromHealthKit.map((f) => MapEntry(f.startTimestamp, f)));
     final cloudMiss =
         c.difference(state.value?.map((e) => e.time).toSet() ?? {});
     final healthMiss =
@@ -64,7 +64,8 @@ class BluesDb extends _$BluesDb {
       List<BlueData> newData = [
         ...(state.value ?? []),
         ...cloudMiss.map((i) {
-          return BlueData(time: i, protected: sexualAcitvityProtected(cm[i]));
+          return BlueData(
+              time: i.toDouble(), protected: sexualAcitvityProtected(cm[i]));
         })
       ]..sort(sort);
       debugPrint("sync: $cloudMiss");
@@ -74,15 +75,15 @@ class BluesDb extends _$BluesDb {
     return state.value?.where((e) => healthMiss.contains(e.time)).toSet() ?? {};
   }
 
-  FutureOr<Map<int, BlueData>> _fetch() async {
+  FutureOr<Map<double, BlueData>> _fetch() async {
     final res = await settingFetch(
         tag,
         (d) => ({...d}..remove("update"))
-            .map((a, b) => MapEntry(int.parse(a), BlueData.fromJson(b))));
+            .map((a, b) => MapEntry(double.parse(a), BlueData.fromJson(b))));
     return res ?? {};
   }
 
-  Future<String> _set(Map<int, BlueData> data) async {
+  Future<String> _set(Map<double, BlueData> data) async {
     await settingUpload(
         tag, data.map((a, b) => MapEntry(a.toString(), b.toJson())));
     return "success";

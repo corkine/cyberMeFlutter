@@ -69,7 +69,8 @@ class _SexualActivityViewState extends ConsumerState<SexualActivityView> {
         debugPrint('kit missed: ${healthKitMiss.length}');
         for (var e in healthKitMiss) {
           addSexualActivity(
-              DateTime.fromMillisecondsSinceEpoch(e.time * 1000), e.protected);
+              DateTime.fromMillisecondsSinceEpoch((e.time * 1000).toInt()),
+              e.protected);
         }
       }
     } else {
@@ -166,7 +167,7 @@ class _SexualActivityViewState extends ConsumerState<SexualActivityView> {
                   trailing: Text(
                       DateFormat('HH:mm').format(
                           DateTime.fromMillisecondsSinceEpoch(
-                              activity.time * 1000)),
+                              (activity.time * 1000).toInt())),
                       style: const TextStyle(
                           fontFamily: 'Sank',
                           fontWeight: FontWeight.bold,
@@ -177,8 +178,11 @@ class _SexualActivityViewState extends ConsumerState<SexualActivityView> {
   Future<void> _edit(BlueData data) async {
     await showModalBottomSheet<BlueData>(
         context: context,
+        isScrollControlled: true,
         builder: (BuildContext context) {
-          return SexualActivityEditView(data, false);
+          return SizedBox(
+              height: MediaQuery.of(context).size.height / 1.3,
+              child: SexualActivityEditView(data, false));
         });
   }
 
@@ -197,9 +201,14 @@ class _SexualActivityViewState extends ConsumerState<SexualActivityView> {
         DateTime(yesterday.year, yesterday.month, yesterday.day, 23, 0);
     await showModalBottomSheet<BlueData>(
         context: context,
-        builder: (BuildContext context) => SexualActivityEditView(
-            BlueData(time: dateTime.millisecondsSinceEpoch ~/ 1000, note: ""),
-            true));
+        isScrollControlled: true,
+        builder: (BuildContext context) => SizedBox(
+              height: MediaQuery.of(context).size.height / 1.3,
+              child: SexualActivityEditView(
+                  BlueData(
+                      time: dateTime.millisecondsSinceEpoch / 1000, note: ""),
+                  true),
+            ));
   }
 }
 
@@ -218,7 +227,8 @@ class _SexualActivityEditViewState
   late final BlueData data = widget.data;
   late final noteController = TextEditingController(text: data.note);
   late var useProtected = data.protected;
-  late var dateTime = DateTime.fromMillisecondsSinceEpoch(data.time * 1000);
+  late var dateTime =
+      DateTime.fromMillisecondsSinceEpoch((data.time * 1000).toInt());
 
   @override
   Widget build(BuildContext context) {
@@ -270,6 +280,9 @@ class _SexualActivityEditViewState
               TextField(
                   controller: noteController,
                   maxLines: null,
+                  onTapOutside: (e) {
+                    FocusManager.instance.primaryFocus?.unfocus();
+                  },
                   keyboardType: TextInputType.multiline,
                   decoration: const InputDecoration(labelText: '备注')),
               const Spacer(),
@@ -311,8 +324,8 @@ class _BlueCalViewState extends ConsumerState<BlueCalView> {
     super.initState();
     ref.read(bluesDbProvider.future).then((v) {
       final r = v.map((d) => MapEntry(
-          DateFormat.yMd()
-              .format(DateTime.fromMillisecondsSinceEpoch(d.time * 1000)),
+          DateFormat.yMd().format(
+              DateTime.fromMillisecondsSinceEpoch((d.time * 1000).toInt())),
           d));
       _map = Map.fromEntries(r);
       setState(() {});

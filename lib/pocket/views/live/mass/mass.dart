@@ -173,7 +173,10 @@ class _MassActivityViewState extends ConsumerState<MassActivityView> {
 
   void showEditDialog(MassData activity) async {
     final res = await showModalBottomSheet<MassData>(
-        context: context, builder: (context) => MassItemEditView(activity));
+        context: context,
+        builder: (context) => SizedBox(
+            height: MediaQuery.of(context).size.height / 1.3,
+            child: MassItemEditView(activity)));
     if (res != null) {
       ref.read(massDbProvider.notifier).edit(res);
     }
@@ -232,6 +235,9 @@ class _MassItemEditViewState extends ConsumerState<MassItemEditView> {
                 decoration: const InputDecoration(label: Text("标题")),
               ),
               TextField(
+                  onTapOutside: (e) {
+                    FocusManager.instance.primaryFocus?.unfocus();
+                  },
                   controller: description,
                   maxLines: null,
                   decoration: const InputDecoration(label: Text("描述"))),

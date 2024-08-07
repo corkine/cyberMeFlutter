@@ -45,14 +45,14 @@ class MassDb extends _$MassDb {
 
   Future<String> delete(double time) async {
     final newData = (state.value ?? []).where((d) => d.time != time).toList();
-    state = AsyncData(newData);
+    state = AsyncData(newData..sort(sort));
     await _set(Map.fromEntries(newData.map((e) => MapEntry(e.time, e))));
     return "success";
   }
 
   Future<String> add(MassData data) async {
     List<MassData> newData = [...(state.value ?? []), data]..sort(sort);
-    state = AsyncData(newData);
+    state = AsyncData(newData..sort(sort));
     await _set(Map.fromEntries(newData.map((e) => MapEntry(e.time, e))));
     return "success";
   }
@@ -60,7 +60,7 @@ class MassDb extends _$MassDb {
   Future<String> edit(MassData data) async {
     final newData =
         (state.value ?? []).map((d) => d.time == data.time ? data : d);
-    state = AsyncData(newData.toList());
+    state = AsyncData(newData.toList()..sort(sort));
     await _set(Map.fromEntries(newData.map((e) => MapEntry(e.time, e))));
     return "success";
   }
