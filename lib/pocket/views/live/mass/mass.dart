@@ -76,7 +76,7 @@ class _MassActivityViewState extends ConsumerState<MassActivityView> {
         backgroundColor: Colors.white,
         body: CustomScrollView(slivers: [
           SliverAppBar(
-              expandedHeight: 150,
+              expandedHeight: Platform.isWindows ? 126 : 150,
               flexibleSpace: FlexibleSpaceBar(
                   centerTitle: false,
                   title: const Text("Body Mass",
@@ -154,7 +154,6 @@ class _MassActivityViewState extends ConsumerState<MassActivityView> {
                                 ],
                                 style: TextStyle(
                                     fontSize: 16,
-                                    //fontWeight: FontWeight.bold,
                                     color: Theme.of(context)
                                         .colorScheme
                                         .primary)))));

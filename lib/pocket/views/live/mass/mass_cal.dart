@@ -1,5 +1,6 @@
 import 'package:cyberme_flutter/pocket/viewmodels/mass.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -16,7 +17,7 @@ class MassCalView extends ConsumerStatefulWidget {
 class _BodyCalViewState extends ConsumerState<MassCalView> {
   DateTime now = DateTime.now();
   Map<String, MassData> _map = {};
-  Map<String, MassData> _prev = {};
+  final Map<String, MassData> _prev = {};
   @override
   void initState() {
     super.initState();
@@ -64,30 +65,30 @@ class _BodyCalViewState extends ConsumerState<MassCalView> {
               Widget? deltaWidget;
               if (prev != null) {
                 final delta = prev.kgValue - v.kgValue;
-                if (delta > 0) {
-                  deltaWidget = Transform.translate(
-                      offset: const Offset(-2, 0),
-                      child: Row(children: [
-                        Transform.translate(
-                            offset: const Offset(5, 0),
-                            child: const Icon(Icons.arrow_drop_up,
-                                color: Colors.red)),
-                        Text(delta.toStringAsFixed(1),
+                if (delta < 0) {
+                  deltaWidget = Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const TriangleWidget(
+                            up: true,
+                            size: 7,
+                            padding: EdgeInsets.only(right: 3)),
+                        Text((delta < 0 ? -delta : delta).toStringAsFixed(1),
                             style: const TextStyle(
                                 fontSize: 10, color: Colors.red))
-                      ]));
+                      ]);
                 } else {
-                  deltaWidget = Transform.translate(
-                      offset: const Offset(-2, 0),
-                      child: Row(children: [
-                        Transform.translate(
-                            offset: const Offset(5, 0),
-                            child: const Icon(Icons.arrow_drop_down,
-                                color: Colors.green)),
-                        Text((delta * -1).toStringAsFixed(1),
+                  deltaWidget = Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const TriangleWidget(
+                            up: false,
+                            size: 7,
+                            padding: EdgeInsets.only(right: 3)),
+                        Text((delta < 0 ? -delta : delta).toStringAsFixed(1),
                             style: const TextStyle(
                                 fontSize: 10, color: Colors.green))
-                      ]));
+                      ]);
                 }
               }
               return Stack(alignment: Alignment.center, children: [
@@ -101,12 +102,63 @@ class _BodyCalViewState extends ConsumerState<MassCalView> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      if (deltaWidget != null) const SizedBox(height: 5),
                       Text(v.kgValue.toStringAsFixed(1),
                           style: const TextStyle(height: 1)),
                       if (deltaWidget != null) deltaWidget
                     ])
               ]);
             })));
+  }
+}
+
+class TriangleWidget extends StatelessWidget {
+  final double size;
+  final bool up;
+  final EdgeInsetsGeometry padding;
+
+  const TriangleWidget({
+    Key? key,
+    required this.up,
+    this.size = 100,
+    this.padding = const EdgeInsets.only(),
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+        padding: padding,
+        child: CustomPaint(
+            size: Size(size, size), painter: TrianglePainter(direction: up)));
+  }
+}
+
+class TrianglePainter extends CustomPainter {
+  final bool direction;
+
+  TrianglePainter({required this.direction});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint();
+    paint.color = direction ? Colors.red : Colors.green;
+
+    var path = Path();
+    if (direction) {
+      path.moveTo(size.width / 2, 0);
+      path.lineTo(0, size.height);
+      path.lineTo(size.width, size.height);
+    } else {
+      path.moveTo(0, 0);
+      path.lineTo(size.width, 0);
+      path.lineTo(size.width / 2, size.height);
+    }
+    path.close();
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return false;
   }
 }
