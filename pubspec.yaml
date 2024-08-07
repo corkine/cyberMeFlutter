@@ -16,7 +16,6 @@ dependencies:
   http: ^1.0.0
   sprintf: ^6.0.0
   shared_preferences: ^2.0.13
-  #rive: ^0.12.4
   url_launcher: ^6.1.0
   image_picker: ^0.8.5
   flutter_image_compress: ^1.1.0
@@ -30,7 +29,6 @@ dependencies:
   json_annotation: ^4.8.1
   flutter_inappwebview: ^5.8.0
   cached_network_image: ^3.3.0
-  #health: ^8.0.0
   health_kit_reporter: ^2.1.1
   hooks_riverpod: ^2.4.6
   flutter_hooks: ^0.20.3
@@ -75,6 +73,6 @@ flutter:
      fonts:
        - asset: fonts/sank.ttf
   module:
-#    androidX: true
-#    androidPackage: com.mazhangjing.cyberme-flutter
+# #    androidX: true
+# #    androidPackage: com.mazhangjing.cyberme-flutter
     iosBundleIdentifier: com.mazhangjing.landmark

@@ -1,8 +1,6 @@
 PODS:
   - audio_session (0.0.1):
     - Flutter
-  - device_info_plus (0.0.1):
-    - Flutter
   - Flutter (1.0.0)
   - flutter_image_compress (1.0.0):
     - Flutter
@@ -16,8 +14,6 @@ PODS:
   - flutter_inappwebview/Core (0.0.1):
     - Flutter
     - OrderedSet (~> 5.0)
-  - health (1.0.4):
-    - Flutter
   - health_kit_reporter (2.1.0):
     - Flutter
     - HealthKitReporter
@@ -72,11 +68,9 @@ PODS:
 
 DEPENDENCIES:
   - audio_session (from `.symlinks/plugins/audio_session/ios`)
-  - device_info_plus (from `.symlinks/plugins/device_info_plus/ios`)
   - Flutter (from `Flutter`)
   - flutter_image_compress (from `.symlinks/plugins/flutter_image_compress/ios`)
   - flutter_inappwebview (from `.symlinks/plugins/flutter_inappwebview/ios`)
-  - health (from `.symlinks/plugins/health/ios`)
   - health_kit_reporter (from `.symlinks/plugins/health_kit_reporter/ios`)
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
   - just_audio (from `.symlinks/plugins/just_audio/ios`)
@@ -103,16 +97,12 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   audio_session:
     :path: ".symlinks/plugins/audio_session/ios"
-  device_info_plus:
-    :path: ".symlinks/plugins/device_info_plus/ios"
   Flutter:
     :path: Flutter
   flutter_image_compress:
     :path: ".symlinks/plugins/flutter_image_compress/ios"
   flutter_inappwebview:
     :path: ".symlinks/plugins/flutter_inappwebview/ios"
-  health:
-    :path: ".symlinks/plugins/health/ios"
   health_kit_reporter:
     :path: ".symlinks/plugins/health_kit_reporter/ios"
   image_picker_ios:
@@ -142,11 +132,9 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   audio_session: 088d2483ebd1dc43f51d253d4a1c517d9a2e7207
-  device_info_plus: c6fb39579d0f423935b0c9ce7ee2f44b71b9fce6
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   flutter_image_compress: 5a5e9aee05b6553048b8df1c3bc456d0afaac433
   flutter_inappwebview: 3d32228f1304635e7c028b0d4252937730bbc6cf
-  health: 5a380c0f6c4f619535845992993964293962e99e
   health_kit_reporter: c42352ae9e6ba3035618f27aec723833487ceab3
   HealthKitReporter: 3511fd29070917a255fa60df7f415c2007f74b73
   image_picker_ios: c560581cceedb403a6ff17f2f816d7fea1421fc1

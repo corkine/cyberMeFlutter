@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:cyberme_flutter/learn/sliver.dart';
 import 'package:cyberme_flutter/pocket/viewmodels/sex.dart';
 import 'package:cyberme_flutter/pocket/views/util.dart';
 import 'package:flutter/foundation.dart' as f;
@@ -89,6 +88,7 @@ class _SexualActivityViewState extends ConsumerState<SexualActivityView> {
           SliverAppBar(
               expandedHeight: 250,
               flexibleSpace: FlexibleSpaceBar(
+                  centerTitle: false,
                   title: const Text("Sexual Activity",
                       style: TextStyle(
                           fontSize: 24,
@@ -109,12 +109,12 @@ class _SexualActivityViewState extends ConsumerState<SexualActivityView> {
                     onPressed: _showDialog),
                 const SizedBox(width: 10)
               ]),
-          SliverFillRemaining(child: buildList(data))
+          buildList(data)
         ]));
   }
 
-  ListView buildList(List<BlueData> data) {
-    return ListView.builder(
+  SliverList buildList(List<BlueData> data) {
+    return SliverList.builder(
         itemCount: data.length,
         itemBuilder: (context, index) {
           final activity = data[index];
@@ -159,19 +159,7 @@ class _SexualActivityViewState extends ConsumerState<SexualActivityView> {
                       today: today,
                       weekDayOne: weekDayOne,
                       lastWeekDayOne: lastWeekDayOne),
-                  onTap: () {
-                    showModalBottomSheet(
-                        context: context,
-                        builder: (context) => SizedBox(
-                            height: 300,
-                            width: double.infinity,
-                            child: Padding(
-                              padding: const EdgeInsets.only(
-                                  left: 15, right: 15, top: 20),
-                              child: Text(activity.note),
-                            )));
-                  },
-                  onLongPress: () => _edit(activity),
+                  onTap: () => _edit(activity),
                   subtitle: Text(activity.note.isEmpty ? "--" : activity.note,
                       maxLines: 1, overflow: TextOverflow.ellipsis),
                   leading: buildIcon(activity),
@@ -209,11 +197,9 @@ class _SexualActivityViewState extends ConsumerState<SexualActivityView> {
         DateTime(yesterday.year, yesterday.month, yesterday.day, 23, 0);
     await showModalBottomSheet<BlueData>(
         context: context,
-        builder: (BuildContext context) {
-          return SexualActivityEditView(
-              BlueData(time: dateTime.millisecondsSinceEpoch ~/ 1000, note: ""),
-              true);
-        });
+        builder: (BuildContext context) => SexualActivityEditView(
+            BlueData(time: dateTime.millisecondsSinceEpoch ~/ 1000, note: ""),
+            true));
   }
 }
 
@@ -237,12 +223,13 @@ class _SexualActivityEditViewState
   @override
   Widget build(BuildContext context) {
     return Padding(
-        padding:
-            const EdgeInsets.only(left: 10, right: 10, top: 20, bottom: 10),
-        child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
+        padding: EdgeInsets.only(
+            left: 20, right: 20, top: 20, bottom: Platform.isWindows ? 10 : 0),
+        child: SafeArea(
+            child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
               Row(children: [
                 const Text("日期"),
                 TextButton(
@@ -284,23 +271,28 @@ class _SexualActivityEditViewState
                   controller: noteController,
                   maxLines: null,
                   keyboardType: TextInputType.multiline,
-                  decoration: const InputDecoration(labelText: 'Note')),
+                  decoration: const InputDecoration(labelText: '备注')),
               const Spacer(),
               SizedBox(
                   width: double.infinity,
                   child: OutlinedButton(
                       onPressed: () async {
-                        await ref.read(bluesDbProvider.notifier).edit(
-                            data.copyWith(
-                                note: noteController.text,
-                                protected: useProtected));
                         if (widget.isAdd) {
                           addSexualActivity(dateTime, useProtected);
+                          await ref.read(bluesDbProvider.notifier).add(
+                              data.copyWith(
+                                  note: noteController.text,
+                                  protected: useProtected));
+                        } else {
+                          await ref.read(bluesDbProvider.notifier).edit(
+                              data.copyWith(
+                                  note: noteController.text,
+                                  protected: useProtected));
                         }
                         Navigator.of(context).pop();
                       },
-                      child: Text(widget.isAdd ? "添加" : "更新"))),
-            ]));
+                      child: Text(widget.isAdd ? "添加" : "更新")))
+            ])));
   }
 }
 

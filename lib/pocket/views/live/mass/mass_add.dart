@@ -47,7 +47,7 @@ class _BodyMassViewState extends ConsumerState<BodyMassView> {
               child: nonAvailableData
                   ? const Center(child: Text("数据不足，收集些数据后再来吧"))
                   : null)),
-      const Spacer(),
+      const SizedBox(height: 30),
       Center(
           child: Container(
               height: 150,

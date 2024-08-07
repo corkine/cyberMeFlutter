@@ -7,7 +7,6 @@ import 'package:flutter/foundation.dart' as f;
 import 'package:flutter/material.dart';
 import 'package:health_kit_reporter/health_kit_reporter.dart';
 import 'package:health_kit_reporter/model/predicate.dart';
-import 'package:health_kit_reporter/model/type/category_type.dart';
 import 'package:health_kit_reporter/model/type/quantity_type.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../health.dart';
@@ -69,8 +68,9 @@ class _MassActivityViewState extends ConsumerState<MassActivityView> {
               showModalBottomSheet(
                   context: context,
                   isScrollControlled: true,
-                  builder: (context) => const SizedBox(
-                      height: 400, child: BodyMassView(standalone: false)));
+                  builder: (context) => SizedBox(
+                      height: MediaQuery.maybeSizeOf(context)!.height - 200,
+                      child: const BodyMassView(standalone: false)));
             },
             child: const Icon(Icons.add)),
         backgroundColor: Colors.white,
@@ -78,6 +78,7 @@ class _MassActivityViewState extends ConsumerState<MassActivityView> {
           SliverAppBar(
               expandedHeight: 130,
               flexibleSpace: FlexibleSpaceBar(
+                  centerTitle: false,
                   title: const Text("Body Mass",
                       style: TextStyle(fontSize: 24, fontFamily: "Sank")),
                   titlePadding: const EdgeInsets.only(left: 20, bottom: 10),
@@ -91,92 +92,74 @@ class _MassActivityViewState extends ConsumerState<MassActivityView> {
                     onPressed: _showDialog),
                 const SizedBox(width: 10)
               ]),
-          SliverFillRemaining(child: buildList(data))
+          SliverList.builder(
+              itemCount: data.length,
+              itemBuilder: (context, index) {
+                final activity = data[index];
+                return Dismissible(
+                    key: ValueKey(activity.time),
+                    confirmDismiss: (direction) async {
+                      if (direction == DismissDirection.endToStart) {
+                        if (await showSimpleMessage(context,
+                            content: "确定删除此记录吗?")) {
+                          await ref
+                              .read(massDbProvider.notifier)
+                              .delete(activity.time);
+                          await deleteSample(
+                              QuantityType.bodyMass.identifier, activity.time);
+                          return true;
+                        }
+                      } else {
+                        showEditDialog(activity);
+                        return false;
+                      }
+                      return false;
+                    },
+                    secondaryBackground: Container(
+                        color: Colors.red,
+                        child: const Align(
+                            alignment: Alignment.centerRight,
+                            child: Padding(
+                                padding: EdgeInsets.only(right: 20),
+                                child: Text("删除",
+                                    style: TextStyle(
+                                        color: Colors.white, fontSize: 15))))),
+                    background: Container(
+                        color: Colors.blue,
+                        child: const Align(
+                            alignment: Alignment.centerLeft,
+                            child: Padding(
+                                padding: EdgeInsets.only(left: 20),
+                                child: Text("编辑",
+                                    style: TextStyle(
+                                        color: Colors.white, fontSize: 15))))),
+                    child: ListTile(
+                        title: Text(
+                            activity.title.isEmpty ? "--" : activity.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis),
+                        onTap: () => showEditDialog(activity),
+                        subtitle: buildRichDate(ts2DateTime(activity.time),
+                            today: today,
+                            weekDayOne: weekDayOne,
+                            lastWeekDayOne: lastWeekDayOne,
+                            fontSize: 12),
+                        trailing: RichText(
+                            text: TextSpan(
+                                text: activity.kgValue.toStringAsFixed(1),
+                                children: const [
+                                  TextSpan(
+                                      text: " kg",
+                                      style: TextStyle(fontSize: 11))
+                                ],
+                                style: TextStyle(
+                                    fontSize: 16,
+                                    //fontWeight: FontWeight.bold,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .primary)))));
+              })
         ]));
-  }
-
-  ListView buildList(List<MassData> data) {
-    return ListView.builder(
-        itemCount: data.length,
-        itemBuilder: (context, index) {
-          final activity = data[index];
-          return Dismissible(
-              key: ValueKey(activity.time),
-              confirmDismiss: (direction) async {
-                if (direction == DismissDirection.endToStart) {
-                  if (await showSimpleMessage(context, content: "确定删除此记录吗?")) {
-                    await ref
-                        .read(massDbProvider.notifier)
-                        .delete(activity.time);
-                    await deleteSample(
-                        QuantityType.bodyMass.identifier, activity.time);
-                    return true;
-                  }
-                } else {
-                  showEditDialog(activity);
-                  return false;
-                }
-                return false;
-              },
-              secondaryBackground: Container(
-                  color: Colors.red,
-                  child: const Align(
-                      alignment: Alignment.centerRight,
-                      child: Padding(
-                          padding: EdgeInsets.only(right: 20),
-                          child: Text("删除",
-                              style: TextStyle(
-                                  color: Colors.white, fontSize: 15))))),
-              background: Container(
-                  color: Colors.blue,
-                  child: const Align(
-                      alignment: Alignment.centerLeft,
-                      child: Padding(
-                          padding: EdgeInsets.only(left: 20),
-                          child: Text("编辑",
-                              style: TextStyle(
-                                  color: Colors.white, fontSize: 15))))),
-              child: ListTile(
-                  title: Text(activity.title.isEmpty ? "--" : activity.title,
-                      maxLines: 1, overflow: TextOverflow.ellipsis),
-                  onTap: () {
-                    showModalBottomSheet(
-                        context: context,
-                        builder: (context) {
-                          return SizedBox(
-                              width: double.infinity,
-                              child: Padding(
-                                  padding: const EdgeInsets.only(
-                                      left: 10, right: 10, top: 20),
-                                  child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(activity.title,
-                                            style: const TextStyle(
-                                                fontSize: 17,
-                                                fontWeight: FontWeight.bold)),
-                                        Text(activity.description)
-                                      ])));
-                        });
-                  },
-                  subtitle: buildRichDate(ts2DateTime(activity.time),
-                      today: today,
-                      weekDayOne: weekDayOne,
-                      lastWeekDayOne: lastWeekDayOne,
-                      fontSize: 12),
-                  trailing: RichText(
-                      text: TextSpan(
-                          text: activity.kgValue.toStringAsFixed(1),
-                          children: const [
-                            TextSpan(
-                                text: " kg", style: TextStyle(fontSize: 11))
-                          ],
-                          style: TextStyle(
-                              fontSize: 16,
-                              //fontWeight: FontWeight.bold,
-                              color: Theme.of(context).colorScheme.primary)))));
-        });
   }
 
   void _showDialog() {
@@ -226,37 +209,41 @@ class _MassItemEditViewState extends ConsumerState<MassItemEditView> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-        padding: const EdgeInsets.only(top: 10, left: 10, right: 10),
-        child: Column(children: [
-          RichText(
-              text: TextSpan(
-                  text: data.kgValue.toStringAsFixed(1),
-                  children: const [
-                    TextSpan(text: "  kg", style: TextStyle(fontSize: 30))
-                  ],
-                  style: TextStyle(
-                      fontSize: 70,
-                      fontFamily: "Sank",
-                      color: Theme.of(context).colorScheme.primary))),
-          TextField(
-            controller: title,
-            decoration: const InputDecoration(label: Text("标题")),
-          ),
-          TextField(
-              controller: description,
-              maxLines: null,
-              decoration: const InputDecoration(label: Text("描述"))),
-          const Spacer(),
-          SizedBox(
-              width: double.infinity,
-              child: OutlinedButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(data.copyWith(
-                        title: title.text, description: description.text));
-                  },
-                  child: const Text("确定"))),
-          const SizedBox(height: 10)
-        ]));
+    return SafeArea(
+        child: Padding(
+            padding: EdgeInsets.only(
+                top: 10,
+                left: 10,
+                right: 10,
+                bottom: Platform.isWindows ? 10 : 0),
+            child: Column(children: [
+              RichText(
+                  text: TextSpan(
+                      text: data.kgValue.toStringAsFixed(1),
+                      children: const [
+                        TextSpan(text: "  kg", style: TextStyle(fontSize: 30))
+                      ],
+                      style: TextStyle(
+                          fontSize: 70,
+                          fontFamily: "Sank",
+                          color: Theme.of(context).colorScheme.primary))),
+              TextField(
+                controller: title,
+                decoration: const InputDecoration(label: Text("标题")),
+              ),
+              TextField(
+                  controller: description,
+                  maxLines: null,
+                  decoration: const InputDecoration(label: Text("描述"))),
+              const Spacer(),
+              SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                      onPressed: () {
+                        Navigator.of(context).pop(data.copyWith(
+                            title: title.text, description: description.text));
+                      },
+                      child: const Text("确定")))
+            ])));
   }
 }

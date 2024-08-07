@@ -61,8 +61,8 @@ Future<(bool, String)> addSample(String type, Sample data) async {
 
 Future<String> deleteSample(String type, int seconds) async {
   if (f.kIsWeb || !Platform.isIOS) return "Platform not supported";
-  await HealthKitReporter.deleteObjects(QuantityType.bodyMass.identifier,
-      Predicate(ts2DateTime(seconds), ts2DateTime(seconds + 1)));
+  await HealthKitReporter.deleteObjects(
+      type, Predicate(ts2DateTime(seconds), ts2DateTime(seconds + 1)));
   return "Delete done";
 }
 

@@ -383,6 +383,7 @@ class _StoryReadViewState extends ConsumerState<StoryReadView> {
               foregroundColor: Colors.white,
               automaticallyImplyLeading: true,
               flexibleSpace: FlexibleSpaceBar(
+                  centerTitle: false,
                   title: Text(widget.storyName,
                       style: const TextStyle(
                           fontSize: 16,
