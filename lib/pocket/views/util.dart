@@ -19,7 +19,8 @@ Future<T?> showAdaptiveBottomSheet<T>(
     Widget Function(BuildContext)? builder,
     bool? cover,
     double? height = 500,
-    double? divideHeight}) {
+    double? divideHeight,
+    double? minusHeight}) {
   return showModalBottomSheet<T>(
       isScrollControlled: cover ?? Platform.isIOS,
       context: context,
@@ -27,7 +28,9 @@ Future<T?> showAdaptiveBottomSheet<T>(
           ? SizedBox(
               height: divideHeight != null
                   ? (MediaQuery.maybeOf(context)!.size.height / divideHeight)
-                  : height,
+                  : minusHeight != null
+                      ? (MediaQuery.maybeOf(context)!.size.height - minusHeight)
+                      : height,
               child: child ?? builder!(context))
           : child ?? builder!(context));
 }

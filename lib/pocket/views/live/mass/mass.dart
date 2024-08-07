@@ -3,8 +3,10 @@ import 'dart:io';
 import 'package:cyberme_flutter/pocket/viewmodels/mass.dart';
 import 'package:cyberme_flutter/pocket/views/live/mass/mass_add.dart';
 import 'package:cyberme_flutter/pocket/views/util.dart';
+import 'package:flame/experimental.dart';
 import 'package:flutter/foundation.dart' as f;
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:health_kit_reporter/health_kit_reporter.dart';
 import 'package:health_kit_reporter/model/predicate.dart';
 import 'package:health_kit_reporter/model/type/quantity_type.dart';
@@ -62,17 +64,16 @@ class _MassActivityViewState extends ConsumerState<MassActivityView> {
 
   @override
   Widget build(BuildContext context) {
-    final data = (ref.watch(massDbProvider).value ?? [])
-      ..sort((b, a) => a.time.compareTo(b.time));
+    final data = ref.watch(massDbProvider).value ?? [];
+    print("render mass first is ${data.isEmpty ? "x" : data.first.title}");
     return Scaffold(
         floatingActionButton: FloatingActionButton(
             onPressed: () {
-              showModalBottomSheet(
+              showAdaptiveBottomSheet(
                   context: context,
-                  isScrollControlled: true,
-                  builder: (context) => SizedBox(
-                      height: MediaQuery.maybeSizeOf(context)!.height - 200,
-                      child: const BodyMassView(standalone: false)));
+                  cover: true,
+                  child: const BodyMassView(standalone: false),
+                  minusHeight: 200);
             },
             child: const Icon(Icons.add)),
         backgroundColor: Colors.white,

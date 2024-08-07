@@ -1,5 +1,5 @@
 import 'package:cyberme_flutter/pocket/viewmodels/basic.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:health_kit_reporter/model/payload/quantity.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -23,24 +23,13 @@ class MassData with _$MassData {
 @riverpod
 class MassDb extends _$MassDb {
   static const tag = "health_mass";
-  int sort(MassData a, MassData b) => b.time.compareTo(a.time);
+  static int sort(MassData a, MassData b) => b.time > a.time ? 1 : -1;
+  static int sortReverse(MassData a, MassData b) => a.time > b.time ? 1 : -1;
   @override
   FutureOr<List<MassData>> build() async {
     final res = await _fetch();
-    return res.values.toList()..sort(sort);
-    // return [
-    //   MassData(time: 1, kgValue: 98.3, title: "test", description: "desc"),
-    //   MassData(time: 2, kgValue: 99.6, title: "test", description: "desc"),
-    //   MassData(time: 3, kgValue: 95.6, title: "吃多了", description: "desc"),
-    //   MassData(time: 4, kgValue: 98.3),
-    //   MassData(time: 1722672578, kgValue: 95.6),
-    //   MassData(time: 1722845302, kgValue: 92.4),
-    //   MassData(
-    //       time: 1722931478,
-    //       kgValue: 99.4,
-    //       title: "因为吃的比较多",
-    //       description: "desc"),
-    // ]..sort(sort);
+    final res2 = res.values.toList()..sort(sort);
+    return res2;
   }
 
   Future<String> delete(double time) async {

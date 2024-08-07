@@ -329,7 +329,7 @@ class _BlueCalViewState extends ConsumerState<BlueCalView> {
                 weekdayStyle:
                     TextStyle(color: appThemeData.colorScheme.onSurface)),
             locale: 'zh_CN',
-            firstDay: now.subtract(const Duration(days: 30)),
+            firstDay: now.subtract(const Duration(days: 60)),
             lastDay: now.add(const Duration(days: 30)),
             focusedDay: now,
             calendarFormat: CalendarFormat.month,

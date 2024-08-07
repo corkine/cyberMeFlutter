@@ -22,7 +22,7 @@ class _BodyCalViewState extends ConsumerState<MassCalView> {
     super.initState();
     ref.read(massDbProvider.future).then((v) {
       MassData? prev;
-      final r = (v..sort((a, b) => (a.time - b.time).toInt())).map((d) {
+      final r = ([...v]..sort(MassDb.sortReverse)).map((d) {
         final key = DateFormat.yMd().format(
             DateTime.fromMillisecondsSinceEpoch((d.time * 1000).toInt()));
         if (prev != null) {
@@ -45,7 +45,7 @@ class _BodyCalViewState extends ConsumerState<MassCalView> {
                 weekdayStyle:
                     TextStyle(color: appThemeData.colorScheme.onSurface)),
             locale: 'zh_CN',
-            firstDay: now.subtract(const Duration(days: 30)),
+            firstDay: now.subtract(const Duration(days: 60)),
             lastDay: now.add(const Duration(days: 30)),
             focusedDay: now,
             calendarFormat: CalendarFormat.month,

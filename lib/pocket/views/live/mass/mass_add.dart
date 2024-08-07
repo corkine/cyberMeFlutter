@@ -121,38 +121,6 @@ class _BodyMassViewState extends ConsumerState<BodyMassView> {
   }
 
   handleReadBodyMassRecent() async {
-    // if (Platform.isAndroid || Platform.isIOS) {
-    //   final health = HealthFactory(useHealthConnectIfAvailable: false);
-    //   var types = [HealthDataType.WEIGHT];
-    //   var permissions = [HealthDataAccess.READ_WRITE];
-    //   var take = 7;
-    //   bool req =
-    //       await health.requestAuthorization(types, permissions: permissions);
-    //   if (req) {
-    //     final now = DateTime.now();
-    //     final start = now.subtract(const Duration(days: 50));
-    //     final data = await health.getHealthDataFromTypes(start, now, types);
-    //     data.sort((a, b) => a.dateFrom.compareTo(b.dateFrom));
-    //     final takeData = data
-    //         .getRange(
-    //             data.length - take >= 0 ? data.length - take : 0, data.length)
-    //         .toList(growable: false);
-    //     recentBodyMass = [];
-    //     for (final d in takeData) {
-    //       final v = (d.value as NumericHealthValue?)?.numericValue;
-    //       debugPrint(
-    //           "date: ${d.dateFrom}, value: ${v.toString()}, unit: ${d.unit.name}");
-    //       if (v != null) {
-    //         recentBodyMass.add(v as double);
-    //       }
-    //     }
-    //     setState(() {});
-    //   } else {
-    //     recentBodyMass = [];
-    //     ScaffoldMessenger.of(context).showSnackBar(
-    //         const SnackBar(content: Text("没有 HealthKit 读取权限，请检查后再试！")));
-    //   }
-    // }
     final d = await ref.read(massDbProvider.future);
     recentBodyMass.clear();
     recentBodyMass.addAll(d.map((e) => e.kgValue).take(7).toList().reversed);
