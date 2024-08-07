@@ -65,7 +65,6 @@ class _MassActivityViewState extends ConsumerState<MassActivityView> {
   @override
   Widget build(BuildContext context) {
     final data = ref.watch(massDbProvider).value ?? [];
-    print("render mass first is ${data.isEmpty ? "x" : data.first.title}");
     return Scaffold(
         floatingActionButton: FloatingActionButton(
             onPressed: () {
@@ -216,7 +215,7 @@ class _MassItemEditViewState extends ConsumerState<MassItemEditView> {
                 top: 10,
                 left: 10,
                 right: 10,
-                bottom: Platform.isWindows ? 10 : 0),
+                bottom: Platform.isWindows || Platform.isMacOS ? 10 : 0),
             child: Column(children: [
               RichText(
                   text: TextSpan(

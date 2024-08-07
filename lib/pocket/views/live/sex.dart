@@ -222,7 +222,10 @@ class _SexualActivityEditViewState
   Widget build(BuildContext context) {
     return Padding(
         padding: EdgeInsets.only(
-            left: 20, right: 20, top: 20, bottom: Platform.isWindows ? 10 : 0),
+            left: 20,
+            right: 20,
+            top: 20,
+            bottom: Platform.isWindows || Platform.isMacOS ? 10 : 0),
         child: SafeArea(
             child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

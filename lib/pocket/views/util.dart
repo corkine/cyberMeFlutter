@@ -18,7 +18,7 @@ Future<T?> showAdaptiveBottomSheet<T>(
     Widget? child,
     Widget Function(BuildContext)? builder,
     bool? cover,
-    double? height = 500,
+    double? height = 550,
     double? divideHeight,
     double? minusHeight}) {
   return showModalBottomSheet<T>(
