@@ -178,7 +178,7 @@ class _SexualActivityViewState extends ConsumerState<SexualActivityView> {
   Future<void> _edit(BlueData data) async {
     await showModalBottomSheet<BlueData>(
         context: context,
-        isScrollControlled: true,
+        isScrollControlled: false,
         builder: (BuildContext context) {
           return SizedBox(
               height: MediaQuery.of(context).size.height / 1.3,
@@ -201,7 +201,7 @@ class _SexualActivityViewState extends ConsumerState<SexualActivityView> {
         DateTime(yesterday.year, yesterday.month, yesterday.day, 23, 0);
     await showModalBottomSheet<BlueData>(
         context: context,
-        isScrollControlled: true,
+        isScrollControlled: false,
         builder: (BuildContext context) => SizedBox(
               height: MediaQuery.of(context).size.height / 1.3,
               child: SexualActivityEditView(

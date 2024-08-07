@@ -173,11 +173,7 @@ class _MassActivityViewState extends ConsumerState<MassActivityView> {
 
   void showEditDialog(MassData activity) async {
     final res = await showModalBottomSheet<MassData>(
-        context: context,
-        isScrollControlled: true,
-        builder: (context) => SizedBox(
-            height: MediaQuery.of(context).size.height / 1.3,
-            child: MassItemEditView(activity)));
+        context: context, builder: (context) => MassItemEditView(activity));
     if (res != null) {
       ref.read(massDbProvider.notifier).edit(res);
     }
