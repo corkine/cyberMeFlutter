@@ -154,7 +154,8 @@ class _BodyMassViewState extends ConsumerState<BodyMassView> {
     //   }
     // }
     final d = await ref.read(massDbProvider.future);
-    recentBodyMass.addAll(d.map((e) => e.kgValue).take(7));
+    recentBodyMass.clear();
+    recentBodyMass.addAll(d.map((e) => e.kgValue).take(7).toList().reversed);
     setState(() {});
   }
 
