@@ -62,7 +62,8 @@ class _MassActivityViewState extends ConsumerState<MassActivityView> {
 
   @override
   Widget build(BuildContext context) {
-    final data = ref.watch(massDbProvider).value ?? [];
+    final data = (ref.watch(massDbProvider).value ?? [])
+      ..sort((b, a) => a.time.compareTo(b.time));
     return Scaffold(
         floatingActionButton: FloatingActionButton(
             onPressed: () {
@@ -90,7 +91,7 @@ class _MassActivityViewState extends ConsumerState<MassActivityView> {
               actions: [
                 IconButton(
                     icon: const Icon(Icons.calendar_month, size: 19),
-                    onPressed: _showDialog),
+                    onPressed: _showCalDialog),
                 const SizedBox(width: 10)
               ]),
           SliverList.builder(
@@ -162,18 +163,14 @@ class _MassActivityViewState extends ConsumerState<MassActivityView> {
         ]));
   }
 
-  void _showDialog() {
-    showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        builder: (context) => SizedBox(
-            height: MediaQuery.of(context).size.height / 1.3,
-            child: const MassCalView()));
+  void _showCalDialog() {
+    showAdaptiveBottomSheet(
+        context: context, child: const MassCalView(), divideHeight: 1.3);
   }
 
   void showEditDialog(MassData activity) async {
-    final res = await showModalBottomSheet<MassData>(
-        context: context, builder: (context) => MassItemEditView(activity));
+    final res = await showAdaptiveBottomSheet<MassData>(
+        context: context, child: MassItemEditView(activity));
     if (res != null) {
       ref.read(massDbProvider.notifier).edit(res);
     }

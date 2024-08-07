@@ -107,7 +107,7 @@ class _SexualActivityViewState extends ConsumerState<SexualActivityView> {
               actions: [
                 IconButton(
                     icon: const Icon(Icons.calendar_month, size: 19),
-                    onPressed: _showDialog),
+                    onPressed: _showCalDialog),
                 const SizedBox(width: 10)
               ]),
           buildList(data)
@@ -132,7 +132,7 @@ class _SexualActivityViewState extends ConsumerState<SexualActivityView> {
                     return true;
                   }
                 } else {
-                  await _edit(activity);
+                  await _showEditDialog(activity);
                   return false;
                 }
                 return false;
@@ -160,7 +160,7 @@ class _SexualActivityViewState extends ConsumerState<SexualActivityView> {
                       today: today,
                       weekDayOne: weekDayOne,
                       lastWeekDayOne: lastWeekDayOne),
-                  onTap: () => _edit(activity),
+                  onTap: () => _showEditDialog(activity),
                   subtitle: Text(activity.note.isEmpty ? "--" : activity.note,
                       maxLines: 1, overflow: TextOverflow.ellipsis),
                   leading: buildIcon(activity),
@@ -175,40 +175,25 @@ class _SexualActivityViewState extends ConsumerState<SexualActivityView> {
         });
   }
 
-  Future<void> _edit(BlueData data) async {
-    await showModalBottomSheet<BlueData>(
-        context: context,
-        isScrollControlled: false,
-        builder: (BuildContext context) {
-          return SizedBox(
-              height: MediaQuery.of(context).size.height / 1.3,
-              child: SexualActivityEditView(data, false));
-        });
+  void _showCalDialog() {
+    showAdaptiveBottomSheet(
+        context: context, child: const BlueCalView(), divideHeight: 1.3);
   }
 
-  void _showDialog() {
-    showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        builder: (context) => SizedBox(
-            height: MediaQuery.of(context).size.height / 1.3,
-            child: const BlueCalView()));
+  Future<void> _showEditDialog(BlueData data) async {
+    await showAdaptiveBottomSheet<BlueData>(
+        context: context, child: SexualActivityEditView(data, false));
   }
 
   void _showAddDialog() async {
     final yesterday = DateTime.now().subtract(const Duration(days: 1));
     var dateTime =
         DateTime(yesterday.year, yesterday.month, yesterday.day, 23, 0);
-    await showModalBottomSheet<BlueData>(
+    await showAdaptiveBottomSheet<BlueData>(
         context: context,
-        isScrollControlled: false,
-        builder: (BuildContext context) => SizedBox(
-              height: MediaQuery.of(context).size.height / 1.3,
-              child: SexualActivityEditView(
-                  BlueData(
-                      time: dateTime.millisecondsSinceEpoch / 1000, note: ""),
-                  true),
-            ));
+        child: SexualActivityEditView(
+            BlueData(time: dateTime.millisecondsSinceEpoch / 1000, note: ""),
+            true));
   }
 }
 

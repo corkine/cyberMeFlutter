@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cyberme_flutter/main.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -9,6 +11,25 @@ showModal(BuildContext context, Widget widget) {
       backgroundColor: Colors.transparent,
       builder: (context) => DraggableScrollableSheet(
           initialChildSize: 0.8, builder: (context, sc) => widget));
+}
+
+Future<T?> showAdaptiveBottomSheet<T>(
+    {required BuildContext context,
+    Widget? child,
+    Widget Function(BuildContext)? builder,
+    bool? cover,
+    double? height = 500,
+    double? divideHeight}) {
+  return showModalBottomSheet<T>(
+      isScrollControlled: cover ?? Platform.isIOS,
+      context: context,
+      builder: (context) => cover ?? Platform.isIOS
+          ? SizedBox(
+              height: divideHeight != null
+                  ? (MediaQuery.maybeOf(context)!.size.height / divideHeight)
+                  : height,
+              child: child ?? builder!(context))
+          : child ?? builder!(context));
 }
 
 showDebugBar(BuildContext context, dynamic e, {bool withPop = false}) {
