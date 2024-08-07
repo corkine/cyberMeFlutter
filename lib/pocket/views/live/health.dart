@@ -25,8 +25,6 @@ Future<(bool, String)> requestAuthorization<T>(
     {required List<String> readTypes, required List<String> writeTypes}) async {
   if (f.kIsWeb || !Platform.isIOS) return (false, "Platform not supported");
   try {
-    final readTypes = <String>[CategoryType.sexualActivity.identifier];
-    final writeTypes = <String>[CategoryType.sexualActivity.identifier];
     final isRequested =
         await HealthKitReporter.requestAuthorization(readTypes, writeTypes);
     if (isRequested) {
