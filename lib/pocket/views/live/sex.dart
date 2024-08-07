@@ -177,7 +177,10 @@ class _SexualActivityViewState extends ConsumerState<SexualActivityView> {
 
   void _showCalDialog() {
     showAdaptiveBottomSheet(
-        context: context, child: const BlueCalView(), divideHeight: 1.3);
+        cover: true,
+        context: context,
+        child: const BlueCalView(),
+        divideHeight: 1.3);
   }
 
   Future<void> _showEditDialog(BlueData data) async {

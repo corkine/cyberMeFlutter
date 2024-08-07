@@ -165,7 +165,10 @@ class _MassActivityViewState extends ConsumerState<MassActivityView> {
 
   void _showCalDialog() {
     showAdaptiveBottomSheet(
-        context: context, child: const MassCalView(), divideHeight: 1.3);
+        cover: true,
+        context: context,
+        child: const MassCalView(),
+        divideHeight: 1.3);
   }
 
   void showEditDialog(MassData activity) async {
