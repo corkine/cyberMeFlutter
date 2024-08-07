@@ -1,6 +1,5 @@
 import 'package:cyberme_flutter/pocket/viewmodels/mass.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -23,9 +22,9 @@ class _BodyCalViewState extends ConsumerState<MassCalView> {
     super.initState();
     ref.read(massDbProvider.future).then((v) {
       MassData? prev;
-      final r = (v..sort((a, b) => a.time - b.time)).map((d) {
-        final key = DateFormat.yMd()
-            .format(DateTime.fromMillisecondsSinceEpoch(d.time * 1000));
+      final r = (v..sort((a, b) => (a.time - b.time).toInt())).map((d) {
+        final key = DateFormat.yMd().format(
+            DateTime.fromMillisecondsSinceEpoch((d.time * 1000).toInt()));
         if (prev != null) {
           _prev[key] = prev!;
         }

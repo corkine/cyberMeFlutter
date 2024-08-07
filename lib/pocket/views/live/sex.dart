@@ -126,8 +126,8 @@ class _SexualActivityViewState extends ConsumerState<SexualActivityView> {
                     await ref
                         .read(bluesDbProvider.notifier)
                         .delete(activity.time);
-                    await deleteSample(
-                        CategoryType.sexualActivity.identifier, activity.time);
+                    await deleteSample(CategoryType.sexualActivity.identifier,
+                        activity.time.toDouble());
                     return true;
                   }
                 } else {

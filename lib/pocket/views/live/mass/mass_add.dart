@@ -8,6 +8,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:intl/intl.dart';
 
 class BodyMassView extends ConsumerStatefulWidget {
   final bool standalone;
@@ -153,7 +154,7 @@ class _BodyMassViewState extends ConsumerState<BodyMassView> {
     //   }
     // }
     final d = await ref.read(massDbProvider.future);
-    recentBodyMass.addAll(d.map((e) => e.kgValue));
+    recentBodyMass.addAll(d.map((e) => e.kgValue).take(7));
     setState(() {});
   }
 
@@ -177,7 +178,9 @@ class _BodyMassViewState extends ConsumerState<BodyMassView> {
     // }
     final time = DateTime.now();
     await ref.read(massDbProvider.notifier).add(MassData(
-        time: time.millisecondsSinceEpoch ~/ 1000, kgValue: value, title: ""));
+        time: time.millisecondsSinceEpoch / 1000,
+        kgValue: value,
+        title: DateFormat("yyyy-MM-dd HH:mm").format(time) + " 添加"));
     if (!kIsWeb && Platform.isIOS) {
       final (ok, msg) = await addBodyMassRecord(time, value);
       await showSimpleMessage(context,

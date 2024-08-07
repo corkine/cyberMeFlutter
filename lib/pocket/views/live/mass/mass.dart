@@ -41,7 +41,7 @@ class _MassActivityViewState extends ConsumerState<MassActivityView> {
         readTypes: [QuantityType.bodyMass.identifier],
         writeTypes: [QuantityType.bodyMass.identifier]);
     if (ok.$1) {
-      final now = DateTime.now();
+      final now = DateTime.now().add(const Duration(hours: 1));
       final threeMonthsAgo = now.subtract(const Duration(days: 90));
       final activities = await HealthKitReporter.quantityQuery(
           QuantityType.bodyMass, "kg", Predicate(threeMonthsAgo, now));
@@ -51,7 +51,8 @@ class _MassActivityViewState extends ConsumerState<MassActivityView> {
         debugPrint('kit missed: ${healthKitMiss.length}');
         for (var e in healthKitMiss) {
           addBodyMassRecord(
-              DateTime.fromMillisecondsSinceEpoch(e.time * 1000), e.kgValue);
+              DateTime.fromMillisecondsSinceEpoch((e.time * 1000).toInt()),
+              e.kgValue);
         }
       }
     } else {

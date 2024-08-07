@@ -18,7 +18,7 @@ const _sourceRevision =
     SourceRevision(_source, null, null, "1.0", _operatingSystem);
 
 DateTime ts2DateTime(num ts) {
-  return DateTime.fromMillisecondsSinceEpoch(ts * 1000 as int);
+  return DateTime.fromMillisecondsSinceEpoch((ts * 1000).toInt());
 }
 
 Future<(bool, String)> requestAuthorization<T>(
@@ -57,7 +57,7 @@ Future<(bool, String)> addSample(String type, Sample data) async {
   }
 }
 
-Future<String> deleteSample(String type, int seconds) async {
+Future<String> deleteSample(String type, double seconds) async {
   if (f.kIsWeb || !Platform.isIOS) return "Platform not supported";
   await HealthKitReporter.deleteObjects(
       type, Predicate(ts2DateTime(seconds), ts2DateTime(seconds + 1)));

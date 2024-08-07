@@ -10,7 +10,7 @@ part 'mass.g.dart';
 @freezed
 class MassData with _$MassData {
   factory MassData({
-    @Default(0) int time,
+    @Default(0.0) double time,
     @Default("") String title,
     @Default("") String description,
     @Default(0) double kgValue,
@@ -43,7 +43,7 @@ class MassDb extends _$MassDb {
     // ]..sort(sort);
   }
 
-  Future<String> delete(int time) async {
+  Future<String> delete(double time) async {
     final newData = (state.value ?? []).where((d) => d.time != time).toList();
     state = AsyncData(newData);
     await _set(Map.fromEntries(newData.map((e) => MapEntry(e.time, e))));
@@ -66,9 +66,9 @@ class MassDb extends _$MassDb {
   }
 
   Future<Set<MassData>> sync(List<Quantity> fromHealthKit) async {
-    final c = fromHealthKit.map((e) => e.startTimestamp as int).toSet();
+    final c = fromHealthKit.map((e) => e.startTimestamp).toSet();
     final cm = Map.fromEntries(
-        fromHealthKit.map((f) => MapEntry(f.startTimestamp as int, f)));
+        fromHealthKit.map((f) => MapEntry(f.startTimestamp, f)));
     final cloudMiss =
         c.difference(state.value?.map((e) => e.time).toSet() ?? {});
     final healthMiss =
@@ -76,8 +76,8 @@ class MassDb extends _$MassDb {
     if (cloudMiss.isNotEmpty) {
       List<MassData> newData = [
         ...(state.value ?? []),
-        ...cloudMiss.map((i) =>
-            MassData(time: i, kgValue: cm[i]!.harmonized.value as double))
+        ...cloudMiss.map((i) => MassData(
+            time: i.toDouble(), kgValue: cm[i]!.harmonized.value.toDouble()))
       ]..sort(sort);
       debugPrint("sync: $cloudMiss");
       await _set(Map.fromEntries(newData.map((e) => MapEntry(e.time, e))));
@@ -86,15 +86,15 @@ class MassDb extends _$MassDb {
     return state.value?.where((e) => healthMiss.contains(e.time)).toSet() ?? {};
   }
 
-  FutureOr<Map<int, MassData>> _fetch() async {
+  FutureOr<Map<double, MassData>> _fetch() async {
     final res = await settingFetch(
         tag,
         (d) => ({...d}..remove("update"))
-            .map((a, b) => MapEntry(int.parse(a), MassData.fromJson(b))));
+            .map((a, b) => MapEntry(double.parse(a), MassData.fromJson(b))));
     return res ?? {};
   }
 
-  Future<String> _set(Map<int, MassData> data) async {
+  Future<String> _set(Map<double, MassData> data) async {
     await settingUpload(
         tag, data.map((a, b) => MapEntry(a.toString(), b.toJson())));
     return "success";
