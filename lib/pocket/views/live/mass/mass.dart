@@ -76,7 +76,7 @@ class _MassActivityViewState extends ConsumerState<MassActivityView> {
         backgroundColor: Colors.white,
         body: CustomScrollView(slivers: [
           SliverAppBar(
-              expandedHeight: 155,
+              expandedHeight: 150,
               flexibleSpace: FlexibleSpaceBar(
                   centerTitle: false,
                   title: const Text("Body Mass",
