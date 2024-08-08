@@ -221,7 +221,7 @@ class _MassActivityViewState extends ConsumerState<MassActivityView> {
 
   Widget buildTopBar() {
     bool useBody = Platform.isIOS;
-    double paddingTop = 10;
+    double paddingTop = Platform.isIOS ? 35 : 10;
     return SizedBox(
         height: useBody ? 133 : 183,
         child: Stack(children: [
