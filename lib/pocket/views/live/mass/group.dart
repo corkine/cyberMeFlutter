@@ -115,7 +115,7 @@ class _MassGroupEditViewState extends ConsumerState<MassGroupEditView> {
                   },
                   controller: description,
                   maxLines: null,
-                  decoration: const InputDecoration(label: Text("事实"))),
+                  decoration: const InputDecoration(label: Text("实施"))),
               const Spacer(),
               SizedBox(
                   width: double.infinity,
