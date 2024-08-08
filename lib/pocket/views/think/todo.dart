@@ -11,6 +11,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:sticky_grouped_list/sticky_grouped_list.dart';
 
+import '../../util.dart';
+
 class TodoView extends ConsumerStatefulWidget {
   const TodoView({super.key});
 
@@ -121,18 +123,6 @@ class _TodoViewState extends ConsumerState<TodoView>
   final _dfGroup = DateFormat("yyyyMM");
   final _dfDay = DateFormat("yyyy年M月");
 
-  int _weekOfYear(DateTime date) {
-    // 获取该日期的第一天
-    DateTime firstDayOfYear = DateTime(date.year, 1, 1);
-    // 计算该日期是第几天
-    int dayOfYear = date.difference(firstDayOfYear).inDays + 1;
-    // 计算星期几
-    int dayOfWeek = date.weekday;
-    // 计算第几周
-    int weekOfYear = ((dayOfYear - dayOfWeek + 10) / 7).floor();
-    return weekOfYear;
-  }
-
   String _groupBy(todo) => _dfGroup.format(todo.date ?? DateTime.now());
 
   Widget _groupBySeparator(todo) => Container(
@@ -145,14 +135,14 @@ class _TodoViewState extends ConsumerState<TodoView>
                   color: Theme.of(context).colorScheme.primary))));
 
   String _groupByWeek(todo) =>
-      _weekOfYear(todo.date ?? DateTime.now()).toString().padLeft(3, '0');
+      weekOfYear(todo.date ?? DateTime.now()).toString().padLeft(3, '0');
 
   Widget _groupBySeparatorWeek(todo) => Container(
       color: Theme.of(context).colorScheme.surfaceContainer,
       child: Padding(
           padding: const EdgeInsets.only(left: 13, top: 2, bottom: 2),
           child: Text(
-              "${todo.date?.year ?? DateTime.now().year}年第${_weekOfYear(todo.date ?? DateTime.now())}周",
+              "${todo.date?.year ?? DateTime.now().year}年第${weekOfYear(todo.date ?? DateTime.now())}周",
               style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Theme.of(context).colorScheme.primary))));

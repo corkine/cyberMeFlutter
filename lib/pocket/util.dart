@@ -52,6 +52,18 @@ const Map<String, String> storyCover = {
 String defaultStoryCover =
     "https://static2.mazhangjing.com/cyber/202310/70b6426c_图片.png";
 
+int weekOfYear(DateTime date) {
+  // 获取该日期的第一天
+  DateTime firstDayOfYear = DateTime(date.year, 1, 1);
+  // 计算该日期是第几天
+  int dayOfYear = date.difference(firstDayOfYear).inDays + 1;
+  // 计算星期几
+  int dayOfWeek = date.weekday;
+  // 计算第几周
+  int weekOfYear = ((dayOfYear - dayOfWeek + 10) / 7).floor();
+  return weekOfYear;
+}
+
 /// 执行 Redis Lua 脚本，see taoensso.carmine/lua:
 ///
 /// (lua "redis.call('set', _:my-key, _:my-arg)" {:my-key "foo"} {:my-arg "bar"})

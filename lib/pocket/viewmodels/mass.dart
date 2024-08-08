@@ -1,5 +1,7 @@
+import 'package:cyberme_flutter/pocket/util.dart';
 import 'package:cyberme_flutter/pocket/viewmodels/basic.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:health_kit_reporter/model/payload/quantity.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -8,16 +10,68 @@ part 'mass.freezed.dart';
 part 'mass.g.dart';
 
 @freezed
+class MassGroup with _$MassGroup {
+  const factory MassGroup({
+    @Default(0) int id, //startDay Time MillSeconds
+    @Default("") String desc, //plan
+    @Default(false) bool satisfied,
+    @Default([]) List<MassData> data,
+    @Default(0) double goalKg, //note
+    @Default("") String note,
+  }) = _MassGroup;
+
+  factory MassGroup.fromJson(Map<String, dynamic> json) =>
+      _$MassGroupFromJson(json);
+}
+
+@freezed
 class MassData with _$MassData {
-  factory MassData({
-    @Default(0.0) double time,
+  const factory MassData({
+    @Default(0.0) double time, //seconds
     @Default("") String title,
     @Default("") String description,
     @Default(0) double kgValue,
-  }) = _BlueData;
+    @Default(0) int group,
+  }) = _MassData;
 
   factory MassData.fromJson(Map<String, dynamic> json) =>
       _$MassDataFromJson(json);
+}
+
+@riverpod
+class MassPlanDb extends _$MassPlanDb {
+  static const tag = "health_mass_plan";
+  @override
+  FutureOr<Map<int, MassGroup>> build() async {
+    final res = await settingFetch(
+        tag,
+        (d) => ({...d}..remove("update")).map((k, v) {
+              var week = MassGroup.fromJson(v);
+              return MapEntry(int.parse(k), week);
+            }));
+    return res ?? {};
+  }
+
+  Future<String> addOrEdit(MassGroup data) async {
+    final n = {...?state.value};
+    n[data.id] = data;
+    await saveState(n);
+    state = AsyncData(n);
+    return "success";
+  }
+
+  Future<String> delete(int id) async {
+    final n = {...?state.value};
+    n.remove(id);
+    await saveState(n);
+    state = AsyncData(n);
+    return "success";
+  }
+
+  Future saveState(Map<int, MassGroup>? data) async {
+    await settingUpload(
+        tag, (data ?? {}).map((k, v) => MapEntry(k.toString(), v.toJson())));
+  }
 }
 
 @riverpod
@@ -78,8 +132,16 @@ class MassDb extends _$MassDb {
   FutureOr<Map<double, MassData>> _fetch() async {
     final res = await settingFetch(
         tag,
-        (d) => ({...d}..remove("update"))
-            .map((a, b) => MapEntry(double.parse(a), MassData.fromJson(b))));
+        (d) => ({...d}..remove("update")).map((a, b) {
+              var bb = MassData.fromJson(b);
+              final start =
+                  DateTime.fromMillisecondsSinceEpoch((bb.time * 1000).toInt());
+              final startPure = DateTime(start.year, start.month, start.day);
+              final weekId =
+                  getFirstDayOfRange(startPure).millisecondsSinceEpoch;
+              bb = bb.copyWith(group: weekId);
+              return MapEntry(double.parse(a), bb);
+            }));
     return res ?? {};
   }
 
@@ -88,4 +150,44 @@ class MassDb extends _$MassDb {
         tag, data.map((a, b) => MapEntry(a.toString(), b.toJson())));
     return "success";
   }
+}
+
+@riverpod
+Map<int, MassGroup> massWeekView(MassWeekViewRef ref) {
+  final r = {...?ref.watch(massPlanDbProvider).value};
+  final l = ref.watch(massDbProvider).value ?? [];
+  for (final i in l) {
+    final findGroup = r[i.group];
+    if (findGroup != null) {
+      final start = DateTime.fromMillisecondsSinceEpoch(findGroup.id);
+      final end = getEndOfRange(start);
+      final startInt = start.millisecondsSinceEpoch ~/ 1000;
+      final endInt = end.millisecondsSinceEpoch ~/ 1000;
+      final inIt =
+          l.where((t) => t.time >= startInt && t.time <= endInt).toList();
+      inIt.sort((a, b) => (b.time - a.time).toInt());
+      final ok = (inIt.lastOrNull?.kgValue ?? 1000) < findGroup.goalKg;
+      r[i.group] = findGroup.copyWith(satisfied: ok, data: inIt);
+    } else {
+      r[i.group] = MassGroup(id: i.group, data: [i]);
+    }
+  }
+  return r;
+}
+
+DateTime getEndOfRange(DateTime start) {
+  return start.add(const Duration(days: 7));
+}
+
+DateTime getFirstDayOfRange(DateTime start) {
+  return start.subtract(Duration(days: start.weekday - 1));
+}
+
+Widget buildGroupView(DateTime date) {
+  final week = weekOfYear(date);
+  return Text("${date.year}年第$week周");
+}
+
+bool groupNoInfo(MassGroup? groupInfo) {
+  return groupInfo == null || groupInfo.goalKg == 0;
 }

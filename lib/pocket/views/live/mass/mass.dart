@@ -1,18 +1,22 @@
 import 'dart:io';
 
-import 'package:cyberme_flutter/pocket/viewmodels/mass.dart';
-import 'package:cyberme_flutter/pocket/views/live/mass/mass_add.dart';
-import 'package:cyberme_flutter/pocket/views/util.dart';
-import 'package:flame/experimental.dart';
+import 'package:cyberme_flutter/pocket/util.dart';
 import 'package:flutter/foundation.dart' as f;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/services.dart';
 import 'package:health_kit_reporter/health_kit_reporter.dart';
 import 'package:health_kit_reporter/model/predicate.dart';
 import 'package:health_kit_reporter/model/type/quantity_type.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sticky_grouped_list/sticky_grouped_list.dart';
+import '../../../viewmodels/mass.dart';
+import '../../util.dart';
 import '../health.dart';
-import 'mass_cal.dart';
+import 'add.dart';
+import 'cal.dart';
+import 'edit.dart';
+import 'group.dart';
 
 class MassActivityView extends ConsumerStatefulWidget {
   const MassActivityView({super.key});
@@ -62,104 +66,196 @@ class _MassActivityViewState extends ConsumerState<MassActivityView> {
     }
   }
 
+  ScrollController controller = ScrollController();
+
   @override
   Widget build(BuildContext context) {
     final data = ref.watch(massDbProvider).value ?? [];
     return Scaffold(
         floatingActionButton: FloatingActionButton(
-            onPressed: () {
-              showAdaptiveBottomSheet(
-                  context: context,
-                  cover: true,
-                  child: const BodyMassView(standalone: false),
-                  minusHeight: 200);
-            },
+            onPressed: () => showAdaptiveBottomSheet(
+                context: context,
+                cover: true,
+                child: const BodyMassView(standalone: false),
+                minusHeight: 200),
             child: const Icon(Icons.add)),
         backgroundColor: Colors.white,
-        body: CustomScrollView(slivers: [
-          SliverAppBar(
-              expandedHeight: Platform.isWindows ? 126 : 150,
-              flexibleSpace: FlexibleSpaceBar(
-                  centerTitle: false,
-                  title: const Text("Body Mass",
-                      style: TextStyle(fontSize: 24, fontFamily: "Sank")),
-                  titlePadding: const EdgeInsets.only(left: 20, bottom: 10),
-                  background: Image.network(
-                      fit: BoxFit.cover,
-                      alignment: Alignment.bottomCenter,
-                      "https://static2.mazhangjing.com/cyber/202408/f32be152_image.png")),
-              actions: [
+        body: SingleChildScrollView(
+            child: Column(children: [buildTopBar(), buildList(data)])));
+  }
+
+  Widget buildList(List<MassData> data) {
+    final plan = ref.watch(massWeekViewProvider);
+    return StickyGroupedListView(
+        shrinkWrap: true,
+        elements: data,
+        itemBuilder: (context, element) => buildCard(element, plan),
+        groupBy: (element) => element.group,
+        groupComparator: (a, b) => b - a,
+        groupSeparatorBuilder: (element) {
+          final groupInfo = plan[element.group];
+          final noInfo = groupNoInfo(groupInfo);
+          final date = DateTime.fromMillisecondsSinceEpoch(element.group);
+          action() => showEditGroupDialog(groupInfo!.copyWith(
+              goalKg: groupInfo.goalKg == 0
+                  ? element.kgValue - 3
+                  : groupInfo.goalKg));
+          return Container(
+              decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceContainer),
+              padding:
+                  const EdgeInsets.only(left: 5, right: 10, top: 3, bottom: 3),
+              child: InkWell(
+                  onTap: action,
+                  child: Row(children: [
+                    noInfo
+                        ? const Icon(Icons.report_outlined,
+                            color: Color.fromARGB(255, 211, 211, 211))
+                        : groupInfo!.satisfied
+                            ? const Icon(Icons.verified, color: Colors.green)
+                            : const Icon(Icons.report, color: Colors.red),
+                    const SizedBox(width: 5),
+                    buildGroupView(date),
+                    const Spacer(),
+                    const Icon(Icons.insert_invitation, size: 16),
+                    const SizedBox(width: 2),
+                    Text(
+                        (noInfo
+                            ? "--kg"
+                            : groupInfo!.goalKg.toStringAsFixed(0) + "kg"),
+                        style: const TextStyle(fontFamily: "consolas")),
+                    const SizedBox(width: 10),
+                    InkWell(
+                        onTap: action,
+                        child: const Icon(Icons.more_vert, size: 16))
+                  ])));
+        });
+  }
+
+  Dismissible buildCard(MassData activity, Map<int, MassGroup> plan) {
+    final group = plan[activity.group];
+    final existPlan = group != null;
+    bool? lowerThanPrev;
+    if (existPlan) {
+      bool findMe = false;
+      for (final i in group.data) {
+        if (i.time == activity.time) {
+          findMe = true;
+          continue;
+        }
+        if (findMe) {
+          if (i.kgValue > activity.kgValue) {
+            lowerThanPrev = true;
+          } else {
+            lowerThanPrev = false;
+          }
+        }
+      }
+    }
+    return Dismissible(
+        key: ValueKey(activity.time),
+        confirmDismiss: (direction) async {
+          if (direction == DismissDirection.endToStart) {
+            if (await showSimpleMessage(context, content: "确定删除此记录吗?")) {
+              await ref.read(massDbProvider.notifier).delete(activity.time);
+              await deleteSample(
+                  QuantityType.bodyMass.identifier, activity.time);
+              return true;
+            }
+          } else {
+            showEditDialog(activity);
+            return false;
+          }
+          return false;
+        },
+        secondaryBackground: Container(
+            color: Colors.red,
+            child: const Align(
+                alignment: Alignment.centerRight,
+                child: Padding(
+                    padding: EdgeInsets.only(right: 20),
+                    child: Text("删除",
+                        style: TextStyle(color: Colors.white, fontSize: 15))))),
+        background: Container(
+            color: Colors.blue,
+            child: const Align(
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                    padding: EdgeInsets.only(left: 20),
+                    child: Text("编辑",
+                        style: TextStyle(color: Colors.white, fontSize: 15))))),
+        child: ListTile(
+            contentPadding: const EdgeInsets.only(right: 15, left: 13),
+            leading: Container(
+                width: 5,
+                height: double.infinity,
+                color: lowerThanPrev == null
+                    ? Colors.orange
+                    : lowerThanPrev
+                        ? Colors.green
+                        : Colors.red),
+            minLeadingWidth: 0,
+            visualDensity: VisualDensity.compact,
+            dense: true,
+            title: Text(activity.title.isEmpty ? "--" : activity.title,
+                maxLines: 1, overflow: TextOverflow.ellipsis),
+            onTap: () => showEditDialog(activity),
+            subtitle: buildRichDate(ts2DateTime(activity.time),
+                today: today,
+                weekDayOne: weekDayOne,
+                lastWeekDayOne: lastWeekDayOne,
+                fontSize: 12),
+            trailing: RichText(
+                text: TextSpan(
+                    text: activity.kgValue.toStringAsFixed(1),
+                    children: const [
+                      TextSpan(text: " kg", style: TextStyle(fontSize: 11))
+                    ],
+                    style: TextStyle(
+                        fontSize: 16,
+                        color: Theme.of(context).colorScheme.primary)))));
+  }
+
+  Widget buildTopBar() {
+    bool useBody = Platform.isIOS;
+    double paddingTop = 10;
+    return SizedBox(
+        height: useBody ? 133 : 183,
+        child: Stack(children: [
+          Positioned(
+              left: 0,
+              right: 0,
+              top: 0,
+              bottom: 0,
+              child: Image.network(
+                  fit: BoxFit.cover,
+                  alignment: const Alignment(0, 1),
+                  useBody
+                      ? "https://static2.mazhangjing.com/cyber/202408/f32be152_image.png"
+                      : "https://static2.mazhangjing.com/cyber/202408/23ce6021_image.png")),
+          Positioned(
+              top: paddingTop,
+              bottom: 0,
+              left: 15,
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Transform.translate(
+                        offset: const Offset(-10, 0),
+                        child: const BackButton()),
+                    const Spacer(),
+                    const Text("Body Mass",
+                        style: TextStyle(fontSize: 30, fontFamily: "Sank"))
+                  ])),
+          Padding(
+              padding: EdgeInsets.only(top: paddingTop),
+              child: Row(children: [
+                const Spacer(),
                 IconButton(
                     icon: const Icon(Icons.calendar_month, size: 19),
                     onPressed: _showCalDialog),
                 const SizedBox(width: 10)
-              ]),
-          SliverList.builder(
-              itemCount: data.length,
-              itemBuilder: (context, index) {
-                final activity = data[index];
-                return Dismissible(
-                    key: ValueKey(activity.time),
-                    confirmDismiss: (direction) async {
-                      if (direction == DismissDirection.endToStart) {
-                        if (await showSimpleMessage(context,
-                            content: "确定删除此记录吗?")) {
-                          await ref
-                              .read(massDbProvider.notifier)
-                              .delete(activity.time);
-                          await deleteSample(
-                              QuantityType.bodyMass.identifier, activity.time);
-                          return true;
-                        }
-                      } else {
-                        showEditDialog(activity);
-                        return false;
-                      }
-                      return false;
-                    },
-                    secondaryBackground: Container(
-                        color: Colors.red,
-                        child: const Align(
-                            alignment: Alignment.centerRight,
-                            child: Padding(
-                                padding: EdgeInsets.only(right: 20),
-                                child: Text("删除",
-                                    style: TextStyle(
-                                        color: Colors.white, fontSize: 15))))),
-                    background: Container(
-                        color: Colors.blue,
-                        child: const Align(
-                            alignment: Alignment.centerLeft,
-                            child: Padding(
-                                padding: EdgeInsets.only(left: 20),
-                                child: Text("编辑",
-                                    style: TextStyle(
-                                        color: Colors.white, fontSize: 15))))),
-                    child: ListTile(
-                        title: Text(
-                            activity.title.isEmpty ? "--" : activity.title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis),
-                        onTap: () => showEditDialog(activity),
-                        subtitle: buildRichDate(ts2DateTime(activity.time),
-                            today: today,
-                            weekDayOne: weekDayOne,
-                            lastWeekDayOne: lastWeekDayOne,
-                            fontSize: 12),
-                        trailing: RichText(
-                            text: TextSpan(
-                                text: activity.kgValue.toStringAsFixed(1),
-                                children: const [
-                                  TextSpan(
-                                      text: " kg",
-                                      style: TextStyle(fontSize: 11))
-                                ],
-                                style: TextStyle(
-                                    fontSize: 16,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .primary)))));
-              })
+              ]))
         ]));
   }
 
@@ -178,75 +274,12 @@ class _MassActivityViewState extends ConsumerState<MassActivityView> {
       ref.read(massDbProvider.notifier).edit(res);
     }
   }
-}
 
-class MassItemEditView extends ConsumerStatefulWidget {
-  final MassData data;
-  const MassItemEditView(this.data, {super.key});
-
-  @override
-  ConsumerState<ConsumerStatefulWidget> createState() =>
-      _MassItemEditViewState();
-}
-
-class _MassItemEditViewState extends ConsumerState<MassItemEditView> {
-  late final MassData data = widget.data;
-  final title = TextEditingController();
-  final description = TextEditingController();
-  @override
-  void initState() {
-    super.initState();
-    title.text = data.title;
-    description.text = data.description;
-  }
-
-  @override
-  void dispose() {
-    title.dispose();
-    description.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-        child: Padding(
-            padding: EdgeInsets.only(
-                top: 10,
-                left: 10,
-                right: 10,
-                bottom: Platform.isWindows || Platform.isMacOS ? 10 : 0),
-            child: Column(children: [
-              RichText(
-                  text: TextSpan(
-                      text: data.kgValue.toStringAsFixed(1),
-                      children: const [
-                        TextSpan(text: "  kg", style: TextStyle(fontSize: 30))
-                      ],
-                      style: TextStyle(
-                          fontSize: 70,
-                          fontFamily: "Sank",
-                          color: Theme.of(context).colorScheme.primary))),
-              TextField(
-                controller: title,
-                decoration: const InputDecoration(label: Text("标题")),
-              ),
-              TextField(
-                  onTapOutside: (e) {
-                    FocusManager.instance.primaryFocus?.unfocus();
-                  },
-                  controller: description,
-                  maxLines: null,
-                  decoration: const InputDecoration(label: Text("描述"))),
-              const Spacer(),
-              SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton(
-                      onPressed: () {
-                        Navigator.of(context).pop(data.copyWith(
-                            title: title.text, description: description.text));
-                      },
-                      child: const Text("确定")))
-            ])));
+  void showEditGroupDialog(MassGroup group) async {
+    final res = await showAdaptiveBottomSheet<MassGroup>(
+        context: context, child: MassGroupEditView(group));
+    if (res != null) {
+      ref.read(massPlanDbProvider.notifier).addOrEdit(res);
+    }
   }
 }
