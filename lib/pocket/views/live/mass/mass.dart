@@ -117,13 +117,16 @@ class _MassActivityViewState extends ConsumerState<MassActivityView> {
                     const SizedBox(width: 5),
                     buildGroupView(date),
                     const Spacer(),
-                    const Icon(Icons.insert_invitation, size: 16),
+                    Icon(Icons.insert_invitation,
+                        size: 16, color: noInfo ? Colors.transparent : null),
                     const SizedBox(width: 2),
                     Text(
                         (noInfo
-                            ? "--kg"
-                            : groupInfo!.goalKg.toStringAsFixed(0) + "kg"),
-                        style: const TextStyle(fontFamily: "consolas")),
+                            ? "--.-kg"
+                            : groupInfo!.goalKg.toStringAsFixed(1) + "kg"),
+                        style: TextStyle(
+                            fontFamily: "consolas",
+                            color: noInfo ? Colors.transparent : null)),
                     const SizedBox(width: 10),
                     InkWell(
                         onTap: action,
