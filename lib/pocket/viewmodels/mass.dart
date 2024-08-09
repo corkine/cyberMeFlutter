@@ -18,6 +18,8 @@ class MassGroup with _$MassGroup {
     @Default([]) List<MassData> data,
     @Default(0) double goalKg, //note
     @Default("") String note,
+    @Default("") String reward,
+    @Default(false) bool rewardChecked,
   }) = _MassGroup;
 
   factory MassGroup.fromJson(Map<String, dynamic> json) =>
@@ -29,7 +31,7 @@ class MassData with _$MassData {
   const factory MassData({
     @Default(0.0) double time, //seconds
     @Default("") String title,
-    @Default("") String description,
+    @Default("") String note,
     @Default(0) double kgValue,
     @Default(0) int group,
   }) = _MassData;
@@ -82,8 +84,7 @@ class MassDb extends _$MassDb {
   @override
   FutureOr<List<MassData>> build() async {
     final res = await _fetch();
-    final res2 = res.values.toList()..sort(sort);
-    return res2;
+    return res.values.toList()..sort(sort);
   }
 
   Future<String> delete(double time) async {
@@ -94,8 +95,11 @@ class MassDb extends _$MassDb {
   }
 
   Future<String> add(MassData data) async {
-    List<MassData> newData = [...(state.value ?? []), data]..sort(sort);
-    state = AsyncData(newData..sort(sort));
+    List<MassData> newData = [
+      ...(state.value ?? []),
+      data.copyWith(group: groupOfTime(data.time))
+    ]..sort(sort);
+    state = AsyncData(newData);
     await _set(Map.fromEntries(newData.map((e) => MapEntry(e.time, e))));
     return "success";
   }
@@ -133,14 +137,9 @@ class MassDb extends _$MassDb {
     final res = await settingFetch(
         tag,
         (d) => ({...d}..remove("update")).map((a, b) {
-              var bb = MassData.fromJson(b);
-              final start =
-                  DateTime.fromMillisecondsSinceEpoch((bb.time * 1000).toInt());
-              final startPure = DateTime(start.year, start.month, start.day);
-              final weekId =
-                  getFirstDayOfRange(startPure).millisecondsSinceEpoch;
-              bb = bb.copyWith(group: weekId);
-              return MapEntry(double.parse(a), bb);
+              final bb = MassData.fromJson(b);
+              return MapEntry(
+                  double.parse(a), bb.copyWith(group: groupOfTime(bb.time)));
             }));
     return res ?? {};
   }
@@ -173,6 +172,14 @@ Map<int, MassGroup> massWeekView(MassWeekViewRef ref) {
     }
   }
   return r;
+}
+
+int groupOfTime(double timeSeconds) {
+  final start =
+      DateTime.fromMillisecondsSinceEpoch((timeSeconds * 1000).toInt());
+  final startPure = DateTime(start.year, start.month, start.day);
+  final weekId = getFirstDayOfRange(startPure).millisecondsSinceEpoch;
+  return weekId;
 }
 
 DateTime getEndOfRange(DateTime start) {

@@ -59,11 +59,9 @@ class _BlocksViewState extends ConsumerState<BlocksView> {
                       fit: BoxFit.cover))),
           const SliverToBoxAdapter(child: SizedBox(height: 2)),
           SliverList(
-              delegate:
-                  SliverChildBuilderDelegate((BuildContext context, int index) {
-            final item = data[index];
-            return buildCard(context, item);
-          }, childCount: data.length)),
+              delegate: SliverChildBuilderDelegate(
+                  (context, index) => buildCard(context, data[index]),
+                  childCount: data.length)),
           const SliverToBoxAdapter(child: SizedBox(height: 3))
         ]));
   }

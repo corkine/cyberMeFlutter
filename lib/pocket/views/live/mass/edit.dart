@@ -17,18 +17,18 @@ class MassItemEditView extends ConsumerStatefulWidget {
 class _MassItemEditViewState extends ConsumerState<MassItemEditView> {
   late final MassData data = widget.data;
   final title = TextEditingController();
-  final description = TextEditingController();
+  final note = TextEditingController();
   @override
   void initState() {
     super.initState();
     title.text = data.title;
-    description.text = data.description;
+    note.text = data.note;
   }
 
   @override
   void dispose() {
     title.dispose();
-    description.dispose();
+    note.dispose();
     super.dispose();
   }
 
@@ -60,7 +60,7 @@ class _MassItemEditViewState extends ConsumerState<MassItemEditView> {
                   onTapOutside: (e) {
                     FocusManager.instance.primaryFocus?.unfocus();
                   },
-                  controller: description,
+                  controller: note,
                   maxLines: null,
                   decoration: const InputDecoration(label: Text("描述"))),
               const Spacer(),
@@ -68,8 +68,8 @@ class _MassItemEditViewState extends ConsumerState<MassItemEditView> {
                   width: double.infinity,
                   child: OutlinedButton(
                       onPressed: () {
-                        Navigator.of(context).pop(data.copyWith(
-                            title: title.text, description: description.text));
+                        Navigator.of(context).pop(
+                            data.copyWith(title: title.text, note: note.text));
                       },
                       child: const Text("确定")))
             ])));

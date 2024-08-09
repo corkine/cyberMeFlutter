@@ -8,7 +8,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:intl/intl.dart';
 
 class BodyMassView extends ConsumerStatefulWidget {
   final bool standalone;
@@ -128,28 +127,9 @@ class _BodyMassViewState extends ConsumerState<BodyMassView> {
   }
 
   handleWriteBodyMass(double value) async {
-    // if (Platform.isIOS || Platform.isAndroid) {
-    //   final health = HealthFactory(useHealthConnectIfAvailable: false);
-    //   var types = [HealthDataType.WEIGHT];
-    //   var permissions = [HealthDataAccess.READ_WRITE];
-    //   bool req =
-    //       await health.requestAuthorization(types, permissions: permissions);
-    //   if (req) {
-    //     final now = DateTime.now();
-    //     bool success = await health.writeHealthData(
-    //         value, HealthDataType.WEIGHT, now, now);
-    //     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-    //         content: Text("更新数据 ${value.toStringAsFixed(1)} 结果：$success。")));
-    //   } else {
-    //     ScaffoldMessenger.of(context).showSnackBar(
-    //         const SnackBar(content: Text("没有 HealthKit 写入权限，请检查后再试！")));
-    //   }
-    // }
     final time = DateTime.now();
     await ref.read(massDbProvider.notifier).add(MassData(
-        time: time.millisecondsSinceEpoch / 1000,
-        kgValue: value,
-        title: DateFormat("yyyy-MM-dd HH:mm").format(time) + " 添加"));
+        time: time.millisecondsSinceEpoch / 1000, kgValue: value, title: ""));
     if (!kIsWeb && Platform.isIOS) {
       final (ok, msg) = await addBodyMassRecord(time, value);
       await showSimpleMessage(context,

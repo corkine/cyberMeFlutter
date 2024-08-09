@@ -67,7 +67,6 @@ class _MassActivityViewState extends ConsumerState<MassActivityView> {
 
   @override
   Widget build(BuildContext context) {
-    final data = ref.watch(massDbProvider).value ?? [];
     return Scaffold(
         floatingActionButton: FloatingActionButton(
             onPressed: () => showAdaptiveBottomSheet(
@@ -78,10 +77,11 @@ class _MassActivityViewState extends ConsumerState<MassActivityView> {
             child: const Icon(Icons.add)),
         backgroundColor: Colors.white,
         body: SingleChildScrollView(
-            child: Column(children: [buildTopBar(), buildList(data)])));
+            child: Column(children: [buildTopBar(), buildList()])));
   }
 
-  Widget buildList(List<MassData> data) {
+  Widget buildList() {
+    final data = ref.watch(massDbProvider).value ?? [];
     final plan = ref.watch(massWeekViewProvider);
     return StickyGroupedListView(
         shrinkWrap: true,
