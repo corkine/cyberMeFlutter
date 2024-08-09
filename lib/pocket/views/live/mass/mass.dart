@@ -109,10 +109,14 @@ class _MassActivityViewState extends ConsumerState<MassActivityView> {
                         ? const Icon(Icons.report_outlined,
                             color: Color.fromARGB(255, 211, 211, 211))
                         : groupInfo!.satisfied
-                            ? const Icon(Icons.verified, color: Colors.green)
-                            : const Icon(Icons.report, color: Colors.red),
+                            ? const Icon(Icons.verified,
+                                color: Colors.green, size: 21)
+                            : const Icon(Icons.watch_later,
+                                color: Colors.orange, size: 21),
                     const SizedBox(width: 5),
-                    buildGroupView(date),
+                    Transform.translate(
+                        offset: const Offset(0, -1),
+                        child: buildGroupView(date)),
                     const Spacer(),
                     Icon(Icons.insert_invitation,
                         size: 16, color: noInfo ? Colors.transparent : null),
@@ -125,9 +129,13 @@ class _MassActivityViewState extends ConsumerState<MassActivityView> {
                             fontFamily: "consolas",
                             color: noInfo ? Colors.transparent : null)),
                     const SizedBox(width: 10),
-                    InkWell(
-                        onTap: action,
-                        child: const Icon(Icons.more_vert, size: 16))
+                    noInfo || (groupInfo?.reward.isEmpty ?? true)
+                        ? const Icon(Icons.more_vert, size: 16)
+                        : Icon(Icons.card_giftcard,
+                            size: 16,
+                            color: groupInfo!.rewardChecked
+                                ? Theme.of(context).colorScheme.primary
+                                : Theme.of(context).colorScheme.secondary)
                   ])));
         });
   }
