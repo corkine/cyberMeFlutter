@@ -11,7 +11,9 @@ class _ClothViewState extends State<ClothView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Cloth"),),
+      appBar: AppBar(
+        title: const Text("Cloth"),
+      ),
     );
   }
 }

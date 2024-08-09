@@ -1,10 +1,7 @@
 import 'dart:io';
 
-import 'package:cyberme_flutter/pocket/util.dart';
 import 'package:flutter/foundation.dart' as f;
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:health_kit_reporter/health_kit_reporter.dart';
 import 'package:health_kit_reporter/model/predicate.dart';
 import 'package:health_kit_reporter/model/type/quantity_type.dart';
