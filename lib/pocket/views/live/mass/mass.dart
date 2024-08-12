@@ -141,25 +141,9 @@ class _MassActivityViewState extends ConsumerState<MassActivityView> {
   }
 
   Dismissible buildCard(MassData activity, Map<int, MassGroup> plan) {
-    final group = plan[activity.group];
-    final existPlan = group != null;
-    bool? lowerThanPrev;
-    if (existPlan) {
-      bool findMe = false;
-      for (final i in group.data) {
-        if (i.time == activity.time) {
-          findMe = true;
-          continue;
-        }
-        if (findMe) {
-          if (i.kgValue > activity.kgValue) {
-            lowerThanPrev = true;
-          } else {
-            lowerThanPrev = false;
-          }
-        }
-      }
-    }
+    bool? lowerThanPrev = activity.next != null
+        ? activity.kgValue < activity.next!.kgValue
+        : null;
     return Dismissible(
         key: ValueKey(activity.time),
         confirmDismiss: (direction) async {

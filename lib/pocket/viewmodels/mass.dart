@@ -28,13 +28,14 @@ class MassGroup with _$MassGroup {
 
 @freezed
 class MassData with _$MassData {
-  const factory MassData({
-    @Default(0.0) double time, //seconds
-    @Default("") String title,
-    @Default("") String note,
-    @Default(0) double kgValue,
-    @Default(0) int group,
-  }) = _MassData;
+  const factory MassData(
+      {@Default(0.0) double time, //seconds
+      @Default("") String title,
+      @Default("") String note,
+      @Default(0) double kgValue,
+      @Default(0) int group,
+      MassData? prev,
+      MassData? next}) = _MassData;
 
   factory MassData.fromJson(Map<String, dynamic> json) =>
       _$MassDataFromJson(json);
@@ -81,15 +82,27 @@ class MassDb extends _$MassDb {
   static const tag = "health_mass";
   static int sort(MassData a, MassData b) => b.time > a.time ? 1 : -1;
   static int sortReverse(MassData a, MassData b) => a.time > b.time ? 1 : -1;
+
+  List<MassData> sortAndCompute(List<MassData> data) {
+    data.sort(sort);
+    for (var i = 0; i < data.length - 1; i++) {
+      final a = data[i];
+      final b = data[i + 1];
+      data[i] = a.copyWith(next: b);
+      data[i + 1] = b.copyWith(prev: a);
+    }
+    return data;
+  }
+
   @override
   FutureOr<List<MassData>> build() async {
     final res = await _fetch();
-    return res.values.toList()..sort(sort);
+    return sortAndCompute(res.values.toList());
   }
 
   Future<String> delete(double time) async {
     final newData = (state.value ?? []).where((d) => d.time != time).toList();
-    state = AsyncData(newData..sort(sort));
+    state = AsyncData(sortAndCompute(newData));
     await _set(Map.fromEntries(newData.map((e) => MapEntry(e.time, e))));
     return "success";
   }
@@ -98,8 +111,8 @@ class MassDb extends _$MassDb {
     List<MassData> newData = [
       ...(state.value ?? []),
       data.copyWith(group: groupOfTime(data.time))
-    ]..sort(sort);
-    state = AsyncData(newData);
+    ];
+    state = AsyncData(sortAndCompute(newData));
     await _set(Map.fromEntries(newData.map((e) => MapEntry(e.time, e))));
     return "success";
   }
@@ -107,7 +120,7 @@ class MassDb extends _$MassDb {
   Future<String> edit(MassData data) async {
     final newData =
         (state.value ?? []).map((d) => d.time == data.time ? data : d);
-    state = AsyncData(newData.toList()..sort(sort));
+    state = AsyncData(sortAndCompute(newData.toList()));
     await _set(Map.fromEntries(newData.map((e) => MapEntry(e.time, e))));
     return "success";
   }
@@ -125,10 +138,10 @@ class MassDb extends _$MassDb {
         ...(state.value ?? []),
         ...cloudMiss.map((i) => MassData(
             time: i.toDouble(), kgValue: cm[i]!.harmonized.value.toDouble()))
-      ]..sort(sort);
+      ];
       debugPrint("sync: $cloudMiss");
       await _set(Map.fromEntries(newData.map((e) => MapEntry(e.time, e))));
-      state = AsyncData(newData);
+      state = AsyncData(sortAndCompute(newData));
     }
     return state.value?.where((e) => healthMiss.contains(e.time)).toSet() ?? {};
   }
