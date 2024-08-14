@@ -15,7 +15,6 @@ dependencies:
   google_fonts: ^6.1.0
   http: ^1.0.0
   sprintf: ^6.0.0
-  shared_preferences: ^2.0.13
   url_launcher: ^6.1.0
   image_picker: ^0.8.5
   flutter_image_compress: ^1.1.0
@@ -49,6 +48,7 @@ dependencies:
   html: ^0.15.4
   json_pretty: ^1.0.4
   flutter_markdown: ^0.7.3
+  shared_preferences: ^2.3.1
 dev_dependencies:
   flutter_test:
     sdk: flutter
