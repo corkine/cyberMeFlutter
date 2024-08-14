@@ -25,6 +25,7 @@ class MassActivityView extends ConsumerStatefulWidget {
 class _MassActivityViewState extends ConsumerState<MassActivityView> {
   late DateTime weekDayOne;
   late DateTime lastWeekDayOne;
+  late int weekDayOneMs;
   late DateTime today;
 
   @override
@@ -33,6 +34,7 @@ class _MassActivityViewState extends ConsumerState<MassActivityView> {
     final now = DateTime.now();
     today = DateTime(now.year, now.month, now.day);
     weekDayOne = getThisWeekMonday();
+    weekDayOneMs = weekDayOne.millisecondsSinceEpoch;
     lastWeekDayOne = weekDayOne.subtract(const Duration(days: 7));
     doSync();
   }
@@ -92,6 +94,7 @@ class _MassActivityViewState extends ConsumerState<MassActivityView> {
         groupSeparatorBuilder: (element) {
           final groupInfo = plan[element.group];
           final noInfo = groupNoInfo(groupInfo);
+          final lastWeek = element.group >= weekDayOneMs;
           final date = DateTime.fromMillisecondsSinceEpoch(element.group);
           action() => showEditGroupDialog(groupInfo!.copyWith(
               goalKg: groupInfo.goalKg == 0
@@ -111,8 +114,11 @@ class _MassActivityViewState extends ConsumerState<MassActivityView> {
                         : groupInfo!.satisfied
                             ? const Icon(Icons.verified,
                                 color: Colors.green, size: 21)
-                            : const Icon(Icons.watch_later,
-                                color: Colors.orange, size: 21),
+                            : lastWeek
+                                ? const Icon(Icons.watch_later,
+                                    color: Colors.orange, size: 21)
+                                : const Icon(Icons.report_outlined,
+                                    color: Colors.red, size: 22),
                     const SizedBox(width: 5),
                     Transform.translate(
                         offset: const Offset(0, -1),
