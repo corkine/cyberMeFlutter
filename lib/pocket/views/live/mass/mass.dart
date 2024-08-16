@@ -6,7 +6,6 @@ import 'package:health_kit_reporter/health_kit_reporter.dart';
 import 'package:health_kit_reporter/model/predicate.dart';
 import 'package:health_kit_reporter/model/type/quantity_type.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:sticky_grouped_list/sticky_grouped_list.dart';
 import '../../../viewmodels/mass.dart';
 import '../../util.dart';
