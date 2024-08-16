@@ -82,42 +82,62 @@ class _TodoViewState extends ConsumerState<TodoView>
   }
 
   AppBar buildAppBar(TodoSetting s, List<Todo> todos, List<String> lists) {
-    final sortByList = Tooltip(
-        waitDuration: const Duration(milliseconds: 400),
-        message: "提醒事项按照列表排序",
-        child: IconButton(
-            onPressed: () => ref
-                .read(todoSettingsProvider.notifier)
-                .save((t) => t.copyWith(useListSort: !s.useListSort)),
-            icon:
-                Icon(s.useListSort ? Icons.reviews : Icons.reviews_outlined)));
-    final groupByMode = Tooltip(
-        waitDuration: const Duration(milliseconds: 400),
-        message: "按照周分组",
-        child: IconButton(
-            onPressed: () => ref
-                .read(todoSettingsProvider.notifier)
-                .save((t) => t.copyWith(useWeekGroup: !s.useWeekGroup)),
-            icon: Icon(
-                s.useWeekGroup ? Icons.view_week : Icons.view_week_outlined)));
-    final reportBtn = Tooltip(
-        waitDuration: const Duration(milliseconds: 400),
-        message: "GPT编周报",
-        child: IconButton(
-            onPressed: () => handleAddWeekReport(todos),
-            icon: const Icon(Icons.android)));
-    final hcmBtn = Tooltip(
-        waitDuration: const Duration(milliseconds: 400),
-        message: "HCM 自动登录",
-        child: IconButton(
-            onPressed: handleAutoHCMLogin,
-            icon: const Icon(Icons.login_sharp)));
-    final reload =
-        IconButton(onPressed: handleSyncTodo, icon: const Icon(Icons.sync));
-    final addTask = IconButton(
-        onPressed: () => handleAddNewTask(lists), icon: const Icon(Icons.add));
+    const sp = SizedBox(width: 10);
     return AppBar(
-        actions: [addTask, hcmBtn, reportBtn, reload, sortByList, groupByMode]);
+        titleSpacing: 0,
+        title: const Text("待办事项", style: TextStyle(fontSize: 19)),
+        centerTitle: false,
+        actions: [
+          IconButton(
+              onPressed: () => handleAddNewTask(lists),
+              icon: const Icon(Icons.add)),
+          PopupMenuButton<String>(
+              icon: const Icon(Icons.more_vert_rounded),
+              onSelected: (e) {},
+              itemBuilder: (c) {
+                return [
+                  PopupMenuItem(
+                      onTap: handleSyncTodo,
+                      child: const Row(
+                          children: [Icon(Icons.sync), sp, Text("同步数据")])),
+                  PopupMenuItem(
+                      onTap: handleAutoHCMLogin,
+                      child: const Row(children: [
+                        Icon(Icons.login_sharp),
+                        sp,
+                        Text("HCM 登录")
+                      ])),
+                  PopupMenuItem(
+                      onTap: () => handleAddWeekReport(todos),
+                      child: const Row(children: [
+                        Icon(Icons.android),
+                        sp,
+                        Text("GPT 编周报")
+                      ])),
+                  PopupMenuItem(
+                      onTap: () => ref.read(todoSettingsProvider.notifier).save(
+                          (t) => t.copyWith(useWeekGroup: !s.useWeekGroup)),
+                      child: Row(children: [
+                        Icon(s.useWeekGroup
+                            ? Icons.view_week
+                            : Icons.view_week_outlined),
+                        sp,
+                        const Text("按照周分组")
+                      ])),
+                  PopupMenuItem(
+                      onTap: () => ref
+                          .read(todoSettingsProvider.notifier)
+                          .save((t) => t.copyWith(useListSort: !s.useListSort)),
+                      child: Row(children: [
+                        Icon(s.useListSort
+                            ? Icons.reviews
+                            : Icons.reviews_outlined),
+                        sp,
+                        const Text("事项按列表排序")
+                      ]))
+                ];
+              })
+        ]);
   }
 
   final _dfGroup = DateFormat("yyyyMM");
@@ -472,9 +492,8 @@ class _TodoViewState extends ConsumerState<TodoView>
     }
 
     final node = FocusNode();
-    await showModalBottomSheet(
+    await showAdaptiveBottomSheet(
         context: context,
-        isScrollControlled: true,
         builder: (context) => SizedBox(
               height: Platform.isWindows || Platform.isMacOS ? 260 : 450,
               child: StatefulBuilder(builder: (context, setState) {
