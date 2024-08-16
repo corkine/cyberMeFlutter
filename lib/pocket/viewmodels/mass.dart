@@ -1,3 +1,5 @@
+// ignore_for_file: invalid_annotation_target
+
 import 'package:cyberme_flutter/pocket/util.dart';
 import 'package:cyberme_flutter/pocket/viewmodels/basic.dart';
 import 'package:flutter/foundation.dart';
@@ -33,8 +35,11 @@ class MassData with _$MassData {
       @Default("") String title,
       @Default("") String note,
       @Default(0) double kgValue,
-      @Default(0) int group,
-      MassData? prev,
+      @JsonKey(includeFromJson: false, includeToJson: false)
+      @Default(0)
+      int group,
+      @JsonKey(includeFromJson: false, includeToJson: false) MassData? prev,
+      @JsonKey(includeFromJson: false, includeToJson: false)
       MassData? next}) = _MassData;
 
   factory MassData.fromJson(Map<String, dynamic> json) =>
