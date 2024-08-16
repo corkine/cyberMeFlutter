@@ -13,6 +13,16 @@ showModal(BuildContext context, Widget widget) {
           initialChildSize: 0.8, builder: (context, sc) => widget));
 }
 
+Future<T?> showSheet<T>(
+    {required BuildContext context,
+    Widget? child,
+    Widget Function(BuildContext)? builder}) {
+  return showModalBottomSheet<T>(
+      isScrollControlled: false,
+      context: context,
+      builder: (context) => child ?? builder!(context));
+}
+
 Future<T?> showAdaptiveBottomSheet<T>(
     {required BuildContext context,
     Widget? child,

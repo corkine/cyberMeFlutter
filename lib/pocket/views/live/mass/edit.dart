@@ -41,7 +41,8 @@ class _MassItemEditViewState extends ConsumerState<MassItemEditView> {
                 left: 10,
                 right: 10,
                 bottom: Platform.isWindows || Platform.isMacOS ? 10 : 0),
-            child: Column(children: [
+            child: SingleChildScrollView(
+                child: Column(children: [
               RichText(
                   text: TextSpan(
                       text: data.kgValue.toStringAsFixed(1),
@@ -53,9 +54,8 @@ class _MassItemEditViewState extends ConsumerState<MassItemEditView> {
                           fontFamily: "Sank",
                           color: Theme.of(context).colorScheme.primary))),
               TextField(
-                controller: title,
-                decoration: const InputDecoration(label: Text("标题")),
-              ),
+                  controller: title,
+                  decoration: const InputDecoration(label: Text("标题"))),
               TextField(
                   onTapOutside: (e) {
                     FocusManager.instance.primaryFocus?.unfocus();
@@ -63,15 +63,15 @@ class _MassItemEditViewState extends ConsumerState<MassItemEditView> {
                   controller: note,
                   maxLines: null,
                   decoration: const InputDecoration(label: Text("描述"))),
-              const Spacer(),
+              const SizedBox(height: 20),
               SizedBox(
                   width: double.infinity,
-                  child: OutlinedButton(
+                  child: TextButton(
                       onPressed: () {
                         Navigator.of(context).pop(
                             data.copyWith(title: title.text, note: note.text));
                       },
                       child: const Text("确定")))
-            ])));
+            ]))));
   }
 }
