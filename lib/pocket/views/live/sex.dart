@@ -185,7 +185,7 @@ class _SexualActivityViewState extends ConsumerState<SexualActivityView> {
   }
 
   Future<void> _showEditDialog(BlueData data) async {
-    await showSheet<BlueData>(
+    await showAdaptiveBottomSheet<BlueData>(
         context: context, child: SexualActivityEditView(data, false));
   }
 
@@ -228,11 +228,10 @@ class _SexualActivityEditViewState
             top: 20,
             bottom: Platform.isWindows || Platform.isMacOS ? 10 : 0),
         child: SafeArea(
-            child: SingleChildScrollView(
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
+            child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
               Row(children: [
                 const Text("日期"),
                 TextButton(
@@ -278,10 +277,10 @@ class _SexualActivityEditViewState
                   },
                   keyboardType: TextInputType.multiline,
                   decoration: const InputDecoration(labelText: '备注')),
-              const SizedBox(height: 20),
+              const Spacer(),
               SizedBox(
                   width: double.infinity,
-                  child: TextButton(
+                  child: OutlinedButton(
                       onPressed: () async {
                         if (widget.isAdd) {
                           addSexualActivity(dateTime, useProtected);
@@ -298,7 +297,7 @@ class _SexualActivityEditViewState
                         Navigator.of(context).pop();
                       },
                       child: Text(widget.isAdd ? "添加" : "更新")))
-            ]))));
+            ])));
   }
 }
 

@@ -6,6 +6,7 @@ import 'package:health_kit_reporter/health_kit_reporter.dart';
 import 'package:health_kit_reporter/model/predicate.dart';
 import 'package:health_kit_reporter/model/type/quantity_type.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:sticky_grouped_list/sticky_grouped_list.dart';
 import '../../../viewmodels/mass.dart';
 import '../../util.dart';
@@ -266,16 +267,16 @@ class _MassActivityViewState extends ConsumerState<MassActivityView> {
   }
 
   void showEditDialog(MassData activity) async {
-    final res = await showSheet<MassData>(
-        context: context, child: MassItemEditView(activity));
+    final res = await showAdaptiveBottomSheet<MassData>(
+        divideHeight: 1.5, context: context, child: MassItemEditView(activity));
     if (res != null) {
       ref.read(massDbProvider.notifier).edit(res);
     }
   }
 
   void showEditGroupDialog(MassGroup group) async {
-    final res = await showSheet<MassGroup>(
-        context: context, child: MassGroupEditView(group));
+    final res = await showAdaptiveBottomSheet<MassGroup>(
+        divideHeight: 1.5, context: context, child: MassGroupEditView(group));
     // final res = await Navigator.of(context).push(
     //     MaterialPageRoute(builder: (context) => MassGroupEditView(group)));
     if (res != null) {

@@ -91,8 +91,7 @@ class _MassGroupEditViewState extends ConsumerState<MassGroupEditView> {
                 left: 10,
                 right: 10,
                 bottom: Platform.isWindows || Platform.isMacOS ? 10 : 0),
-            child: SingleChildScrollView(
-                child: Column(children: [
+            child: Column(children: [
               Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                 IconButton(onPressed: minus, icon: const Icon(Icons.remove)),
                 const SizedBox(width: 20),
@@ -142,10 +141,10 @@ class _MassGroupEditViewState extends ConsumerState<MassGroupEditView> {
                         controller: reward,
                         decoration: const InputDecoration(label: Text("奖励"))))
               ]),
-              const SizedBox(height: 20),
+              const Spacer(),
               SizedBox(
                   width: double.infinity,
-                  child: TextButton(
+                  child: OutlinedButton(
                       onPressed: () {
                         Navigator.of(context).pop(group.copyWith(
                             note: plan.text,
@@ -154,6 +153,6 @@ class _MassGroupEditViewState extends ConsumerState<MassGroupEditView> {
                       },
                       child: const Text("确定"))),
               const SizedBox(height: 5)
-            ]))));
+            ])));
   }
 }

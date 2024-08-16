@@ -41,8 +41,7 @@ class _MassItemEditViewState extends ConsumerState<MassItemEditView> {
                 left: 10,
                 right: 10,
                 bottom: Platform.isWindows || Platform.isMacOS ? 10 : 0),
-            child: SingleChildScrollView(
-                child: Column(children: [
+            child: Column(children: [
               RichText(
                   text: TextSpan(
                       text: data.kgValue.toStringAsFixed(1),
@@ -63,15 +62,15 @@ class _MassItemEditViewState extends ConsumerState<MassItemEditView> {
                   controller: note,
                   maxLines: null,
                   decoration: const InputDecoration(label: Text("描述"))),
-              const SizedBox(height: 20),
+              const Spacer(),
               SizedBox(
                   width: double.infinity,
-                  child: TextButton(
+                  child: OutlinedButton(
                       onPressed: () {
                         Navigator.of(context).pop(
                             data.copyWith(title: title.text, note: note.text));
                       },
                       child: const Text("确定")))
-            ]))));
+            ])));
   }
 }
