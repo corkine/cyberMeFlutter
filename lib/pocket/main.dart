@@ -37,7 +37,7 @@ import 'diary.dart' as diary;
 import 'views/info/ticket.dart';
 import 'views/info/express.dart';
 import 'views/think/todo.dart';
-import 'views/info/track.dart';
+import 'views/info/track/track.dart';
 
 final apps = {
   "dashboard": {

@@ -68,6 +68,12 @@ class _MassActivityViewState extends ConsumerState<MassActivityView> {
   ScrollController controller = ScrollController();
 
   @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
         floatingActionButton: FloatingActionButton(
@@ -113,7 +119,7 @@ class _MassActivityViewState extends ConsumerState<MassActivityView> {
                             color: Color.fromARGB(255, 211, 211, 211))
                         : groupInfo!.satisfied
                             ? const Icon(Icons.verified,
-                                color: Colors.green, size: 21)
+                                color: Colors.green, size: 20)
                             : lastWeek
                                 ? const Icon(Icons.watch_later,
                                     color: Colors.orange, size: 21)

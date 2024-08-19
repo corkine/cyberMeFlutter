@@ -183,7 +183,7 @@ Map<int, MassGroup> massWeekView(MassWeekViewRef ref) {
       final inIt =
           l.where((t) => t.time >= startInt && t.time <= endInt).toList();
       inIt.sort((a, b) => (b.time - a.time).toInt());
-      final ok = (inIt.lastOrNull?.kgValue ?? 1000) < findGroup.goalKg;
+      final ok = (inIt.firstOrNull?.kgValue ?? 1000) < findGroup.goalKg;
       r[i.group] = findGroup.copyWith(satisfied: ok, data: inIt);
     } else {
       r[i.group] = MassGroup(id: i.group, data: [i]);

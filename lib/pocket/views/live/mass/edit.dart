@@ -41,7 +41,21 @@ class _MassItemEditViewState extends ConsumerState<MassItemEditView> {
                 left: 10,
                 right: 10,
                 bottom: Platform.isWindows || Platform.isMacOS ? 10 : 0),
-            child: Column(children: [
+            child: SingleChildScrollView(
+                child: Column(children: [
+              Row(children: [
+                const SizedBox(width: 6),
+                const Icon(Icons.edit, size: 16),
+                const SizedBox(width: 3),
+                const Text("编辑记录"),
+                const Spacer(),
+                TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop(
+                          data.copyWith(title: title.text, note: note.text));
+                    },
+                    child: const Text("确定"))
+              ]),
               RichText(
                   text: TextSpan(
                       text: data.kgValue.toStringAsFixed(1),
@@ -62,15 +76,7 @@ class _MassItemEditViewState extends ConsumerState<MassItemEditView> {
                   controller: note,
                   maxLines: null,
                   decoration: const InputDecoration(label: Text("描述"))),
-              const Spacer(),
-              SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton(
-                      onPressed: () {
-                        Navigator.of(context).pop(
-                            data.copyWith(title: title.text, note: note.text));
-                      },
-                      child: const Text("确定")))
-            ])));
+              const SizedBox(height: 10)
+            ]))));
   }
 }

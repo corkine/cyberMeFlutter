@@ -91,68 +91,74 @@ class _MassGroupEditViewState extends ConsumerState<MassGroupEditView> {
                 left: 10,
                 right: 10,
                 bottom: Platform.isWindows || Platform.isMacOS ? 10 : 0),
-            child: Column(children: [
-              Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                IconButton(onPressed: minus, icon: const Icon(Icons.remove)),
-                const SizedBox(width: 20),
-                InkWell(
-                  onTap: edit,
-                  child: RichText(
-                      text: TextSpan(
-                          text: group.goalKg.toStringAsFixed(1),
-                          children: const [
-                            TextSpan(
-                                text: "  kg", style: TextStyle(fontSize: 30))
-                          ],
-                          style: TextStyle(
-                              fontSize: 70,
-                              fontFamily: "Sank",
-                              color: Theme.of(context).colorScheme.primary))),
-                ),
-                const SizedBox(width: 20),
-                IconButton(onPressed: add, icon: const Icon(Icons.add))
-              ]),
-              TextField(
-                  controller: plan,
-                  decoration: const InputDecoration(label: Text("计划"))),
-              TextField(
-                  onTapOutside: (e) {
-                    FocusManager.instance.primaryFocus?.unfocus();
-                  },
-                  controller: impl,
-                  maxLines: null,
-                  decoration: const InputDecoration(label: Text("实施"))),
-              Row(children: [
-                Transform.translate(
-                    offset: const Offset(0, 5),
-                    child: Checkbox(
-                        value: group.rewardChecked,
-                        onChanged: (v) {
-                          setState(() {
-                            group = group.copyWith(rewardChecked: v!);
-                          });
-                        })),
-                const SizedBox(width: 10),
-                Expanded(
-                    child: TextField(
-                        onTapOutside: (e) {
-                          FocusManager.instance.primaryFocus?.unfocus();
-                        },
-                        controller: reward,
-                        decoration: const InputDecoration(label: Text("奖励"))))
-              ]),
-              const Spacer(),
-              SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton(
+            child: SingleChildScrollView(
+              child: Column(children: [
+                Row(children: [
+                  const SizedBox(width: 6),
+                  const Icon(Icons.insert_invitation, size: 16),
+                  const SizedBox(width: 3),
+                  const Text("编辑计划"),
+                  const Spacer(),
+                  TextButton(
                       onPressed: () {
                         Navigator.of(context).pop(group.copyWith(
                             note: plan.text,
                             desc: impl.text,
                             reward: reward.text));
                       },
-                      child: const Text("确定"))),
-              const SizedBox(height: 5)
-            ])));
+                      child: const Text("确定"))
+                ]),
+                Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                  IconButton(onPressed: minus, icon: const Icon(Icons.remove)),
+                  const SizedBox(width: 20),
+                  InkWell(
+                    onTap: edit,
+                    child: RichText(
+                        text: TextSpan(
+                            text: group.goalKg.toStringAsFixed(1),
+                            children: const [
+                              TextSpan(
+                                  text: "  kg", style: TextStyle(fontSize: 30))
+                            ],
+                            style: TextStyle(
+                                fontSize: 70,
+                                fontFamily: "Sank",
+                                color: Theme.of(context).colorScheme.primary))),
+                  ),
+                  const SizedBox(width: 20),
+                  IconButton(onPressed: add, icon: const Icon(Icons.add))
+                ]),
+                TextField(
+                    controller: plan,
+                    decoration: const InputDecoration(label: Text("计划"))),
+                TextField(
+                    onTapOutside: (e) {
+                      FocusManager.instance.primaryFocus?.unfocus();
+                    },
+                    controller: impl,
+                    maxLines: null,
+                    decoration: const InputDecoration(label: Text("实施"))),
+                Row(children: [
+                  Transform.translate(
+                      offset: const Offset(0, 5),
+                      child: Checkbox(
+                          value: group.rewardChecked,
+                          onChanged: (v) {
+                            setState(() {
+                              group = group.copyWith(rewardChecked: v!);
+                            });
+                          })),
+                  const SizedBox(width: 10),
+                  Expanded(
+                      child: TextField(
+                          onTapOutside: (e) {
+                            FocusManager.instance.primaryFocus?.unfocus();
+                          },
+                          controller: reward,
+                          decoration: const InputDecoration(label: Text("奖励"))))
+                ]),
+                const SizedBox(height: 5)
+              ]),
+            )));
   }
 }
