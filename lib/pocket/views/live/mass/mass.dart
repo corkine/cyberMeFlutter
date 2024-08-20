@@ -273,7 +273,7 @@ class _MassActivityViewState extends ConsumerState<MassActivityView> {
 
   void showEditDialog(MassData activity) async {
     final res = await showAdaptiveBottomSheet<MassData>(
-        divideHeight: 1.5, context: context, child: MassItemEditView(activity));
+        height: 600, context: context, child: MassItemEditView(activity));
     if (res != null) {
       ref.read(massDbProvider.notifier).edit(res);
     }
@@ -281,7 +281,7 @@ class _MassActivityViewState extends ConsumerState<MassActivityView> {
 
   void showEditGroupDialog(MassGroup group) async {
     final res = await showAdaptiveBottomSheet<MassGroup>(
-        divideHeight: 1.5, context: context, child: MassGroupEditView(group));
+        height: 600, context: context, child: MassGroupEditView(group));
     // final res = await Navigator.of(context).push(
     //     MaterialPageRoute(builder: (context) => MassGroupEditView(group)));
     if (res != null) {

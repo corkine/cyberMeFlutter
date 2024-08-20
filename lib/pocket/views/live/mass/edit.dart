@@ -34,8 +34,9 @@ class _MassItemEditViewState extends ConsumerState<MassItemEditView> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-        child: Padding(
+    return Scaffold(
+        backgroundColor: Colors.transparent,
+        body: Padding(
             padding: EdgeInsets.only(
                 top: 10,
                 left: 10,
@@ -75,8 +76,7 @@ class _MassItemEditViewState extends ConsumerState<MassItemEditView> {
                   },
                   controller: note,
                   maxLines: null,
-                  decoration: const InputDecoration(label: Text("描述"))),
-              const SizedBox(height: 10)
+                  decoration: const InputDecoration(label: Text("描述")))
             ]))));
   }
 }

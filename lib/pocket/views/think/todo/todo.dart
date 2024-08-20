@@ -11,7 +11,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:sticky_grouped_list/sticky_grouped_list.dart';
 
-import '../../util.dart';
+import '../../../util.dart';
+import 'gpt.dart';
 
 class TodoView extends ConsumerStatefulWidget {
   const TodoView({super.key});
@@ -494,86 +495,83 @@ class _TodoViewState extends ConsumerState<TodoView>
     final node = FocusNode();
     await showAdaptiveBottomSheet(
         context: context,
-        builder: (context) => SizedBox(
-              height: Platform.isWindows || Platform.isMacOS ? 260 : 450,
-              child: StatefulBuilder(builder: (context, setState) {
-                return Scaffold(
-                    backgroundColor: Colors.transparent,
-                    body: Padding(
-                        padding: const EdgeInsets.only(
-                            top: 20, bottom: 10, left: 15, right: 15),
-                        child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              TextField(
-                                  onSubmitted: (_) => handleAdd(),
-                                  autofocus: true,
-                                  focusNode: node,
-                                  decoration: const InputDecoration(
-                                      border: UnderlineInputBorder(),
-                                      hintText: "标题"),
-                                  controller: title),
-                              const SizedBox(height: 10),
-                              Wrap(runSpacing: 5, spacing: 5, children: [
-                                for (var list in lists)
-                                  RawChip(
-                                      label: Text(list),
-                                      selected: list == selectList,
-                                      onPressed: () {
-                                        if (list.contains("工作")) {
-                                          markFinished = true;
-                                        } else {
-                                          markFinished = false;
-                                        }
-                                        setState(() => selectList = list);
-                                      })
-                              ]),
-                              const SizedBox(height: 5),
-                              Row(children: [
-                                InkWell(
-                                    onTap: () async {
-                                      final selectedDate = await showDatePicker(
-                                          context: context,
-                                          firstDate: date
-                                              .add(const Duration(days: -30)),
-                                          lastDate: date
-                                              .add(const Duration(days: 300)));
-                                      if (selectedDate != null) {
-                                        setState(() => date = selectedDate);
-                                      }
-                                    },
-                                    child: Text(
-                                        "截止于 ${DateFormat("yyyy-MM-dd").format(date)}")),
-                                const SizedBox(width: 5),
-                                TextButton(
+        builder: (context) => StatefulBuilder(builder: (context, setState) {
+              return Scaffold(
+                  backgroundColor: Colors.transparent,
+                  body: Padding(
+                      padding: const EdgeInsets.only(
+                          top: 20, bottom: 10, left: 15, right: 15),
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            TextField(
+                                onSubmitted: (_) => handleAdd(),
+                                autofocus: true,
+                                focusNode: node,
+                                decoration: const InputDecoration(
+                                    border: UnderlineInputBorder(),
+                                    hintText: "标题"),
+                                controller: title),
+                            const SizedBox(height: 10),
+                            Wrap(runSpacing: 5, spacing: 5, children: [
+                              for (var list in lists)
+                                RawChip(
+                                    label: Text(list),
+                                    selected: list == selectList,
                                     onPressed: () {
-                                      setState(() => date = DateTime.now()
-                                          .add(const Duration(days: -1)));
-                                      FocusScope.of(context).requestFocus(node);
-                                    },
-                                    child: const Text("昨天"))
-                              ]),
-                              const SizedBox(height: 3),
-                              Transform.translate(
-                                  offset: const Offset(-8, 0),
-                                  child: Row(children: [
-                                    Checkbox(
-                                        value: markFinished,
-                                        onChanged: (v) =>
-                                            setState(() => markFinished = v!)),
-                                    const Text("标记为已完成")
-                                  ])),
-                              const Spacer(),
-                              SizedBox(
-                                  width: double.infinity,
-                                  child: OutlinedButton(
-                                      onPressed: handleAdd,
-                                      child: const Text("确定")))
-                            ])));
-              }),
-            ));
+                                      if (list.contains("工作")) {
+                                        markFinished = true;
+                                      } else {
+                                        markFinished = false;
+                                      }
+                                      setState(() => selectList = list);
+                                    })
+                            ]),
+                            const SizedBox(height: 5),
+                            Row(children: [
+                              InkWell(
+                                  onTap: () async {
+                                    final selectedDate = await showDatePicker(
+                                        context: context,
+                                        firstDate:
+                                            date.add(const Duration(days: -30)),
+                                        lastDate: date
+                                            .add(const Duration(days: 300)));
+                                    if (selectedDate != null) {
+                                      setState(() => date = selectedDate);
+                                    }
+                                  },
+                                  child: Text(
+                                      "截止于 ${DateFormat("yyyy-MM-dd").format(date)}")),
+                              const SizedBox(width: 5),
+                              TextButton(
+                                  onPressed: () {
+                                    setState(() => date = DateTime.now()
+                                        .add(const Duration(days: -1)));
+                                    FocusScope.of(context).requestFocus(node);
+                                  },
+                                  child: const Text("昨天"))
+                            ]),
+                            const SizedBox(height: 3),
+                            Transform.translate(
+                                offset: const Offset(-8, 0),
+                                child: Row(children: [
+                                  Checkbox(
+                                      value: markFinished,
+                                      onChanged: (v) =>
+                                          setState(() => markFinished = v!)),
+                                  const Text("标记为已完成")
+                                ])),
+                            const Spacer(),
+                            SizedBox(
+                                width: double.infinity,
+                                child: OutlinedButton(
+                                    onPressed: handleAdd,
+                                    child: const Text("确定")))
+                          ])));
+            }));
   }
 
   void handleAutoHCMLogin() async {
@@ -638,61 +636,4 @@ class _TodoViewState extends ConsumerState<TodoView>
           return GPTWeekPlanView(res);
         });
   }
-}
-
-class GPTWeekPlanView extends ConsumerStatefulWidget {
-  final String answer;
-  const GPTWeekPlanView(this.answer, {super.key});
-
-  @override
-  ConsumerState<ConsumerStatefulWidget> createState() =>
-      _GPTWeekPlanViewState();
-}
-
-class _GPTWeekPlanViewState extends ConsumerState<GPTWeekPlanView> {
-  final controller = TextEditingController();
-  @override
-  void initState() {
-    super.initState();
-    controller.text = widget.answer;
-  }
-
-  @override
-  void dispose() {
-    controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-        child: Padding(
-            padding: const EdgeInsets.only(left: 10, right: 10, top: 20),
-            child: Column(children: [
-              TextField(maxLines: 9, controller: controller),
-              ButtonBar(alignment: MainAxisAlignment.center, children: [
-                TextButton(
-                    onPressed: () {
-                      controller.text = controller.text.replaceAll("*", "");
-                    },
-                    child: const Text("移星号")),
-                TextButton(
-                    onPressed: () {
-                      controller.text = controller.text.replaceAll("*", "-");
-                    },
-                    child: const Text("星改杠")),
-                TextButton(
-                    onPressed: () {
-                      FlutterClipboard.copy(controller.text);
-                      setState(() => copyText = "已复制");
-                      Future.delayed(const Duration(seconds: 1))
-                          .then((value) => setState(() => copyText = "复制"));
-                    },
-                    child: Text(copyText)),
-                TextButton(onPressed: () {}, child: const Text("确定"))
-              ])
-            ])));
-  }
-
-  String copyText = "复制";
 }

@@ -4,7 +4,6 @@ import 'package:clipboard/clipboard.dart';
 import 'package:cyberme_flutter/pocket/viewmodels/track.dart';
 import 'package:cyberme_flutter/main.dart';
 import 'package:cyberme_flutter/pocket/views/util.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart';
@@ -12,7 +11,6 @@ import 'package:intl/intl.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
-import '../../../viewmodels/statistics.dart';
 import '../../../config.dart';
 import '../../../models/track.dart';
 
@@ -338,7 +336,6 @@ class _TrackDetailViewState extends ConsumerState<TrackDetailView> {
   }
 }
 
-
 class TrackDetailFilterView extends ConsumerStatefulWidget {
   final List<Logs> logs;
   const TrackDetailFilterView(this.logs, {super.key});
@@ -356,44 +353,46 @@ class _TrackDetailFilterViewState extends ConsumerState<TrackDetailFilterView> {
     final savedTrackCount = ref.read(trackMarksProvider).value?.length ?? -1;
     logs.remove("");
     return Theme(
-      data: appThemeData,
-      child: Scaffold(
-          body: Padding(
-              padding: const EdgeInsets.only(
-                  left: 10, right: 10, top: 10, bottom: 10),
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text("显示标签", style: TextStyle(fontSize: 18)),
-                    const SizedBox(height: 10),
-                    Expanded(
-                        child: logs.isEmpty
-                            ? const Text("当前日志无 IP 地址标签")
-                            : Wrap(
-                                runSpacing: 5,
-                                spacing: 5,
-                                children: logs.entries
-                                    .map((e) => RawChip(
-                                          label: Text(e.key),
-                                          selected: !e.value,
-                                          onSelected: (v) {
-                                            ref
-                                                .read(
-                                                    trackMarksProvider.notifier)
-                                                .set(e.key, !v);
-                                          },
-                                        ))
-                                    .toList(growable: false))),
-                    const Spacer(),
-                    Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                      Text("已存储 $savedTrackCount 个键"),
-                      const SizedBox(width: 20),
-                      TextButton(
-                          onPressed: () =>
-                              ref.read(trackMarksProvider.notifier).clean(true),
-                          child: const Text("清空"))
-                    ])
-                  ])))
-    );
+        data: appThemeData,
+        child: Scaffold(
+            body: Padding(
+                padding: const EdgeInsets.only(
+                    left: 10, right: 10, top: 10, bottom: 10),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text("显示标签", style: TextStyle(fontSize: 18)),
+                      const SizedBox(height: 10),
+                      Expanded(
+                          child: logs.isEmpty
+                              ? const Text("当前日志无 IP 地址标签")
+                              : Wrap(
+                                  runSpacing: 5,
+                                  spacing: 5,
+                                  children: logs.entries
+                                      .map((e) => RawChip(
+                                            label: Text(e.key),
+                                            selected: !e.value,
+                                            onSelected: (v) {
+                                              ref
+                                                  .read(trackMarksProvider
+                                                      .notifier)
+                                                  .set(e.key, !v);
+                                            },
+                                          ))
+                                      .toList(growable: false))),
+                      const Spacer(),
+                      Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text("已存储 $savedTrackCount 个键"),
+                            const SizedBox(width: 20),
+                            TextButton(
+                                onPressed: () => ref
+                                    .read(trackMarksProvider.notifier)
+                                    .clean(true),
+                                child: const Text("清空"))
+                          ])
+                    ]))));
   }
 }

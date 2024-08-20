@@ -36,7 +36,7 @@ import '../learn/shortcut.dart' as short;
 import 'diary.dart' as diary;
 import 'views/info/ticket.dart';
 import 'views/info/express.dart';
-import 'views/think/todo.dart';
+import 'views/think/todo/todo.dart';
 import 'views/info/track/track.dart';
 
 final apps = {

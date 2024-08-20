@@ -186,7 +186,9 @@ class _SexualActivityViewState extends ConsumerState<SexualActivityView> {
 
   Future<void> _showEditDialog(BlueData data) async {
     await showAdaptiveBottomSheet<BlueData>(
-        context: context, child: SexualActivityEditView(data, false));
+        height: 500,
+        context: context,
+        child: SexualActivityEditView(data, false));
   }
 
   void _showAddDialog() async {
@@ -194,6 +196,7 @@ class _SexualActivityViewState extends ConsumerState<SexualActivityView> {
     var dateTime =
         DateTime(yesterday.year, yesterday.month, yesterday.day, 23, 0);
     await showAdaptiveBottomSheet<BlueData>(
+        height: 500,
         context: context,
         child: SexualActivityEditView(
             BlueData(time: dateTime.millisecondsSinceEpoch / 1000, note: ""),
@@ -221,83 +224,103 @@ class _SexualActivityEditViewState
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-        padding: EdgeInsets.only(
-            left: 20,
-            right: 20,
-            top: 20,
-            bottom: Platform.isWindows || Platform.isMacOS ? 10 : 0),
-        child: SafeArea(
-            child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-              Row(children: [
-                const Text("日期"),
+    return Scaffold(
+        backgroundColor: Colors.transparent,
+        body: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(left: 15, right: 15, top: 10),
+              child: Row(children: [
+                const SizedBox(width: 6),
+                const Icon(Icons.insert_invitation, size: 16),
+                const SizedBox(width: 3),
+                Text(widget.isAdd ? "添加" : "编辑"),
+                const Spacer(),
                 TextButton(
-                    child:
-                        Text(DateFormat('yyyy-MM-dd HH:mm').format(dateTime)),
                     onPressed: () async {
-                      final DateTime? picked = await showDatePicker(
-                        context: context,
-                        initialDate: dateTime,
-                        firstDate: DateTime(2000),
-                        lastDate: DateTime.now(),
-                      );
-                      if (picked != null) {
-                        final TimeOfDay? timePicked = await showTimePicker(
-                            context: context,
-                            initialTime: TimeOfDay.fromDateTime(dateTime));
-                        if (timePicked != null) {
-                          setState(() {
-                            dateTime = DateTime(picked.year, picked.month,
-                                picked.day, timePicked.hour, timePicked.minute);
-                          });
-                        }
+                      if (widget.isAdd) {
+                        addSexualActivity(dateTime, useProtected);
+                        await ref.read(bluesDbProvider.notifier).add(
+                            data.copyWith(
+                                note: noteController.text,
+                                protected: useProtected));
+                      } else {
+                        await ref.read(bluesDbProvider.notifier).edit(
+                            data.copyWith(
+                                note: noteController.text,
+                                protected: useProtected));
                       }
-                    })
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text("确定"))
               ]),
-              Row(children: [
-                const Text("保护"),
-                const SizedBox(width: 5),
-                Checkbox(
-                    tristate: true,
-                    value: useProtected,
-                    onChanged: (value) {
-                      setState(() {
-                        useProtected = value;
-                      });
-                    })
-              ]),
-              TextField(
-                  controller: noteController,
-                  maxLines: null,
-                  onTapOutside: (e) {
-                    FocusManager.instance.primaryFocus?.unfocus();
-                  },
-                  keyboardType: TextInputType.multiline,
-                  decoration: const InputDecoration(labelText: '备注')),
-              const Spacer(),
-              SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton(
-                      onPressed: () async {
-                        if (widget.isAdd) {
-                          addSexualActivity(dateTime, useProtected);
-                          await ref.read(bluesDbProvider.notifier).add(
-                              data.copyWith(
-                                  note: noteController.text,
-                                  protected: useProtected));
-                        } else {
-                          await ref.read(bluesDbProvider.notifier).edit(
-                              data.copyWith(
-                                  note: noteController.text,
-                                  protected: useProtected));
-                        }
-                        Navigator.of(context).pop();
-                      },
-                      child: Text(widget.isAdd ? "添加" : "更新")))
-            ])));
+            ),
+            Expanded(
+              child: Padding(
+                  padding: EdgeInsets.only(
+                      left: 20,
+                      right: 20,
+                      bottom: Platform.isWindows || Platform.isMacOS ? 10 : 20),
+                  child: SingleChildScrollView(
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                        Row(children: [
+                          const Text("日期"),
+                          TextButton(
+                              child: Text(DateFormat('yyyy-MM-dd HH:mm')
+                                  .format(dateTime)),
+                              onPressed: () async {
+                                final DateTime? picked = await showDatePicker(
+                                  context: context,
+                                  initialDate: dateTime,
+                                  firstDate: DateTime(2000),
+                                  lastDate: DateTime.now(),
+                                );
+                                if (picked != null) {
+                                  final TimeOfDay? timePicked =
+                                      await showTimePicker(
+                                          context: context,
+                                          initialTime:
+                                              TimeOfDay.fromDateTime(dateTime));
+                                  if (timePicked != null) {
+                                    setState(() {
+                                      dateTime = DateTime(
+                                          picked.year,
+                                          picked.month,
+                                          picked.day,
+                                          timePicked.hour,
+                                          timePicked.minute);
+                                    });
+                                  }
+                                }
+                              })
+                        ]),
+                        Row(children: [
+                          const Text("保护"),
+                          const SizedBox(width: 5),
+                          Checkbox(
+                              tristate: true,
+                              value: useProtected,
+                              onChanged: (value) {
+                                setState(() {
+                                  useProtected = value;
+                                });
+                              })
+                        ]),
+                        TextField(
+                            controller: noteController,
+                            maxLines: null,
+                            onTapOutside: (e) {
+                              FocusManager.instance.primaryFocus?.unfocus();
+                            },
+                            keyboardType: TextInputType.multiline,
+                            decoration: const InputDecoration(labelText: '备注'))
+                      ]))),
+            ),
+          ],
+        ));
   }
 }
 
