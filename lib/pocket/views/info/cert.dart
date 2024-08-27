@@ -211,7 +211,7 @@ class _CertConfigViewState extends ConsumerState<CertConfigView> {
                                       publicKey: publicKeyController.text,
                                       privateKey: privateKeyController.text,
                                       deploys: existingCert?.deploys ?? [],
-                                      id: const Uuid().v4(),
+                                      id: existingCert?.id ?? const Uuid().v4(),
                                       updateAt: DateTime.now()
                                               .millisecondsSinceEpoch ~/
                                           1000,
