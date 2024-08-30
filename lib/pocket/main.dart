@@ -18,6 +18,7 @@ import 'package:cyberme_flutter/pocket/views/server/service.dart';
 import 'package:cyberme_flutter/pocket/views/news/story.dart';
 import 'package:cyberme_flutter/pocket/views/think/block.dart';
 import 'views/info/blog.dart';
+import 'views/info/psych.dart';
 import 'views/live/blue.dart';
 import 'views/think/gpt.dart';
 import 'views/live/medic.dart';
@@ -248,6 +249,13 @@ final apps = {
     "addToMenu": true,
     "addToContext": true,
     "icon": Icons.bookmark
+  },
+  "psych": {
+    "name": "心理测试",
+    "view": (c) => const PsychRecentView(),
+    "addToMenu": true,
+    "addToContext": false,
+    "icon": Icons.psychology
   }
 };
 
