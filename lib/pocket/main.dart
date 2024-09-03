@@ -20,6 +20,7 @@ import 'package:cyberme_flutter/pocket/views/think/block.dart';
 import 'views/info/blog.dart';
 import 'views/info/psych.dart';
 import 'views/live/blue.dart';
+import 'views/live/car.dart';
 import 'views/think/gpt.dart';
 import 'views/live/medic.dart';
 import 'views/think/sticky.dart';
@@ -256,6 +257,13 @@ final apps = {
     "addToMenu": true,
     "addToContext": false,
     "icon": Icons.psychology
+  },
+  "car": {
+    "name": "Car",
+    "view": (c) => const CarView(),
+    "addToMenu": true,
+    "addToContext": false,
+    "icon": Icons.car_rental
   }
 };
 
