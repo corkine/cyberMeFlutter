@@ -1,4 +1,5 @@
-import 'package:cyberme_flutter/learn/flame/brickbreaker.dart';
+import 'dart:io';
+
 import 'package:cyberme_flutter/main.dart';
 import 'package:cyberme_flutter/pocket/viewmodels/car.dart';
 import 'package:cyberme_flutter/pocket/views/util.dart';
@@ -184,7 +185,8 @@ class _CarViewState extends ConsumerState<CarView> {
           top: -30,
           right: -160,
           child: Opacity(opacity: 0.8, child: Image.asset("images/car.png"))),
-      const Positioned(left: 10, top: 10, child: BackButton())
+      Positioned(
+          left: 10, top: Platform.isIOS ? 20 : 10, child: const BackButton())
     ]);
   }
 }
