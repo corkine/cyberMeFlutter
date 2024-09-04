@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:cyberme_flutter/main.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 showModal(BuildContext context, Widget widget) {
@@ -84,6 +85,7 @@ Future<bool> showSimpleMessage(BuildContext context,
     required String content,
     bool withPopFirst = false,
     bool useSnackBar = false,
+    bool showCopy = false,
     int duration = 500}) async {
   if (withPopFirst) {
     Navigator.of(context).pop();
@@ -101,6 +103,11 @@ Future<bool> showSimpleMessage(BuildContext context,
                     title: Text(title ?? "提示"),
                     content: SingleChildScrollView(child: Text(content)),
                     actions: [
+                      if (showCopy)
+                        TextButton(
+                            child: const Text("拷贝"),
+                            onPressed: () => Clipboard.setData(
+                                ClipboardData(text: content))),
                       TextButton(
                           onPressed: () => Navigator.of(context).pop(false),
                           child: const Text("取消")),

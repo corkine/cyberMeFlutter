@@ -18,6 +18,7 @@ import 'package:cyberme_flutter/pocket/views/server/service.dart';
 import 'package:cyberme_flutter/pocket/views/news/story.dart';
 import 'package:cyberme_flutter/pocket/views/think/block.dart';
 import 'views/info/blog.dart';
+import 'views/info/disaptch.dart';
 import 'views/info/psych.dart';
 import 'views/live/blue.dart';
 import 'views/live/car.dart';
@@ -263,7 +264,14 @@ final apps = {
     "view": (c) => const CarView(),
     "addToMenu": true,
     "addToContext": false,
-    "icon": Icons.car_rental
+    "icon": Icons.directions_car
+  },
+  "dispatch": {
+    "name": "Dispatch",
+    "view": (c) => const DispatchView(),
+    "addToMenu": true,
+    "addToContext": false,
+    "icon": Icons.send
   }
 };
 
