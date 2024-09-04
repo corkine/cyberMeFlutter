@@ -190,7 +190,7 @@ class _CarViewState extends ConsumerState<CarView> {
               top: -40,
               child:
                   Opacity(opacity: 0.1, child: Image.asset("images/vwa.png")))
-          .animate()
+          .animate(delay: 500.milliseconds)
           .fadeIn(),
       Positioned(
               left: -40,
@@ -198,16 +198,16 @@ class _CarViewState extends ConsumerState<CarView> {
               right: -160,
               child:
                   Opacity(opacity: 0.8, child: Image.asset("images/car.png")))
-          .animate()
+          .animate(delay: 500.milliseconds)
           .moveY(
               begin: -5,
               end: 0,
-              duration: 300.milliseconds,
+              duration: 200.milliseconds,
               curve: Curves.easeIn)
           .moveX(
               begin: 10,
               end: 0,
-              duration: 300.milliseconds,
+              duration: 200.milliseconds,
               curve: Curves.easeIn),
       Positioned(
           left: 10, top: Platform.isIOS ? 20 : 10, child: const BackButton())
