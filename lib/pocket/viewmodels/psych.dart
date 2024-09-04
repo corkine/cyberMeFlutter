@@ -15,6 +15,7 @@ class PsychItem with _$PsychItem {
     @Default({}) Map<String, dynamic> info,
     @JsonKey(name: "create_at") @Default("") String createAt,
     @Default("") String url,
+    @Default("") String note,
   }) = _PsychItem;
 
   factory PsychItem.fromJson(Map<String, dynamic> json) =>
@@ -30,9 +31,51 @@ class PsychItems with _$PsychItems {
   }) = _PsychItems;
 }
 
+@freezed
+class PsychNotes with _$PsychNotes {
+  factory PsychNotes({@Default({}) Map<String, String> notes}) = _PsychNotes;
+
+  factory PsychNotes.fromJson(Map<String, dynamic> json) =>
+      _$PsychNotesFromJson(json);
+}
+
+@riverpod
+class PsychNoteDb extends _$PsychNoteDb {
+  final tag = "psych-notes";
+  @override
+  FutureOr<PsychNotes> build() async {
+    final a = await settingFetch(tag, (item) => PsychNotes.fromJson(item));
+    return a ?? PsychNotes();
+  }
+
+  Future<String> addNote(int id, String note) async {
+    final res = {...((state.value ?? PsychNotes()).notes), id.toString(): note};
+    await settingUpload(tag, PsychNotes(notes: res).toJson());
+    state = AsyncData(state.value!.copyWith(notes: res));
+    return "OK";
+  }
+
+  Future<String> delNote(int id) async {
+    final res = {...(state.value?.notes ?? {})};
+    res.remove(id.toString());
+    await settingUpload(tag, PsychNotes(notes: res).toJson());
+    state = AsyncData(state.value!.copyWith(notes: res));
+    return "OK";
+  }
+}
+
+@riverpod
+List<PsychItem> fetchPsychItems(FetchPsychItemsRef ref) {
+  final notes = ref.watch(psychNoteDbProvider).value?.notes ?? {};
+  final items = ref.watch(psychDbProvider).value?.items ?? [];
+  return items
+      .map((item) => item.copyWith(note: notes[item.id.toString()] ?? ""))
+      .toList();
+}
+
 @riverpod
 class PsychDb extends _$PsychDb {
-  final step = 30;
+  final step = 200;
   @override
   FutureOr<PsychItems> build() async {
     return PsychItems(items: await fetch(step, 0), take: step, drop: 0);
@@ -44,6 +87,18 @@ class PsychDb extends _$PsychDb {
                 (l) => l.map((e) => PsychItem.fromJson(e)).toList()))
             .$1 ??
         [];
+  }
+
+  Future<PsychItem> fetchOne(int id) async {
+    final res =
+        await requestFrom("/cyber/service/psych-cases/$id", PsychItem.fromJson);
+    if (res.$1 != null) {
+      state = AsyncData(state.value!.copyWith(
+          items: state.value!.items
+              .map((item) => item.id == id ? res.$1! : item)
+              .toList()));
+    }
+    return res.$1 ?? PsychItem();
   }
 
   Future<String> next() async {
