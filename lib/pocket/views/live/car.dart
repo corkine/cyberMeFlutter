@@ -54,7 +54,10 @@ class _CarViewState extends ConsumerState<CarView> {
             Text(car.status.fuelLevel.toStringAsFixed(0)),
             const Text("% "),
             const Text("燃油")
-          ]).animate().flip(),
+          ])
+              .animate(
+                  delay: Platform.isWindows ? 100.milliseconds : 0.milliseconds)
+              .flip(),
           Container(width: double.infinity, height: 3, color: Colors.white12),
           Transform.translate(
               offset: const Offset(0, -3),
@@ -184,31 +187,34 @@ class _CarViewState extends ConsumerState<CarView> {
   }
 
   Stack buildLogo() {
+    final vw = Positioned(
+        left: -40,
+        top: -40,
+        child: Opacity(opacity: 0.1, child: Image.asset("images/vwa.png")));
+    final car = Positioned(
+        left: -40,
+        top: -30,
+        right: -160,
+        child: Opacity(opacity: 0.8, child: Image.asset("images/car.png")));
     return Stack(fit: StackFit.passthrough, children: [
-      Positioned(
-              left: -40,
-              top: -40,
-              child:
-                  Opacity(opacity: 0.1, child: Image.asset("images/vwa.png")))
-          .animate(delay: 500.milliseconds)
+      vw
+          .animate(
+              delay: Platform.isWindows ? 500.milliseconds : 100.milliseconds)
           .fadeIn(),
-      Positioned(
-              left: -40,
-              top: -30,
-              right: -160,
-              child:
-                  Opacity(opacity: 0.8, child: Image.asset("images/car.png")))
-          .animate(delay: 500.milliseconds)
-          .moveY(
-              begin: -5,
-              end: 0,
-              duration: 200.milliseconds,
-              curve: Curves.easeIn)
-          .moveX(
-              begin: 10,
-              end: 0,
-              duration: 200.milliseconds,
-              curve: Curves.easeIn),
+      Platform.isWindows
+          ? car
+          : car
+              .animate()
+              .moveY(
+                  begin: -5,
+                  end: 0,
+                  duration: 200.milliseconds,
+                  curve: Curves.easeIn)
+              .moveX(
+                  begin: 10,
+                  end: 0,
+                  duration: 200.milliseconds,
+                  curve: Curves.easeIn),
       Positioned(
           left: 10, top: Platform.isIOS ? 20 : 10, child: const BackButton())
     ]);
