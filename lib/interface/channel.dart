@@ -18,4 +18,10 @@ class NativePlatform {
           <String, String>{"name": appName, "route": appRoute});
     }
   }
+
+  static void refreshWidget() {
+    if (Platform.isIOS) {
+      _channel.invokeMethod('refreshWidget');
+    }
+  }
 }

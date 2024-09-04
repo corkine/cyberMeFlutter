@@ -8,6 +8,8 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
+import '../../../interface/channel.dart';
+
 class CarView extends ConsumerStatefulWidget {
   const CarView({super.key});
 
@@ -28,6 +30,7 @@ class _CarViewState extends ConsumerState<CarView> {
                 onRefresh: () async {
                   final res =
                       await ref.read(carDbProvider.notifier).forceUpdate();
+                  NativePlatform.refreshWidget();
                   showSimpleMessage(context, content: res, useSnackBar: true);
                 },
                 child: SingleChildScrollView(
