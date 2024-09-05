@@ -115,7 +115,7 @@ class _CarViewState extends ConsumerState<CarView> {
           buildRow("平均油耗", car.trip.averageFuel.toStringAsFixed(1) + "L/100km",
               "下次保养", car.status.inspection.toStringAsFixed(0) + " km"),
           const SizedBox(height: 100)
-        ].animate().fadeIn(duration: 800.milliseconds));
+        ].animate().fadeIn(duration: 600.milliseconds));
   }
 
   Widget buildRow(
@@ -173,8 +173,8 @@ class _CarViewState extends ConsumerState<CarView> {
                                 bottomRight: Radius.circular(radius))),
                         height: endValue * value);
                   },
-                  duration: 1.seconds,
-                  delay: 0.5.seconds,
+                  duration: 300.milliseconds,
+                  delay: 0.1.seconds,
                   curve: Curves.easeIn),
             ]),
             content
@@ -219,7 +219,7 @@ class _CarViewState extends ConsumerState<CarView> {
                   duration: 200.milliseconds,
                   curve: Curves.easeIn),
       Positioned(
-          left: 10, top: Platform.isIOS ? 20 : 10, child: const BackButton())
+          left: 10, top: Platform.isIOS ? 30 : 10, child: const BackButton())
     ]);
   }
 }
