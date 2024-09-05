@@ -1,3 +1,4 @@
+import 'package:cyberme_flutter/main.dart';
 import 'package:cyberme_flutter/pocket/viewmodels/psych.dart';
 import 'package:cyberme_flutter/pocket/views/util.dart';
 import 'package:flutter/material.dart';
@@ -31,79 +32,94 @@ class _PsychRecentViewState extends ConsumerState<PsychRecentView> {
     final input = TextEditingController();
     final res = await showDialog<int>(
         context: context,
-        builder: (context) => AlertDialog(
-              title: const Text("搜索"),
-              actions: [
-                TextButton(
-                    onPressed: () =>
-                        Navigator.pop(context, int.tryParse(input.text)),
-                    child: const Text("确定"))
-              ],
-              content: TextField(
-                  controller: input,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(hintText: "输入要搜索的 Id")),
-            ));
+        builder: (context) => Theme(
+            data: appThemeData,
+            child: AlertDialog(
+                title: const Text("搜索"),
+                actions: [
+                  TextButton(
+                      onPressed: () =>
+                          Navigator.pop(context, int.tryParse(input.text)),
+                      child: const Text("确定"))
+                ],
+                content: TextField(
+                    controller: input,
+                    autofocus: true,
+                    keyboardType: TextInputType.number,
+                    decoration:
+                        const InputDecoration(hintText: "输入要搜索的 Id")))));
     if (res != null) {
       final out = await ref.read(psychDbProvider.notifier).fetchOne(res);
+      if (out.id == 0) {
+        showSimpleMessage(context, content: "该 Id 不存在", useSnackBar: true);
+        return;
+      }
       await showDialog(
           context: context,
-          builder: (context) => AlertDialog(
-              title: const Text("结果"),
-              actions: [
-                TextButton(
-                    onPressed: () => Navigator.pop(context, true),
-                    child: const Text("确定"))
-              ],
-              content: buildItem(out)));
+          builder: (context) => Theme(
+                data: appThemeData,
+                child: AlertDialog(
+                    contentPadding: const EdgeInsets.only(
+                        left: 5, right: 5, top: 15, bottom: 15),
+                    content: buildItem(out)),
+              ));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final res = ref.watch(fetchPsychItemsProvider);
-    return Scaffold(
-        appBar: AppBar(title: const Text("Psych Cases"), actions: [
-          IconButton(icon: const Icon(Icons.search), onPressed: search),
-          IconButton(
-              icon: const Icon(Icons.playlist_add),
-              onPressed: () async {
-                final res = await ref.read(psychDbProvider.notifier).next();
-                showSimpleMessage(context, content: res, useSnackBar: true);
-              }),
-          const SizedBox(width: 10)
-        ]),
-        body: ListView.builder(
-            itemBuilder: (context, index) {
-              final item = res[index];
-              return buildItem(item);
-            },
-            itemCount: res.length));
+    return Theme(
+      data: appThemeData,
+      child: Scaffold(
+          appBar: AppBar(title: const Text("Psych Cases"), actions: [
+            IconButton(icon: const Icon(Icons.search), onPressed: search),
+            IconButton(
+                icon: const Icon(Icons.playlist_add),
+                onPressed: () async {
+                  final res = await ref.read(psychDbProvider.notifier).next();
+                  showSimpleMessage(context, content: res, useSnackBar: true);
+                }),
+            const SizedBox(width: 10)
+          ]),
+          body: ListView.builder(
+              itemBuilder: (context, index) {
+                final item = res[index];
+                return buildItem(item);
+              },
+              itemCount: res.length)),
+    );
   }
 
   addNote(PsychItem item) async {
     final input = TextEditingController(text: item.note);
     final res = await showDialog<String>(
         context: context,
-        builder: (context) => AlertDialog(
-              actions: [
-                TextButton(
-                    onPressed: () async {
-                      Navigator.pop(context);
-                      final a = await ref
-                          .read(psychNoteDbProvider.notifier)
-                          .delNote(item.id);
-                      showSimpleMessage(context, content: a, useSnackBar: true);
-                    },
-                    child: const Text("删除")),
-                TextButton(
-                    onPressed: () => Navigator.pop(context, input.text),
-                    child: const Text("确定"))
-              ],
-              content: TextField(
-                  controller: input,
-                  maxLines: 10,
-                  decoration: const InputDecoration(hintText: "输入备注")),
+        builder: (context) => Theme(
+              data: appThemeData,
+              child: AlertDialog(
+                actions: [
+                  TextButton(
+                      onPressed: () async {
+                        Navigator.pop(context);
+                        final a = await ref
+                            .read(psychNoteDbProvider.notifier)
+                            .delNote(item.id);
+                        showSimpleMessage(context,
+                            content: a, useSnackBar: true);
+                      },
+                      child: Text("删除",
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.error))),
+                  TextButton(
+                      onPressed: () => Navigator.pop(context, input.text),
+                      child: const Text("确定"))
+                ],
+                content: TextField(
+                    controller: input,
+                    maxLines: 10,
+                    decoration: const InputDecoration(hintText: "输入备注")),
+              ),
             ));
     if (res != null && res.isNotEmpty) {
       final result =
@@ -141,14 +157,7 @@ class _PsychRecentViewState extends ConsumerState<PsychRecentView> {
               weekDayOne: weekDayOne,
               lastWeekDayOne: lastWeekDayOne)
         ]),
-        onTap: () async {
-          if (item.info.isEmpty) {
-            final _ = await fetchContent(item);
-            //showSimpleMessage(context, content: itemNew.copyWith(note: item.note).toString());
-          } else {
-            showSimpleMessage(context, content: item.toString());
-          }
-        },
+        onTap: () => showDetails(item),
         onLongPress: () {
           if (item.url.isNotEmpty) {
             launchUrlString(item.url);
@@ -157,9 +166,42 @@ class _PsychRecentViewState extends ConsumerState<PsychRecentView> {
         });
   }
 
+  showDetails(PsychItem item) async {
+    var itemNeedOpen = item;
+    if (item.info.isEmpty) {
+      itemNeedOpen = (await fetchContent(item)).copyWith(note: item.note);
+    }
+    showAdaptiveBottomSheet(
+        minusHeight: 130,
+        cover: true,
+        context: context,
+        builder: (context) => Theme(
+              data: appThemeData,
+              child: Scaffold(
+                  appBar: AppBar(actions: [
+                    TextButton(
+                        onPressed: () => launchUrlString(itemNeedOpen.url),
+                        child: const Text("网页打开")),
+                    const SizedBox(width: 10)
+                  ]),
+                  body: SingleChildScrollView(
+                      child: Padding(
+                          padding: const EdgeInsets.only(
+                              left: 18, bottom: 8, right: 18),
+                          child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text("id: " + itemNeedOpen.id.toString()),
+                                Text("kind: " + itemNeedOpen.kind),
+                                Text("note: " + itemNeedOpen.note),
+                                Text("info: " + itemNeedOpen.info.toString())
+                              ])))),
+            ));
+  }
+
   Future<PsychItem> fetchContent(PsychItem item) async {
     final newItem = await ref.read(psychDbProvider.notifier).fetchOne(item.id);
-    await showSimpleMessage(context, content: "已获取内容", useSnackBar: true);
     return newItem;
   }
 }

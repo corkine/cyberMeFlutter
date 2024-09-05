@@ -17,6 +17,7 @@ import 'package:cyberme_flutter/pocket/views/info/location.dart';
 import 'package:cyberme_flutter/pocket/views/server/service.dart';
 import 'package:cyberme_flutter/pocket/views/news/story.dart';
 import 'package:cyberme_flutter/pocket/views/think/block.dart';
+import 'package:cyberme_flutter/pocket/views/think/secret_block.dart';
 import 'views/info/blog.dart';
 import 'views/info/disaptch.dart';
 import 'views/info/psych.dart';
@@ -248,8 +249,18 @@ final apps = {
   "blocks": {
     "name": "Blocks",
     "view": (c) => const BlocksView(),
+    "secret": "secret_block",
+    "pass": "9445",
+    "fakePass": "9633",
     "addToMenu": true,
     "addToContext": true,
+    "icon": Icons.bookmark
+  },
+  "secret_block": {
+    "name": "SecretBlocks",
+    "view": (c) => const SecretBlocksView(),
+    "addToMenu": false,
+    "addToContext": false,
     "icon": Icons.bookmark
   },
   "psych": {

@@ -31,6 +31,20 @@ const animalBgs = [
   "https://static2.mazhangjing.com/cyber/202408/b9f56712_Snipaste_2024-08-06_14-30-38.jpg"
 ];
 
+const coverBgs = [
+  "https://static2.mazhangjing.com/cyber/202409/6714aa1d_Snipaste_2024-09-05_10-18-39.jpg",
+  "https://static2.mazhangjing.com/cyber/202409/84de40f3_Snipaste_2024-09-05_10-19-25.jpg",
+  "https://static2.mazhangjing.com/cyber/202409/623f0074_Snipaste_2024-09-05_10-19-52.jpg",
+  "https://static2.mazhangjing.com/cyber/202409/dffd38dd_Snipaste_2024-09-05_10-20-13.jpg",
+  "https://static2.mazhangjing.com/cyber/202409/948ab18f_Snipaste_2024-09-05_10-20-32.jpg",
+  "https://static2.mazhangjing.com/cyber/202409/3815bfb5_Snipaste_2024-09-05_10-21-06.jpg",
+  "https://static2.mazhangjing.com/cyber/202409/c6561a75_Snipaste_2024-09-05_10-21-19.jpg",
+  "https://static2.mazhangjing.com/cyber/202409/300d3fa2_Snipaste_2024-09-05_10-21-34.jpg",
+  "https://static2.mazhangjing.com/cyber/202409/2c64448b_Snipaste_2024-09-05_10-22-30.jpg",
+  "https://static2.mazhangjing.com/cyber/202409/8ce1da26_Snipaste_2024-09-05_10-22-57.jpg",
+  "https://static2.mazhangjing.com/cyber/202409/c61f08d0_Snipaste_2024-09-05_10-23-26.jpg"
+];
+
 const Map<String, String> storyCover = {
   "格林童话": "https://static2.mazhangjing.com/cyber/202310/753d1738_图片.png",
   "伊索寓言": "https://static2.mazhangjing.com/cyber/202310/51472203_图片.png",

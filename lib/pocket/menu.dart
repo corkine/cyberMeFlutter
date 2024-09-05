@@ -5,6 +5,7 @@ import 'package:cyberme_flutter/pocket/views/think/note.dart';
 import 'package:cyberme_flutter/interface/channel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_screen_lock/flutter_screen_lock.dart';
 
 import '../util.dart';
 import 'main.dart';
@@ -83,6 +84,35 @@ class _MenuViewState extends State<MenuView> {
                       }
                       NativePlatform.setLastUsedAppRoute(
                           e.value["name"] as String, "/app/${e.key}");
+                    },
+                    onLongPress: () {
+                      if ((e.value["secret"] as String?) != null) {
+                        final pass = e.value["pass"] as String;
+                        final fakePass = e.value["fakePass"] as String;
+                        var isFake = false;
+                        screenLock(
+                            context: context,
+                            correctString: pass,
+                            title: const Text("请输入密码"),
+                            onValidate: (a) async {
+                              if (a == fakePass) {
+                                isFake = true;
+                                return true;
+                              } else if (a == pass) {
+                                return true;
+                              }
+                              return false;
+                            },
+                            onUnlocked: () {
+                              if (isFake) {
+                                Navigator.of(context)
+                                    .pushReplacementNamed("/app/${e.key}");
+                              } else {
+                                Navigator.of(context).pushReplacementNamed(
+                                    "/app/${e.value["secret"]}");
+                              }
+                            });
+                      }
                     },
                     leading: Icon((e.value["icon"] as IconData?) ?? Icons.apps),
                     title: Text(e.value["name"] as String),

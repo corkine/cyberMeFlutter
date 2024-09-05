@@ -49,6 +49,7 @@ dependencies:
   json_pretty: ^1.0.4
   flutter_markdown: ^0.7.3
   shared_preferences: ^2.3.1
+  flutter_screen_lock: ^9.1.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
