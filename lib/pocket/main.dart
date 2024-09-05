@@ -63,22 +63,22 @@ final apps = {
     "name": "12306 车票",
     "view": (c) => const TicketShowPage(),
     "addToMenu": true,
-    "addToContext": true,
+    "addToContext": false,
     "icon": Icons.airplane_ticket
   },
   "express": {
     "name": "快递追踪",
     "view": (c) => const ExpressView(),
     "addToMenu": true,
-    "addToContext": true,
+    "addToContext": false,
     "icon": Icons.card_giftcard
   },
-  "service": {
-    "name": "服务追踪",
-    "view": (c) => const TrackView(),
+  "score": {
+    "name": "积分系统",
+    "view": (c) => const ScoreView(),
     "addToMenu": true,
-    "addToContext": true,
-    "icon": Icons.dashboard
+    "addToContext": false,
+    "icon": Icons.margin
   },
   "todo": {
     "name": "待办事项",
@@ -88,10 +88,10 @@ final apps = {
     "icon": Icons.check_box
   },
   "sexual": {
-    "name": "Sexual",
+    "name": "活动记录",
     "view": (c) => const SexualActivityView(),
     "addToMenu": true,
-    "addToContext": true,
+    "addToContext": false,
     "icon": Icons.people
   },
   "bodyMass": {
@@ -100,13 +100,6 @@ final apps = {
     "addToMenu": true,
     "addToContext": true,
     "icon": Icons.fit_screen
-  },
-  "score": {
-    "name": "积分系统",
-    "view": (c) => const ScoreView(),
-    "addToMenu": true,
-    "addToContext": false,
-    "icon": Icons.margin
   },
   "show": {
     "name": "影视热榜",
@@ -119,7 +112,7 @@ final apps = {
     "name": "喷嚏图卦",
     "view": (c) => const TuguaView(),
     "addToMenu": true,
-    "addToContext": true,
+    "addToContext": false,
     "icon": Icons.newspaper
   },
   "story": {
@@ -136,6 +129,68 @@ final apps = {
     "addToContext": true,
     "icon": Icons.computer
   },
+  "gpt": {
+    "name": "GPT",
+    "view": (c) => const GPTView(),
+    "addToMenu": true,
+    "addToContext": false,
+    "icon": Icons.android
+  },
+  "location": {
+    "name": "位置管理",
+    "view": (c) => const LocationView(),
+    "addToMenu": true,
+    "icon": Icons.map
+  },
+  "medic": {
+    "name": "药物管理",
+    "view": (c) => const MedicView(),
+    "addToMenu": false,
+    "addToContext": false,
+    "icon": Icons.medical_services_sharp
+  },
+  "service": {
+    "name": "服务追踪",
+    "view": (c) => const TrackView(),
+    "addToMenu": true,
+    "addToContext": true,
+    "icon": Icons.dashboard
+  },
+  "server": {
+    "name": "服务管理",
+    "view": (c) => const ServiceManageView(),
+    "addToMenu": true,
+    "addToContext": false,
+    "icon": Icons.computer
+  },
+  "dispatch": {
+    "name": "应用分发",
+    "view": (c) => const DispatchView(),
+    "addToMenu": true,
+    "addToContext": false,
+    "icon": Icons.send
+  },
+  "link": {
+    "name": "短链接管理",
+    "view": (c) => const QuickLinkView(),
+    "addToMenu": true,
+    "addToContext": true,
+    "icon": Icons.link
+  },
+  "cert-manager": {
+    "name": "证书管理",
+    "view": (c) => const CertConfigView(),
+    "addToMenu": true,
+    "addToContext": false,
+    "icon": Icons.security
+  },
+  "backup": {
+    "name": "数据备份",
+    "view": (c) => const BackupView(),
+    "addToMenu": true,
+    "addToContext": false,
+    "icon": Icons.backup
+  },
   "blog": {
     "name": "博客",
     "view": (c) => const BlogView(),
@@ -149,32 +204,6 @@ final apps = {
     "addToMenu": true,
     "addToContext": false,
     "icon": Icons.source
-  },
-  "gpt": {
-    "name": "GPT",
-    "view": (c) => const GPTView(),
-    "addToMenu": true,
-    "icon": Icons.android
-  },
-  "location": {
-    "name": "位置管理",
-    "view": (c) => const LocationView(),
-    "addToMenu": true,
-    "icon": Icons.map
-  },
-  "link": {
-    "name": "短链接管理",
-    "view": (c) => const QuickLinkView(),
-    "addToMenu": true,
-    "addToContext": true,
-    "icon": Icons.link
-  },
-  "medic": {
-    "name": "药物管理",
-    "view": (c) => const MedicView(),
-    "addToMenu": false,
-    "addToContext": false,
-    "icon": Icons.medical_services_sharp
   },
   "calcgame": {
     "name": "健康游戏",
@@ -211,57 +240,12 @@ final apps = {
     "addToContext": false,
     "icon": Icons.countertops
   },
-  "backup": {
-    "name": "Backup",
-    "view": (c) => const BackupView(),
-    "addToMenu": true,
-    "addToContext": false,
-    "icon": Icons.backup
-  },
   "gallery": {
-    "name": "Gallery",
+    "name": "音响画框",
     "view": (c) => const GalleryManagerScreen(),
     "addToMenu": true,
     "addToContext": false,
     "icon": Icons.image
-  },
-  "cert-manager": {
-    "name": "证书管理",
-    "view": (c) => const CertConfigView(),
-    "addToMenu": true,
-    "addToContext": true,
-    "icon": Icons.security
-  },
-  "server": {
-    "name": "服务管理",
-    "view": (c) => const ServiceManageView(),
-    "addToMenu": true,
-    "addToContext": true,
-    "icon": Icons.computer
-  },
-  "sticky": {
-    "name": "Sticky",
-    "view": (c) => const StickyNoteView(),
-    "addToMenu": true,
-    "addToContext": true,
-    "icon": Icons.note
-  },
-  "blocks": {
-    "name": "Blocks",
-    "view": (c) => const BlocksView(),
-    "secret": "secret_block",
-    "pass": "9445",
-    "fakePass": "9633",
-    "addToMenu": true,
-    "addToContext": true,
-    "icon": Icons.bookmark
-  },
-  "secret_block": {
-    "name": "SecretBlocks",
-    "view": (c) => const SecretBlocksView(),
-    "addToMenu": false,
-    "addToContext": false,
-    "icon": Icons.bookmark
   },
   "psych": {
     "name": "心理测试",
@@ -271,19 +255,36 @@ final apps = {
     "icon": Icons.psychology
   },
   "car": {
-    "name": "Car",
+    "name": "车联网",
     "view": (c) => const CarView(),
     "addToMenu": true,
     "addToContext": false,
     "icon": Icons.directions_car
   },
-  "dispatch": {
-    "name": "Dispatch",
-    "view": (c) => const DispatchView(),
+  "sticky": {
+    "name": "微软便签",
+    "view": (c) => const StickyNoteView(),
     "addToMenu": true,
     "addToContext": false,
-    "icon": Icons.send
-  }
+    "icon": Icons.note
+  },
+  "blocks": {
+    "name": "思考笔记",
+    "view": (c) => const BlocksView(),
+    "secret": "secret_block",
+    "pass": "9445",
+    "fakePass": "9633",
+    "addToMenu": true,
+    "addToContext": true,
+    "icon": Icons.bookmark
+  },
+  "secret_block": {
+    "name": "私人思考笔记",
+    "view": (c) => const SecretBlocksView(),
+    "addToMenu": false,
+    "addToContext": false,
+    "icon": Icons.bookmark
+  },
 };
 
 class PocketHome extends StatefulWidget {

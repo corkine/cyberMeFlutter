@@ -1,6 +1,3 @@
-import 'dart:io';
-
-import 'package:clipboard/clipboard.dart';
 import 'package:cyberme_flutter/pocket/viewmodels/gpt.dart';
 import 'package:cyberme_flutter/pocket/viewmodels/todo.dart';
 import 'package:cyberme_flutter/pocket/views/util.dart';
