@@ -31,41 +31,41 @@ class _BlocksViewState extends ConsumerState<SecretBlocksView> {
   Widget build(BuildContext context) {
     final data = ref.watch(getSecretBlocksListProvider(_selectTags));
     return Theme(
-      data: appThemeData,
-      child: Scaffold(
-          floatingActionButton: FloatingActionButton(
-              backgroundColor: const Color.fromARGB(255, 204, 99, 0),
-              foregroundColor: Colors.white,
-              onPressed: handleAdd,
-              child: const Icon(Icons.add)),
-          body: CustomScrollView(slivers: <Widget>[
-            SliverAppBar(
-                expandedHeight: 130.0,
-                floating: false,
-                pinned: true,
-                backgroundColor: Colors.blueGrey,
-                leading: const BackButton(color: Colors.white),
-                actions: [
-                  IconButton(
-                      icon: const Icon(Icons.filter_list, color: Colors.white),
-                      onPressed: handleFilter),
-                  const SizedBox(width: 5)
-                ],
-                flexibleSpace: FlexibleSpaceBar(
-                    title: const Text('Blocks',
-                        style: TextStyle(color: Colors.white)),
-                    centerTitle: false,
-                    background: Image.network(
-                        "https://static2.mazhangjing.com/cyber/202409/2fc0ce63_image.png",
-                        fit: BoxFit.cover))),
-            const SliverToBoxAdapter(child: SizedBox(height: 2)),
-            SliverList(
-                delegate: SliverChildBuilderDelegate(
-                    (context, index) => buildCard(context, data[index]),
-                    childCount: data.length)),
-            const SliverToBoxAdapter(child: SizedBox(height: 3))
-          ])),
-    );
+        data: appThemeData,
+        child: Scaffold(
+            floatingActionButton: FloatingActionButton(
+                backgroundColor: const Color.fromARGB(255, 204, 99, 0),
+                foregroundColor: Colors.white,
+                onPressed: handleAdd,
+                child: const Icon(Icons.add)),
+            body: CustomScrollView(slivers: <Widget>[
+              SliverAppBar(
+                  expandedHeight: 130.0,
+                  floating: false,
+                  pinned: true,
+                  backgroundColor: Colors.blueGrey,
+                  leading: const BackButton(color: Colors.white),
+                  actions: [
+                    IconButton(
+                        icon:
+                            const Icon(Icons.filter_list, color: Colors.white),
+                        onPressed: handleFilter),
+                    const SizedBox(width: 5)
+                  ],
+                  flexibleSpace: FlexibleSpaceBar(
+                      title: const Text('Blocks',
+                          style: TextStyle(color: Colors.white)),
+                      centerTitle: false,
+                      background: Image.network(
+                          "https://static2.mazhangjing.com/cyber/202409/2fc0ce63_image.png",
+                          fit: BoxFit.cover))),
+              const SliverToBoxAdapter(child: SizedBox(height: 6)),
+              SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                      (context, index) => buildCard(context, data[index]),
+                      childCount: data.length)),
+              const SliverToBoxAdapter(child: SizedBox(height: 3))
+            ])));
   }
 
   Widget buildCard(BuildContext context, BlockItem item) {
