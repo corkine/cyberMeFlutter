@@ -143,9 +143,8 @@ class _PsychRecentViewState extends ConsumerState<PsychRecentView> {
         ]),
         onTap: () async {
           if (item.info.isEmpty) {
-            final itemNew = await fetchContent(item);
-            showSimpleMessage(context,
-                content: itemNew.copyWith(note: item.note).toString());
+            final _ = await fetchContent(item);
+            //showSimpleMessage(context, content: itemNew.copyWith(note: item.note).toString());
           } else {
             showSimpleMessage(context, content: item.toString());
           }
