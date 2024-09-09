@@ -3,9 +3,11 @@ import 'dart:io';
 import 'package:cyberme_flutter/main.dart';
 import 'package:cyberme_flutter/pocket/viewmodels/car.dart';
 import 'package:cyberme_flutter/pocket/views/util.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 import '../../../interface/channel.dart';
@@ -109,12 +111,26 @@ class _CarViewState extends ConsumerState<CarView> {
                         color: Color.fromARGB(75, 255, 45, 25), size: 50)))
           ]),
           const SizedBox(height: 10),
-          buildRow("生涯油耗", car.trip.fuel.toStringAsFixed(0) + "L", "生涯里程",
-              car.trip.mileage.toStringAsFixed(0) + " km"),
+          buildRow("生涯油耗", car.tripStatus.fuel.toStringAsFixed(0) + "L", "生涯里程",
+              car.tripStatus.mileage.toStringAsFixed(0) + " km"),
           const SizedBox(height: 10),
-          buildRow("平均油耗", car.trip.averageFuel.toStringAsFixed(1) + "L/100km",
-              "下次保养", car.status.inspection.toStringAsFixed(0) + " km"),
-          const SizedBox(height: 100)
+          buildRow(
+              "平均油耗",
+              car.tripStatus.averageFuel.toStringAsFixed(1) + "L/100km",
+              "下次保养",
+              car.status.inspection.toStringAsFixed(0) + " km"),
+          const SizedBox(height: 10),
+          Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+            CupertinoButton(
+                onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => TripListView(car.trip))),
+                child: const Text("行程信息")),
+            CupertinoButton(
+                onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => TripListView(car.tripCyclic))),
+                child: const Text("按加油统计"))
+          ]),
+          const SizedBox(height: 100),
         ].animate().fadeIn(duration: 600.milliseconds));
   }
 
@@ -221,5 +237,91 @@ class _CarViewState extends ConsumerState<CarView> {
       Positioned(
           left: 10, top: Platform.isIOS ? 30 : 10, child: const BackButton())
     ]);
+  }
+}
+
+class TripListView extends ConsumerStatefulWidget {
+  final List<CarTripItem> items;
+  const TripListView(this.items, {super.key});
+
+  @override
+  ConsumerState<ConsumerStatefulWidget> createState() => _TripListViewState();
+}
+
+class _TripListViewState extends ConsumerState<TripListView> {
+  late DateTime weekDayOne;
+  late DateTime lastWeekDayOne;
+  late DateTime today;
+  late List<CarTripItem> items;
+
+  @override
+  void initState() {
+    super.initState();
+    items = widget.items.reversed.toList();
+    final now = DateTime.now();
+    today = DateTime(now.year, now.month, now.day);
+    weekDayOne = getThisWeekMonday();
+    lastWeekDayOne = weekDayOne.subtract(const Duration(days: 7));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Theme(
+        data: appThemeData,
+        child: Scaffold(
+            appBar: AppBar(title: const Text("行程信息")),
+            body: ListView.builder(
+                itemCount: items.length,
+                itemBuilder: (context, index) {
+                  final trip = items[index];
+                  return ListTile(
+                      dense: true,
+                      title: Row(
+                        children: [
+                          Text(trip.mileage.toStringAsFixed(0) + " km"),
+                          Container(
+                              height: 10,
+                              color: Colors.white54,
+                              margin: const EdgeInsets.only(left: 5, right: 5),
+                              width: 2),
+                          Text(trip.traveltime.toStringAsFixed(0) + " min"),
+                          Container(
+                              height: 10,
+                              color: Colors.white54,
+                              margin: const EdgeInsets.only(left: 5, right: 5),
+                              width: 2),
+                          Text(trip.averageSpeed.toStringAsFixed(0) + "km/h"),
+                        ],
+                      ),
+                      subtitle: buildRichDate(
+                          DateFormat("yyyy-MM-dd'T'HH:mm:ss'Z")
+                              .parse(trip.timestamp)
+                              .add(const Duration(hours: 8)),
+                          dateFormat: "yyyy-MM-dd HH:mm",
+                          today: today,
+                          weekDayOne: weekDayOne,
+                          lastWeekDayOne: lastWeekDayOne),
+                      trailing: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            buildFuleWidget(trip.averageFuelConsumption),
+                            const Text("L/100km",
+                                style: TextStyle(
+                                    color: Colors.white38,
+                                    fontSize: 8,
+                                    fontFamily: "PingFangSC-Regular"))
+                          ]));
+                })));
+  }
+
+  buildFuleWidget(double value) {
+    return Text((value / 10).toStringAsFixed(1),
+        style: TextStyle(
+            color: value > 120
+                ? Colors.red
+                : value > 90
+                    ? Colors.orange
+                    : Colors.green,
+            fontSize: 14));
   }
 }

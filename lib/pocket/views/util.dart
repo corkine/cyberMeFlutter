@@ -144,9 +144,10 @@ Widget buildRichDate(DateTime? date,
     {required DateTime today,
     required DateTime weekDayOne,
     required DateTime lastWeekDayOne,
+    String dateFormat = "yyyy-MM-dd",
     double? fontSize}) {
   if (date == null) return const Text("未知日期");
-  final df = DateFormat("yyyy-MM-dd");
+  final df = DateFormat(dateFormat);
   bool isToday = date.day == today.day && date.month == today.month;
   bool thisWeek = !weekDayOne.isAfter(date);
   bool lastWeek = !thisWeek && !lastWeekDayOne.isAfter(date);
