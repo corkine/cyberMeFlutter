@@ -147,7 +147,7 @@ Widget buildRichDate(DateTime? date,
     double? fontSize}) {
   if (date == null) return const Text("未知日期");
   final df = DateFormat("yyyy-MM-dd");
-  bool isToday = !today.isAfter(date);
+  bool isToday = date.day == today.day && date.month == today.month;
   bool thisWeek = !weekDayOne.isAfter(date);
   bool lastWeek = !thisWeek && !lastWeekDayOne.isAfter(date);
   final color = isToday
