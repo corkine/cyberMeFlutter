@@ -12,6 +12,28 @@ import 'package:url_launcher/url_launcher_string.dart';
 
 import '../../../interface/channel.dart';
 
+String getRelativeTime(String dateString) {
+  DateTime date = DateTime.parse(dateString);
+  DateTime now = DateTime.now();
+  Duration difference = now.difference(date);
+
+  if (difference.inDays > 365) {
+    return '${(difference.inDays / 365).floor()}年前';
+  } else if (difference.inDays > 30) {
+    return '${(difference.inDays / 30).floor()}个月前';
+  } else if (difference.inDays > 7) {
+    return '${(difference.inDays / 7).floor()}周前';
+  } else if (difference.inDays > 0) {
+    return '${difference.inDays}天前';
+  } else if (difference.inHours > 0) {
+    return '${difference.inHours}小时前';
+  } else if (difference.inMinutes > 0) {
+    return '${difference.inMinutes}分钟前';
+  } else {
+    return '刚刚';
+  }
+}
+
 class CarView extends ConsumerStatefulWidget {
   const CarView({super.key});
 
@@ -100,7 +122,8 @@ class _CarViewState extends ConsumerState<CarView> {
                 borderRadius: BorderRadius.circular(10),
                 onTap: () => launchUrlString(
                     "https://m.amap.com/picker/?center=${car.loc.longitude / 1000000.0},${car.loc.latitude / 1000000.0}&key=446020a2a489b6aa4c918d33910e0f73&jscode=6c70ad0803bcd70f0b7caa54b0c51278"),
-                child: buildCard("当前位置", car.loc.place)),
+                child: buildCard("最后位置",
+                    car.loc.place + " · ${getRelativeTime(car.loc.time)}")),
             Positioned(
                 right: 10,
                 top: 10,
