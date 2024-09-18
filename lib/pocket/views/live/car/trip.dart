@@ -37,7 +37,9 @@ class _TripListViewState extends ConsumerState<TripListView> {
     return Theme(
         data: appThemeData,
         child: Scaffold(
-            appBar: AppBar(title: const Text("行程信息")),
+            appBar: AppBar(
+                title: const Text("行程信息"),
+                actions: const [SizedBox(width: 10)]),
             body: ListView.builder(
                 itemCount: items.length,
                 itemBuilder: (context, index) {
@@ -131,7 +133,7 @@ class _TripListViewState extends ConsumerState<TripListView> {
               alignment: Alignment.centerRight,
               padding: const EdgeInsets.only(right: 20),
               child: const Icon(Icons.delete, color: Colors.white)),
-          child: ListTile(title: Text(note.note), dense: true));
+          child: ListTile(title: Text(note.note, maxLines: 1), dense: true));
     }).toList(growable: false);
   }
 
@@ -146,6 +148,7 @@ class _TripListViewState extends ConsumerState<TripListView> {
               child: AlertDialog(
                   title: Text(isNew ? "添加笔记" : "编辑笔记"),
                   content: TextField(
+                      autofocus: true,
                       controller: note,
                       maxLines: 5,
                       decoration: const InputDecoration(hintText: "请输入内容")),
