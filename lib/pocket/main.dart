@@ -22,7 +22,7 @@ import 'views/info/blog.dart';
 import 'views/info/disaptch.dart';
 import 'views/info/psych.dart';
 import 'views/live/blue.dart';
-import 'views/live/car.dart';
+import 'views/live/car/car.dart';
 import 'views/think/gpt.dart';
 import 'views/live/medic.dart';
 import 'views/think/sticky.dart';

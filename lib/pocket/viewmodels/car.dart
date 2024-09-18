@@ -124,3 +124,55 @@ class CarDb extends _$CarDb {
     return "更新成功";
   }
 }
+
+@freezed
+class TripNote with _$TripNote {
+  factory TripNote({
+    @Default("") String note,
+    @Default(0) int tripID,
+    @Default("") String id,
+  }) = _TripNote;
+
+  factory TripNote.fromJson(Map<String, dynamic> json) =>
+      _$TripNoteFromJson(json);
+}
+
+@Riverpod(keepAlive: true)
+class CarLifeDb extends _$CarLifeDb {
+  static const tag = "trip-note";
+  @override
+  FutureOr<Map<String, TripNote>> build() async {
+    final res = await settingFetch(tag, (m) {
+      m.remove("update");
+      return m.map((k, v) => MapEntry(k, TripNote.fromJson(v)));
+    });
+    return res ?? {};
+  }
+
+  Future<String> addOrUpdate(TripNote item) async {
+    final newState = {...state.value!, item.id: item};
+    await settingUpload(tag, newState.map((k, v) => MapEntry(k, v.toJson())));
+    state = AsyncData(newState);
+    return "OK";
+  }
+
+  Future<String> delete(String id) async {
+    final newState = {...state.value!};
+    newState.remove(id);
+    await settingUpload(tag, newState.map((k, v) => MapEntry(k, v.toJson())));
+    state = AsyncData(newState);
+    return "OK";
+  }
+}
+
+@Riverpod(keepAlive: true)
+Map<int, List<TripNote>> getTripNotes(GetTripNotesRef ref) {
+  final notes = ref.watch(carLifeDbProvider).value ?? {};
+  if (notes.isEmpty) return {};
+  return notes.values.fold<Map<int, List<TripNote>>>({}, (p, e) {
+    final tripID = e.tripID;
+    if (!p.containsKey(tripID)) p[tripID] = [];
+    p[tripID]!.add(e);
+    return p;
+  });
+}
