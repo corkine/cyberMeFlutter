@@ -1,3 +1,4 @@
+import 'package:cyberme_flutter/pocket/views/live/car/chart.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -48,45 +49,54 @@ class _TripListViewState extends ConsumerState<TripListView> {
                       color: Colors.white)),
               const SizedBox(width: 10)
             ]),
-            body: ListView.builder(
-                itemCount: items.length,
-                itemBuilder: (context, index) {
-                  final trip = items[index];
-                  final notes = buildCardTripNotes(notesDb, trip);
-                  final trailing = InkResponse(
-                      radius: 20,
-                      onTap: () =>
-                          showNoteAddOrEditNoteDialog(trip, TripNote()),
-                      child: notes.isEmpty
-                          ? const Icon(Icons.add, color: Colors.white54)
-                          : const Icon(Icons.post_add, color: Colors.white54));
-                  final date = buildRichDate(
-                      df.parse(trip.timestamp).add(const Duration(hours: 8)),
-                      dateFormat: "yyyy-MM-dd HH:mm",
-                      today: today,
-                      weekDayOne: weekDayOne,
-                      lastWeekDayOne: lastWeekDayOne);
-                  final leading = buildCardLeading(trip);
-                  final speed = buildCardInfo(trip);
-                  if (viewMode) {
-                    return Column(children: [
-                      ListTile(
+            body: Column(children: [
+              //if (!viewMode) TripChart(items: items),
+              Expanded(
+                child: ListView.builder(
+                    shrinkWrap: false,
+                    itemCount: items.length,
+                    itemBuilder: (context, index) {
+                      final trip = items[index];
+                      final notes = buildCardTripNotes(notesDb, trip);
+                      final trailing = InkResponse(
+                          radius: 20,
+                          onTap: () =>
+                              showNoteAddOrEditNoteDialog(trip, TripNote()),
+                          child: notes.isEmpty
+                              ? const Icon(Icons.add, color: Colors.white54)
+                              : const Icon(Icons.post_add,
+                                  color: Colors.white54));
+                      final date = buildRichDate(
+                          df
+                              .parse(trip.timestamp)
+                              .add(const Duration(hours: 8)),
+                          dateFormat: "yyyy-MM-dd HH:mm",
+                          today: today,
+                          weekDayOne: weekDayOne,
+                          lastWeekDayOne: lastWeekDayOne);
+                      final leading = buildCardLeading(trip);
+                      final speed = buildCardInfo(trip);
+                      if (viewMode) {
+                        return Column(children: [
+                          ListTile(
+                              dense: true,
+                              trailing: trailing,
+                              title: speed,
+                              subtitle: date,
+                              leading: leading),
+                          ...notes
+                        ]);
+                      }
+                      return ExpansionTile(
                           dense: true,
+                          children: notes,
                           trailing: trailing,
                           title: speed,
                           subtitle: date,
-                          leading: leading),
-                      ...notes
-                    ]);
-                  }
-                  return ExpansionTile(
-                      dense: true,
-                      children: notes,
-                      trailing: trailing,
-                      title: speed,
-                      subtitle: date,
-                      leading: leading);
-                })));
+                          leading: leading);
+                    }),
+              )
+            ])));
   }
 
   Row buildCardInfo(CarTripItem trip) {
