@@ -20,6 +20,8 @@ class _TripListViewState extends ConsumerState<TripListView> {
   late DateTime lastWeekDayOne;
   late DateTime today;
   late List<CarTripItem> items;
+  bool viewMode = false;
+  final df = DateFormat("yyyy-MM-dd'T'HH:mm:ss'Z");
 
   @override
   void initState() {
@@ -37,68 +39,97 @@ class _TripListViewState extends ConsumerState<TripListView> {
     return Theme(
         data: appThemeData,
         child: Scaffold(
-            appBar: AppBar(
-                title: const Text("行程信息"),
-                actions: const [SizedBox(width: 10)]),
+            appBar: AppBar(title: const Text("行程信息"), actions: [
+              IconButton(
+                  onPressed: () => setState(() {
+                        viewMode = !viewMode;
+                      }),
+                  icon: Icon(viewMode ? Icons.info : Icons.info_outline,
+                      color: Colors.white)),
+              const SizedBox(width: 10)
+            ]),
             body: ListView.builder(
                 itemCount: items.length,
                 itemBuilder: (context, index) {
                   final trip = items[index];
-                  final notes = buildTripNotes(notesDb, trip);
+                  final notes = buildCardTripNotes(notesDb, trip);
+                  final trailing = InkResponse(
+                      radius: 20,
+                      onTap: () =>
+                          showNoteAddOrEditNoteDialog(trip, TripNote()),
+                      child: notes.isEmpty
+                          ? const Icon(Icons.add, color: Colors.white54)
+                          : const Icon(Icons.post_add, color: Colors.white54));
+                  final date = buildRichDate(
+                      df.parse(trip.timestamp).add(const Duration(hours: 8)),
+                      dateFormat: "yyyy-MM-dd HH:mm",
+                      today: today,
+                      weekDayOne: weekDayOne,
+                      lastWeekDayOne: lastWeekDayOne);
+                  final leading = buildCardLeading(trip);
+                  final speed = buildCardInfo(trip);
+                  if (viewMode) {
+                    return Column(children: [
+                      ListTile(
+                          dense: true,
+                          trailing: trailing,
+                          title: speed,
+                          subtitle: date,
+                          leading: leading),
+                      ...notes
+                    ]);
+                  }
                   return ExpansionTile(
                       dense: true,
                       children: notes,
-                      trailing: InkResponse(
-                          radius: 20,
-                          onTap: () =>
-                              showNoteAddOrEditNoteDialog(trip, TripNote()),
-                          child: notes.isEmpty
-                              ? const Icon(Icons.add, color: Colors.white54)
-                              : const Icon(Icons.notes)),
-                      title: Row(children: [
-                        Text(trip.mileage.toStringAsFixed(0) + " km"),
-                        Container(
-                            height: 10,
-                            color: Colors.white54,
-                            margin: const EdgeInsets.only(left: 5, right: 5),
-                            width: 2),
-                        Text(trip.traveltime.toStringAsFixed(0) + " min"),
-                        Container(
-                            height: 10,
-                            color: Colors.white54,
-                            margin: const EdgeInsets.only(left: 5, right: 5),
-                            width: 2),
-                        Text(trip.averageSpeed.toStringAsFixed(0) + "km/h")
-                      ]),
-                      subtitle: buildRichDate(
-                          DateFormat("yyyy-MM-dd'T'HH:mm:ss'Z")
-                              .parse(trip.timestamp)
-                              .add(const Duration(hours: 8)),
-                          dateFormat: "yyyy-MM-dd HH:mm",
-                          today: today,
-                          weekDayOne: weekDayOne,
-                          lastWeekDayOne: lastWeekDayOne),
-                      leading: Container(
-                          decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(6)),
-                          padding: const EdgeInsets.only(left: 5, right: 5),
-                          width: 43,
-                          child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                buildFuleWidget(trip.averageFuelConsumption),
-                                const Text("L/100km",
-                                    style: TextStyle(
-                                        color: Colors.white38,
-                                        fontSize: 7,
-                                        fontFamily: "PingFangSC-Regular"))
-                              ])));
+                      trailing: trailing,
+                      title: speed,
+                      subtitle: date,
+                      leading: leading);
                 })));
   }
 
-  buildFuleWidget(double value) {
+  Row buildCardInfo(CarTripItem trip) {
+    return Row(children: [
+      Text(trip.mileage.toStringAsFixed(0) + " km"),
+      Container(
+          height: 10,
+          color: Colors.white54,
+          margin: const EdgeInsets.only(left: 5, right: 5),
+          width: 2),
+      Text(trip.traveltime.toStringAsFixed(0) + " min",
+          style: const TextStyle(color: Colors.white70)),
+      Container(
+          height: 10,
+          color: Colors.white54,
+          margin: const EdgeInsets.only(left: 5, right: 5),
+          width: 2),
+      Text(trip.averageSpeed.toStringAsFixed(0) + " km/h",
+          style: const TextStyle(color: Colors.white54))
+    ]);
+  }
+
+  Container buildCardLeading(CarTripItem trip) {
+    return Container(
+        decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(6)),
+        padding: const EdgeInsets.only(left: 5, right: 5),
+        width: 43,
+        child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              buildFuleWidget(trip.averageFuelConsumption),
+              const Text("L/100km",
+                  style: TextStyle(
+                      color: Colors.white38,
+                      fontSize: 7,
+                      fontFamily: "PingFangSC-Regular"))
+            ]));
+  }
+
+  Widget buildFuleWidget(double value) {
     return Text((value / 10).toStringAsFixed(1),
         style: TextStyle(
             color: value > 120
@@ -109,30 +140,40 @@ class _TripListViewState extends ConsumerState<TripListView> {
             fontSize: 16));
   }
 
-  List<Widget> buildTripNotes(
+  final tripNoteDismissBg = Container(
+      color: Colors.amber,
+      alignment: Alignment.centerLeft,
+      padding: const EdgeInsets.only(left: 20),
+      child: const Icon(Icons.edit, color: Colors.white));
+
+  final tripNoteDismissBg2 = Container(
+      color: Colors.red,
+      alignment: Alignment.centerRight,
+      padding: const EdgeInsets.only(right: 20),
+      child: const Icon(Icons.delete, color: Colors.white));
+
+  List<Widget> buildCardTripNotes(
       Map<int, List<TripNote>> notesDb, CarTripItem trip) {
     return (notesDb[trip.tripID] ?? []).map((note) {
       return Dismissible(
           key: ValueKey(note.id),
           confirmDismiss: (direction) async {
             if (direction == DismissDirection.endToStart) {
-              final res =
-                  await ref.read(carLifeDbProvider.notifier).delete(note.id);
-              showSimpleMessage(context, content: res, useSnackBar: true);
-              return true;
+              if (await showSimpleMessage(context, content: "确定删除吗")) {
+                final res =
+                    await ref.read(carLifeDbProvider.notifier).delete(note.id);
+                showSimpleMessage(context, content: res, useSnackBar: true);
+                return true;
+              } else {
+                return false;
+              }
             } else {
               await showNoteAddOrEditNoteDialog(trip, note);
               return false;
             }
           },
-          background: Container(
-            color: Colors.amber,
-          ),
-          secondaryBackground: Container(
-              color: Colors.red,
-              alignment: Alignment.centerRight,
-              padding: const EdgeInsets.only(right: 20),
-              child: const Icon(Icons.delete, color: Colors.white)),
+          background: tripNoteDismissBg,
+          secondaryBackground: tripNoteDismissBg2,
           child: ListTile(title: Text(note.note, maxLines: 1), dense: true));
     }).toList(growable: false);
   }

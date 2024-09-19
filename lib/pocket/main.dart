@@ -255,7 +255,7 @@ final apps = {
     "icon": Icons.psychology
   },
   "car": {
-    "name": "车联网",
+    "name": "车生活",
     "view": (c) => const CarView(),
     "addToMenu": true,
     "addToContext": false,
