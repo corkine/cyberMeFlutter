@@ -116,17 +116,17 @@ class _TripListViewState extends ConsumerState<TripListView> {
             borderRadius: BorderRadius.circular(6)),
         padding: const EdgeInsets.only(left: 5, right: 5),
         width: 43,
-        child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              buildFuleWidget(trip.averageFuelConsumption),
-              const Text("L/100km",
-                  style: TextStyle(
-                      color: Colors.white38,
-                      fontSize: 7,
-                      fontFamily: "PingFangSC-Regular"))
-            ]));
+        height: 38,
+        child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  buildFuleWidget(trip.averageFuelConsumption),
+                  const Text("l/100km",
+                      style: TextStyle(color: Colors.white38, fontSize: 7))
+                ])));
   }
 
   Widget buildFuleWidget(double value) {
@@ -174,7 +174,10 @@ class _TripListViewState extends ConsumerState<TripListView> {
           },
           background: tripNoteDismissBg,
           secondaryBackground: tripNoteDismissBg2,
-          child: ListTile(title: Text(note.note, maxLines: 1), dense: true));
+          child: ListTile(
+              title:
+                  Text(note.note, maxLines: 1, overflow: TextOverflow.ellipsis),
+              dense: true));
     }).toList(growable: false);
   }
 
