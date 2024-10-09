@@ -1,6 +1,10 @@
+import 'dart:convert';
+
+import 'package:cyberme_flutter/pocket/config.dart';
 import 'package:cyberme_flutter/pocket/viewmodels/backup.dart';
 import 'package:cyberme_flutter/pocket/views/util.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -55,6 +59,86 @@ class _BackupViewState extends ConsumerState<BackupView> {
     data = ref.watch(backupFilterProvider.call(selectServer ?? ""));
     return Scaffold(
         appBar: AppBar(title: const Text("Backups"), actions: [
+          IconButton(
+              onPressed: () async {
+                final pass = TextEditingController();
+                var expiredDay = 10;
+                final passUserPassed = await showDialog<String>(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                            title: const Text("Enter password"),
+                            content: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  TextField(
+                                      controller: pass,
+                                      obscureText: true,
+                                      decoration: const InputDecoration(
+                                          hintText: "Password")),
+                                  DropdownButton(
+                                      onChanged: (e) {
+                                        expiredDay = e!;
+                                      },
+                                      value: expiredDay,
+                                      items: List.generate(
+                                              12,
+                                              (index) =>
+                                                  (index + 1) * expiredDay)
+                                          .map((e) => DropdownMenuItem(
+                                                value: e,
+                                                child: Text(
+                                                    e.toString() + " days"),
+                                              ))
+                                          .toList())
+                                ]),
+                            actions: [
+                              TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop(pass.text);
+                                  },
+                                  child: const Text("OK"))
+                            ]));
+                if (passUserPassed != null && passUserPassed.isNotEmpty) {
+                  final res = encryptPassword(
+                      passUserPassed, 60 * 60 * 24 * expiredDay);
+                  showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                              title: const Text("密钥已生成"),
+                              content: Text("您的密钥已生成，过期时间为" +
+                                  expiredDay.toString() +
+                                  "天"),
+                              actions: [
+                                TextButton(
+                                    onPressed: () {
+                                      Clipboard.setData(
+                                          ClipboardData(text: res));
+                                      showSimpleMessage(context,
+                                          content: "密钥已拷贝", useSnackBar: true);
+                                    },
+                                    child: const Text("拷贝密钥")),
+                                TextButton(
+                                    onPressed: () {
+                                      final newCode = base64Encode(
+                                          utf8.encode("corkine:$res"));
+                                      Clipboard.setData(
+                                          ClipboardData(text: newCode));
+                                      showSimpleMessage(context,
+                                          content: "密钥已拷贝", useSnackBar: true);
+                                    },
+                                    child: const Text("拷贝 Basic 认证信息")),
+                                TextButton(
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(),
+                                    child: const Text("OK"))
+                              ]));
+                } else {
+                  showSimpleMessage(context,
+                      content: "密码不能为空", useSnackBar: true);
+                }
+              },
+              icon: const Icon(Icons.password)),
           IconButton(
               onPressed: () async =>
                   await ref.read(backupsProvider.notifier).append(),
