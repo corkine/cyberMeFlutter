@@ -21,6 +21,7 @@ import 'package:cyberme_flutter/pocket/views/think/secret_block.dart';
 import 'views/info/blog.dart';
 import 'views/info/disaptch.dart';
 import 'views/info/psych.dart';
+import 'views/info/work.dart';
 import 'views/live/blue.dart';
 import 'views/live/car/car.dart';
 import 'views/think/gpt.dart';
@@ -285,6 +286,13 @@ final apps = {
     "addToContext": false,
     "icon": Icons.bookmark
   },
+  "work": {
+    "name": "工作日历",
+    "view": (c) => const WorkView(),
+    "addToMenu": true,
+    "addToContext": false,
+    "icon": Icons.work
+  }
 };
 
 class PocketHome extends StatefulWidget {
