@@ -138,6 +138,13 @@ class _WorkViewState extends ConsumerState<WorkView> {
           padding: const EdgeInsets.only(left: 4, right: 4, bottom: 1),
         )
     ]);
+    final today = df.parse(item.date);
+    final weekOne = today.subtract(Duration(days: today.weekday - 1));
+    var summary = 0.0;
+    for (int i = 0; i < 7; i++) {
+      final d = df.format(weekOne.add(Duration(days: i)));
+      summary += (data[d] as WorkItem?)?.workHour ?? 0;
+    }
     return Card(
         elevation: 10,
         child: Padding(
@@ -165,6 +172,7 @@ class _WorkViewState extends ConsumerState<WorkView> {
                       item.workDay
                           ? Text("工作时长：${item.workHour} 小时")
                           : const Text("休息日"),
+                      Text("本周累计：${summary.toStringAsFixed(1)} 小时"),
                       const SizedBox(height: 2),
                       const SizedBox(height: 5),
                     ]))));
