@@ -20,6 +20,7 @@ import 'package:cyberme_flutter/pocket/views/think/block.dart';
 import 'package:cyberme_flutter/pocket/views/think/secret_block.dart';
 import 'views/info/blog.dart';
 import 'views/info/disaptch.dart';
+import 'views/info/psy1003.dart';
 import 'views/info/psych.dart';
 import 'views/info/work.dart';
 import 'views/live/blue.dart';
@@ -292,6 +293,13 @@ final apps = {
     "addToMenu": true,
     "addToContext": false,
     "icon": Icons.work
+  },
+  "psy1003": {
+    "name": "实验1003",
+    "view": (c) => const Psy1003View(),
+    "addToMenu": true,
+    "addToContext": false,
+    "icon": Icons.psychology
   }
 };
 

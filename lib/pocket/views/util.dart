@@ -140,6 +140,13 @@ DateTime getThisWeekMonday() {
   return DateTime(monday.year, monday.month, monday.day);
 }
 
+mixin TimeMixin {
+  late DateTime now = DateTime.now();
+  late DateTime weekDayOne = getThisWeekMonday();
+  late DateTime lastWeekDayOne = weekDayOne.subtract(const Duration(days: 7));
+  late DateTime today = DateTime(now.year, now.month, now.day);
+}
+
 Widget buildRichDate(DateTime? date,
     {required DateTime today,
     required DateTime weekDayOne,
