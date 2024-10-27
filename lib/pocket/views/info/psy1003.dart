@@ -40,15 +40,19 @@ class _Psy1003ViewState extends ConsumerState<Psy1003View> with TimeMixin {
                                   const TextStyle(fontWeight: FontWeight.bold)),
                           const SizedBox(width: 5),
                           Text(d.name + ", ${d.age}, ${d.gender}"),
+                          const Spacer(),
+                          Text(d.version,
+                              style: const TextStyle(
+                                  fontSize: 10, color: Colors.blueGrey)),
                         ])
                       ]),
                   title: Row(children: [
                     buildRichDate(d.time,
                         today: today,
                         weekDayOne: weekDayOne,
-                        lastWeekDayOne: lastWeekDayOne),
+                        lastWeekDayOne: lastWeekDayOne,
+                        dateFormat: "yyyy-MM-dd HH:mm"),
                     const Spacer(),
-                    Text(d.version),
                     const SizedBox(width: 5),
                     Container(
                         decoration: BoxDecoration(
