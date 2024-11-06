@@ -304,7 +304,7 @@ final apps = {
   },
   "image": {
     "name": "镜像服务",
-    "view": (c) => const RegistryView(),
+    "view": (c) => const ImageView(),
     "addToMenu": true,
     "addToContext": false,
     "icon": Icons.view_in_ar

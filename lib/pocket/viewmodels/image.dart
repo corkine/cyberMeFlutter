@@ -22,15 +22,15 @@ class Registry with _$Registry {
 }
 
 @freezed
-class Container with _$Container {
-  factory Container(
+class Container1 with _$Container1 {
+  factory Container1(
       {@Default("") String id,
       @Default("") String note,
       @Default("") String namespace,
-      @Default({}) Map<String, Tag> tags}) = _Container;
+      @Default({}) Map<String, Tag> tags}) = _Container1;
 
-  factory Container.fromJson(Map<String, dynamic> json) =>
-      _$ContainerFromJson(json);
+  factory Container1.fromJson(Map<String, dynamic> json) =>
+      _$Container1FromJson(json);
 }
 
 @freezed
@@ -48,7 +48,7 @@ class Tag with _$Tag {
 class Images with _$Images {
   factory Images({
     @Default({}) Map<String, Registry> registry,
-    @Default({}) Map<String, Map<String, Container>> images,
+    @Default({}) Map<String, Map<String, Container1>> images,
   }) = _Images;
 
   factory Images.fromJson(Map<String, dynamic> json) => _$ImagesFromJson(json);
@@ -79,11 +79,11 @@ class ImageDb extends _$ImageDb {
     return "删除仓库成功";
   }
 
-  Future<String> editContainer(Container container) async {
+  Future<String> editContainer(Container1 container) async {
     return "更新镜像成功";
   }
 
-  Future<String> deleteContainer(Container container) async {
+  Future<String> deleteContainer(Container1 container) async {
     final images = state.value;
     final nsId = container.namespace;
     if (images == null) return "未找到数据";
@@ -108,10 +108,10 @@ Future<List<Registry>> getRegistry(GetRegistryRef ref) async {
 }
 
 @riverpod
-Future<List<Container>> getContainer(GetContainerRef ref) async {
+Future<List<Container1>> getContainer(GetContainerRef ref) async {
   final res =
       await ref.watch(imageDbProvider.selectAsync((data) => data.images));
-  List<Container> list = [];
+  List<Container1> list = [];
   for (var item in res.entries) {
     for (var item2 in item.value.entries) {
       list.add(item2.value.copyWith(id: item2.key, namespace: item.key));

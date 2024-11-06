@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:flutter/material.dart' as m;
 import '../../viewmodels/image.dart';
 import '../util.dart';
 
@@ -37,7 +36,7 @@ class _ContainerViewState extends ConsumerState<ContainerView> {
                 }
                 return false;
               },
-              secondaryBackground: m.Container(
+              secondaryBackground: Container(
                   color: Colors.red,
                   child: const Align(
                       alignment: Alignment.centerRight,
@@ -46,7 +45,7 @@ class _ContainerViewState extends ConsumerState<ContainerView> {
                           child: Text("删除",
                               style: TextStyle(
                                   color: Colors.white, fontSize: 15))))),
-              background: m.Container(
+              background: Container(
                   color: Colors.blue,
                   child: const Align(
                       alignment: Alignment.centerLeft,
@@ -63,7 +62,10 @@ class _ContainerViewState extends ConsumerState<ContainerView> {
                       Text(item.id, style: const TextStyle(fontSize: 14)),
                     ],
                   ),
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.of(context)
+                        .push(MaterialPageRoute(builder: (c) => TagView(item)));
+                  },
                   dense: true,
                   subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -79,7 +81,7 @@ class _ContainerViewState extends ConsumerState<ContainerView> {
   }
 
   Widget buildContainer(String reg) {
-    return m.Container(
+    return Container(
         padding: const EdgeInsets.only(
           left: 4,
           right: 4,
@@ -90,5 +92,113 @@ class _ContainerViewState extends ConsumerState<ContainerView> {
             color: Theme.of(context).primaryColor.withOpacity(0.2)),
         child: Text(reg,
             style: const TextStyle(fontSize: 12, fontFamily: "Consolas")));
+  }
+}
+
+class TagView extends ConsumerStatefulWidget {
+  final Container1 item;
+  const TagView(this.item, {super.key});
+
+  @override
+  ConsumerState<ConsumerStatefulWidget> createState() => _TagViewState();
+}
+
+class _TagViewState extends ConsumerState<TagView> {
+  late Container1 item = widget.item;
+  late List<Tag> tags =
+      item.tags.entries.map((e) => e.value.copyWith(id: e.key)).toList();
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(
+          title: DefaultTextStyle(
+            style: const TextStyle(fontSize: 18, color: Colors.black),
+            child: Row(
+              children: [
+                Text(item.namespace),
+                const Text(" / "),
+                Text(item.id)
+              ],
+            ),
+          ),
+          actions: [
+            IconButton(onPressed: () {}, icon: const Icon(Icons.add)),
+            const SizedBox(width: 5)
+          ],
+        ),
+        body: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          if (item.note.isNotEmpty)
+            Container(
+                width: double.infinity,
+                margin: const EdgeInsets.only(left: 8, right: 8, top: 3),
+                decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(5)),
+                padding: const EdgeInsets.only(left: 15, bottom: 10, top: 10),
+                child: Text(item.note,
+                    style: TextStyle(
+                        color:
+                            Theme.of(context).colorScheme.onPrimaryContainer))),
+          Expanded(
+            child: ListView.builder(
+                itemBuilder: (context, idx) {
+                  final tag = tags[idx];
+                  return ListTile(
+                    title: Transform.translate(
+                        offset: const Offset(-3, 0),
+                        child: Row(children: [
+                          const Icon(Icons.tag_outlined, size: 17),
+                          Text(tag.id),
+                          const Spacer(),
+                          InkResponse(
+                              onTap: () {},
+                              child: Container(
+                                  margin: const EdgeInsets.only(
+                                      left: 3, right: 3, bottom: 3),
+                                  child: const Text("+")))
+                        ])),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          tag.note,
+                          style: TextStyle(
+                              fontSize: 12,
+                              color: Theme.of(context).colorScheme.secondary),
+                        ),
+                        const SizedBox(height: 3),
+                        ...tag.registry.map((e) => ListTile(
+                            title: Padding(
+                                padding: const EdgeInsets.only(bottom: 10),
+                                child: Text(e.toUpperCase(),
+                                    style: const TextStyle(
+                                        fontFamily: "Consolas"))),
+                            contentPadding: const EdgeInsets.only(left: 0),
+                            subtitle: Wrap(
+                              spacing: 3,
+                              runSpacing: 3,
+                              children: [
+                                OutlinedButton(
+                                    onPressed: () {},
+                                    child: const Text("docker login")),
+                                OutlinedButton(
+                                    onPressed: () {},
+                                    child: const Text("docker pull")),
+                                OutlinedButton(
+                                    onPressed: () {},
+                                    child: const Text("docker tag")),
+                                OutlinedButton(
+                                    onPressed: () {},
+                                    child: const Text("docker push"))
+                              ],
+                            ),
+                            dense: true))
+                      ],
+                    ),
+                  );
+                },
+                itemCount: tags.length),
+          )
+        ]));
   }
 }
