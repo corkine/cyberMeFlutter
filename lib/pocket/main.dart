@@ -25,6 +25,7 @@ import 'views/info/psych.dart';
 import 'views/info/work.dart';
 import 'views/live/blue.dart';
 import 'views/live/car/car.dart';
+import 'views/server/image.dart';
 import 'views/think/gpt.dart';
 import 'views/live/medic.dart';
 import 'views/think/sticky.dart';
@@ -300,6 +301,13 @@ final apps = {
     "addToMenu": true,
     "addToContext": false,
     "icon": Icons.psychology
+  },
+  "image": {
+    "name": "镜像服务",
+    "view": (c) => const RegistryView(),
+    "addToMenu": true,
+    "addToContext": false,
+    "icon": Icons.view_in_ar
   }
 };
 
