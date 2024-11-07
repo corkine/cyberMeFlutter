@@ -1,7 +1,8 @@
+import 'package:cyberme_flutter/pocket/views/server/image/bar.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import '../../viewmodels/image.dart';
-import '../util.dart';
+import '../../../viewmodels/image.dart';
+import '../../util.dart';
 
 class ContainerView extends ConsumerStatefulWidget {
   const ContainerView({super.key});
@@ -140,65 +141,51 @@ class _TagViewState extends ConsumerState<TagView> {
                         color:
                             Theme.of(context).colorScheme.onPrimaryContainer))),
           Expanded(
-            child: ListView.builder(
-                itemBuilder: (context, idx) {
-                  final tag = tags[idx];
-                  return ListTile(
-                    title: Transform.translate(
-                        offset: const Offset(-3, 0),
-                        child: Row(children: [
-                          const Icon(Icons.tag_outlined, size: 17),
-                          Text(tag.id),
-                          const Spacer(),
-                          InkResponse(
-                              onTap: () {},
-                              child: Container(
-                                  margin: const EdgeInsets.only(
-                                      left: 3, right: 3, bottom: 3),
-                                  child: const Text("+")))
-                        ])),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          tag.note,
-                          style: TextStyle(
-                              fontSize: 12,
-                              color: Theme.of(context).colorScheme.secondary),
-                        ),
-                        const SizedBox(height: 3),
-                        ...tag.registry.map((e) => ListTile(
-                            title: Padding(
-                                padding: const EdgeInsets.only(bottom: 10),
-                                child: Text(e.toUpperCase(),
-                                    style: const TextStyle(
-                                        fontFamily: "Consolas"))),
-                            contentPadding: const EdgeInsets.only(left: 0),
-                            subtitle: Wrap(
-                              spacing: 3,
-                              runSpacing: 3,
-                              children: [
-                                OutlinedButton(
-                                    onPressed: () {},
-                                    child: const Text("docker login")),
-                                OutlinedButton(
-                                    onPressed: () {},
-                                    child: const Text("docker pull")),
-                                OutlinedButton(
-                                    onPressed: () {},
-                                    child: const Text("docker tag")),
-                                OutlinedButton(
-                                    onPressed: () {},
-                                    child: const Text("docker push"))
-                              ],
-                            ),
-                            dense: true))
-                      ],
-                    ),
-                  );
-                },
-                itemCount: tags.length),
-          )
+              child: ListView.builder(
+                  itemBuilder: (context, idx) {
+                    final tag = tags[idx];
+                    return ListTile(
+                        title: Transform.translate(
+                            offset: const Offset(-3, 0),
+                            child: Row(children: [
+                              const Icon(Icons.tag_outlined, size: 17),
+                              Text(tag.id),
+                              const Spacer(),
+                              InkWell(
+                                  onTap: () {},
+                                  child: Container(
+                                      margin: const EdgeInsets.only(
+                                          left: 3, right: 3, bottom: 3),
+                                      child: const Text("+"))),
+                              Transform.translate(
+                                offset: const Offset(8, 0),
+                                child: InkWell(
+                                    onTap: () {},
+                                    child: Container(
+                                        margin: const EdgeInsets.only(
+                                            left: 3, right: 3, bottom: 3),
+                                        child: const Text("×"))),
+                              )
+                            ])),
+                        subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                tag.note,
+                                style: TextStyle(
+                                    fontSize: 12,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .secondary),
+                              ),
+                              const SizedBox(height: 9),
+                              ...tag.registry.map((e) => Padding(
+                                    padding: const EdgeInsets.only(bottom: 3),
+                                    child: BarView(registry: e),
+                                  ))
+                            ]));
+                  },
+                  itemCount: tags.length))
         ]));
   }
 }

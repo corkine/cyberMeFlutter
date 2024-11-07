@@ -150,7 +150,7 @@ Future<void> initSystemTray() async {
     if (dockedOnWindows) {
       //await windowManager.setAsFrameless();
       await windowManager.setAlignment(
-          Platform.isWindows ? Alignment.bottomRight : Alignment.topLeft);
+          Platform.isWindows ? Alignment.bottomLeft : Alignment.topLeft);
     }
     await windowManager.show();
     await windowManager.focus();

@@ -25,7 +25,7 @@ import 'views/info/psych.dart';
 import 'views/info/work.dart';
 import 'views/live/blue.dart';
 import 'views/live/car/car.dart';
-import 'views/server/image.dart';
+import 'views/server/image/core.dart';
 import 'views/think/gpt.dart';
 import 'views/live/medic.dart';
 import 'views/think/sticky.dart';
