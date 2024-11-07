@@ -91,7 +91,8 @@ class _RegistryViewState extends ConsumerState<RegistryView> {
   }
 
   Future<void> handleEdit(Registry item) async {
-    //TODO 编辑并更新数据库
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => RepoAddEditView(registry: item)));
   }
 }
 
@@ -107,8 +108,9 @@ class _RepoBatchViewState extends ConsumerState<RepoBatchView> {
   late final registry = widget.registry;
   final input = TextEditingController();
   final input2 = TextEditingController();
-  bool showOriginal = true;
   final prefix = TextEditingController();
+  bool showOriginal = true;
+
   @override
   void dispose() {
     input.dispose();
@@ -143,31 +145,26 @@ class _RepoBatchViewState extends ConsumerState<RepoBatchView> {
               child: Padding(
                   padding: const EdgeInsets.only(left: 8, right: 8, bottom: 3),
                   child: TextField(
-                    decoration: const InputDecoration(
-                        contentPadding: EdgeInsets.only(
-                            left: 8, right: 8, top: 8, bottom: 8),
-                        border: OutlineInputBorder(),
-                        hintText: "输入多个仓库名称, 回车区分"),
-                    controller: showOriginal ? input : input2,
-                    expands: true,
-                    maxLines: null,
-                    textAlignVertical: TextAlignVertical.top,
-                    style: const TextStyle(fontSize: 10),
-                    autocorrect: true,
-                  ))),
+                      decoration: const InputDecoration(
+                          contentPadding: EdgeInsets.only(
+                              left: 8, right: 8, top: 8, bottom: 8),
+                          border: OutlineInputBorder(),
+                          hintText: "输入多个仓库名称, 回车区分"),
+                      controller: showOriginal ? input : input2,
+                      expands: true,
+                      maxLines: null,
+                      textAlignVertical: TextAlignVertical.top,
+                      style: const TextStyle(fontSize: 12),
+                      autocorrect: true))),
           Padding(
-            padding: const EdgeInsets.only(left: 8, right: 8),
-            child: Row(
-              children: [
+              padding: const EdgeInsets.only(left: 8, right: 8),
+              child: Row(children: [
                 Expanded(
-                  child: TextField(
-                      controller: prefix,
-                      style: const TextStyle(fontSize: 13),
-                      decoration: const InputDecoration(labelText: "前缀")),
-                )
-              ],
-            ),
-          ),
+                    child: TextField(
+                        controller: prefix,
+                        style: const TextStyle(fontSize: 13),
+                        decoration: const InputDecoration(labelText: "前缀")))
+              ])),
           const SizedBox(height: 10),
           Wrap(children: [
             TextButton(
@@ -265,6 +262,19 @@ class _RepoBatchViewState extends ConsumerState<RepoBatchView> {
                       content: "已复制到剪贴板", useSnackBar: true, duration: 1000);
                 },
                 child: const Text("推送")),
+            TextButton(
+                onPressed: () {
+                  if (input.text.isEmpty) {
+                    showSimpleMessage(context,
+                        content: "请输入仓库名称, 回车区分",
+                        useSnackBar: true,
+                        duration: 5000);
+                    return;
+                  }
+                  showSimpleMessage(context,
+                      content: "已创建记录", useSnackBar: true, duration: 1000);
+                },
+                child: const Text("记录"))
           ]),
           const SizedBox(height: 60)
         ]));
@@ -276,5 +286,105 @@ class _RepoBatchViewState extends ConsumerState<RepoBatchView> {
     if (sp.length > 2) return url;
     if (sp.length > 1) return "docker.io/$url";
     return "docker.io/library/$url";
+  }
+}
+
+class RepoAddEditView extends ConsumerStatefulWidget {
+  final Registry registry;
+  const RepoAddEditView({super.key, required this.registry});
+
+  @override
+  ConsumerState<ConsumerStatefulWidget> createState() =>
+      _RepoAddEditViewState();
+}
+
+class _RepoAddEditViewState extends ConsumerState<RepoAddEditView> {
+  late Registry registry = widget.registry;
+  late bool isAdd = widget.registry.id.isEmpty;
+  final formKey = GlobalKey<FormState>();
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(title: Text(isAdd ? "添加仓库" : "编辑仓库")),
+        body: Form(
+            key: formKey,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            child: Padding(
+                padding: const EdgeInsets.only(left: 10, right: 10),
+                child: Column(children: [
+                  TextFormField(
+                      decoration: const InputDecoration(labelText: "标记"),
+                      initialValue: registry.id,
+                      readOnly: !isAdd,
+                      validator: (v) => v?.isNotEmpty == true ? null : "不能为空",
+                      onSaved: (e) =>
+                          registry = registry.copyWith(id: e ?? "")),
+                  const SizedBox(height: 3),
+                  TextFormField(
+                      decoration: const InputDecoration(labelText: "优先级"),
+                      initialValue: registry.priority.toString(),
+                      validator: (v) =>
+                          int.tryParse(v ?? "") == null ? "不能为空" : null,
+                      onSaved: (e) => registry =
+                          registry.copyWith(priority: int.parse(e!))),
+                  const SizedBox(height: 3),
+                  TextFormField(
+                      decoration: const InputDecoration(labelText: "名称"),
+                      initialValue: registry.note,
+                      validator: (v) => v?.isNotEmpty == true ? null : "不能为空",
+                      onSaved: (e) =>
+                          registry = registry.copyWith(note: e ?? "")),
+                  const SizedBox(height: 3),
+                  TextFormField(
+                      decoration: const InputDecoration(labelText: "用户名"),
+                      initialValue: registry.user,
+                      validator: (v) => v?.isNotEmpty == true ? null : "不能为空",
+                      onSaved: (e) =>
+                          registry = registry.copyWith(user: e ?? "")),
+                  const SizedBox(height: 3),
+                  TextFormField(
+                      decoration: InputDecoration(
+                          labelText: "地址",
+                          suffix: InkWell(
+                              onTap: () {
+                                if (registry.url.isNotEmpty) {
+                                  launchUrlString("https://" + registry.url);
+                                }
+                              },
+                              child:
+                                  const Icon(Icons.open_in_browser, size: 18))),
+                      initialValue: registry.url,
+                      validator: (v) => v?.isNotEmpty == true ? null : "不能为空",
+                      onSaved: (e) =>
+                          registry = registry.copyWith(url: e ?? "")),
+                  const SizedBox(height: 3),
+                  TextFormField(
+                      decoration: InputDecoration(
+                          labelText: "管理地址",
+                          suffix: InkWell(
+                              onTap: () {
+                                if (registry.manageUrl.startsWith("http")) {
+                                  launchUrlString(registry.manageUrl);
+                                }
+                              },
+                              child:
+                                  const Icon(Icons.open_in_browser, size: 18))),
+                      initialValue: registry.manageUrl,
+                      validator: (v) => v?.isNotEmpty == true ? null : "不能为空",
+                      onSaved: (e) =>
+                          registry = registry.copyWith(manageUrl: e ?? "")),
+                  const SizedBox(height: 3),
+                  TextButton(
+                      onPressed: () async {
+                        if (formKey.currentState?.validate() ?? false) {
+                          formKey.currentState?.save();
+                          await ref
+                              .read(imageDbProvider.notifier)
+                              .editOrAddRegistry(registry);
+                          Navigator.pop(context);
+                        }
+                      },
+                      child: const Text("确定"))
+                ]))));
   }
 }

@@ -15,6 +15,7 @@ class Registry with _$Registry {
     @JsonKey(name: "manage-url") @Default("") String manageUrl,
     @Default("") String user,
     @Default("") String id,
+    @Default(0) int priority,
   }) = _Registry;
 
   factory Registry.fromJson(Map<String, dynamic> json) =>
@@ -66,11 +67,16 @@ class ImageDb extends _$ImageDb {
     return res ?? Images();
   }
 
-  Future<String> editRegistry(Registry registry) async {
+  Future<String> editOrAddRegistry(Registry registry) async {
+    final images = state.value;
+    if (images == null) return "未找到数据";
+    final newRegistry = {...images.registry, registry.id: registry};
+    state = AsyncData(images.copyWith(registry: newRegistry));
     return "更新仓库成功";
   }
 
   Future<String> deleteRegistry(String registryId) async {
+    //TODO: 删除前处理镜像中残留的数据，要么将其级联删除，要么通知用户
     final images = state.value;
     if (images == null) return "未找到数据";
     final newRegistry = {...images.registry};
@@ -94,6 +100,11 @@ class ImageDb extends _$ImageDb {
     state = AsyncData(images.copyWith(images: newNsImages));
     return "删除镜像成功";
   }
+
+  Future<String> saveToRemote() async {
+    await settingUpload(tag, state.value!.toJson());
+    return "保存成功";
+  }
 }
 
 @riverpod
@@ -104,6 +115,7 @@ Future<List<Registry>> getRegistry(GetRegistryRef ref) async {
   for (var item in res.entries) {
     list.add(item.value.copyWith(id: item.key));
   }
+  list.sort((a, b) => b.priority - a.priority);
   return list;
 }
 

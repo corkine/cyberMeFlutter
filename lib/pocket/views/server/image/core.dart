@@ -1,7 +1,9 @@
 import 'package:cyberme_flutter/pocket/views/server/image/container.dart';
+import 'package:cyberme_flutter/pocket/views/util.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../../../viewmodels/image.dart';
 import 'registry.dart';
 
 class ImageView extends ConsumerStatefulWidget {
@@ -17,7 +19,13 @@ class _ImageViewState extends ConsumerState<ImageView> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(title: const Text("容器镜像管理"), actions: [
-          IconButton(onPressed: () async {}, icon: const Icon(Icons.save)),
+          IconButton(
+              onPressed: () async {
+                final a =
+                    await ref.watch(imageDbProvider.notifier).saveToRemote();
+                await showSimpleMessage(context, content: a, useSnackBar: true);
+              },
+              icon: const Icon(Icons.save)),
           const SizedBox(width: 10)
         ]),
         body: IndexedStack(
@@ -27,6 +35,8 @@ class _ImageViewState extends ConsumerState<ImageView> {
             onPressed: () {
               Widget? view;
               switch (_currentIndex) {
+                case 0:
+                  view = RepoAddEditView(registry: Registry());
                 default:
                   break;
               }
