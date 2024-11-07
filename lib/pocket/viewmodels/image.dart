@@ -9,14 +9,14 @@ part 'image.g.dart';
 
 @freezed
 class Registry with _$Registry {
-  factory Registry({
-    @Default("") String note,
-    @Default("") String url,
-    @JsonKey(name: "manage-url") @Default("") String manageUrl,
-    @Default("") String user,
-    @Default("") String id,
-    @Default(0) int priority,
-  }) = _Registry;
+  factory Registry(
+      {@Default("") String note,
+      @Default("") String url,
+      @JsonKey(name: "manage-url") @Default("") String manageUrl,
+      @Default("") String user,
+      @Default("") String id,
+      @Default(0) int priority,
+      @Default(0) int expiredAt}) = _Registry;
 
   factory Registry.fromJson(Map<String, dynamic> json) =>
       _$RegistryFromJson(json);

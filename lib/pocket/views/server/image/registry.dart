@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 import '../../../viewmodels/image.dart';
@@ -33,10 +34,16 @@ class _RegistryViewState extends ConsumerState<RegistryView> {
   @override
   Widget build(BuildContext context) {
     final data = ref.watch(getRegistryProvider).value ?? [];
+    final now = DateTime.now();
     return ListView.builder(
         itemCount: data.length,
         itemBuilder: (context, index) {
           final item = data[index];
+          final expired = item.expiredAt > 0
+              ? DateTime.fromMillisecondsSinceEpoch(item.expiredAt)
+                  .difference(now)
+                  .inDays
+              : 0;
           return Dismissible(
               key: ValueKey(item.id),
               confirmDismiss: (direction) async {
@@ -58,22 +65,29 @@ class _RegistryViewState extends ConsumerState<RegistryView> {
               secondaryBackground: bg1,
               background: bg2,
               child: ListTile(
-                  title: Row(children: [
-                    Container(
-                        padding: const EdgeInsets.only(left: 4, right: 4),
-                        margin: const EdgeInsets.only(right: 4),
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(5),
-                            color: Theme.of(context)
-                                .primaryColor
-                                .withOpacity(0.2)),
-                        child: Text(item.id.toUpperCase(),
+                  title: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                            padding: const EdgeInsets.only(left: 4, right: 4),
+                            margin: const EdgeInsets.only(right: 4),
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(5),
+                                color: Theme.of(context)
+                                    .primaryColor
+                                    .withOpacity(0.2)),
+                            child: Text(item.id.toUpperCase(),
+                                style: const TextStyle(
+                                    fontSize: 12, fontFamily: "Consolas"))),
+                        Text(item.note,
                             style: const TextStyle(
-                                fontSize: 12, fontFamily: "Consolas"))),
-                    Text(item.note,
-                        style: const TextStyle(
-                            fontSize: 13, fontWeight: FontWeight.bold))
-                  ]),
+                                fontSize: 13, fontWeight: FontWeight.bold)),
+                        const SizedBox(width: 6),
+                        if (expired != 0 && expired < 30)
+                          Text("/ $expired 天后过期",
+                              style: const TextStyle(
+                                  color: Colors.red, fontSize: 12))
+                      ]),
                   onTap: () => handleBatch(item),
                   trailing: IconButton(
                       onPressed: () => launchUrlString(item.manageUrl),
@@ -302,6 +316,16 @@ class _RepoAddEditViewState extends ConsumerState<RepoAddEditView> {
   late Registry registry = widget.registry;
   late bool isAdd = widget.registry.id.isEmpty;
   final formKey = GlobalKey<FormState>();
+  final dateController = TextEditingController();
+  @override
+  void initState() {
+    super.initState();
+    dateController.text = registry.expiredAt == 0
+        ? "永久有效"
+        : DateFormat("yyyy-MM-dd")
+            .format(DateTime.fromMillisecondsSinceEpoch(registry.expiredAt));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -373,6 +397,32 @@ class _RepoAddEditViewState extends ConsumerState<RepoAddEditView> {
                       validator: (v) => v?.isNotEmpty == true ? null : "不能为空",
                       onSaved: (e) =>
                           registry = registry.copyWith(manageUrl: e ?? "")),
+                  const SizedBox(height: 3),
+                  TextFormField(
+                      controller: dateController,
+                      decoration: InputDecoration(
+                          labelText: "到期时间",
+                          suffix: InkWell(
+                            onTap: () async {
+                              final firstDate = DateTime.now();
+                              final lastDate =
+                                  firstDate.add(const Duration(days: 365 * 2));
+                              final date = await showDatePicker(
+                                  context: context,
+                                  firstDate: firstDate,
+                                  lastDate: lastDate);
+                              if (date != null) {
+                                registry = registry.copyWith(
+                                    expiredAt: date.millisecondsSinceEpoch);
+                                dateController.text =
+                                    DateFormat("yyyy-MM-dd").format(date);
+                              }
+                            },
+                            child: const Icon(Icons.calendar_today, size: 16),
+                          )),
+                      readOnly: true,
+                      validator: (v) => null,
+                      onSaved: (e) => {}),
                   const SizedBox(height: 3),
                   TextButton(
                       onPressed: () async {
