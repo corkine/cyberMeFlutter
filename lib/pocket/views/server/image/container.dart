@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../viewmodels/image.dart';
 import '../../util.dart';
+import 'tag.dart';
 
 class ContainerView extends ConsumerStatefulWidget {
   const ContainerView({super.key});
@@ -57,17 +58,13 @@ class _ContainerViewState extends ConsumerState<ContainerView> {
                               style: TextStyle(
                                   color: Colors.white, fontSize: 15))))),
               child: ListTile(
-                  title: Row(
-                    children: [
-                      Text(item.namespace),
-                      const Text(" / "),
-                      Text(item.id, style: const TextStyle(fontSize: 14)),
-                    ],
-                  ),
-                  onTap: () {
-                    Navigator.of(context)
-                        .push(MaterialPageRoute(builder: (c) => TagView(item)));
-                  },
+                  title: Row(children: [
+                    Text(item.namespace),
+                    const Text(" / "),
+                    Text(item.id, style: const TextStyle(fontSize: 14))
+                  ]),
+                  onTap: () => Navigator.of(context)
+                      .push(MaterialPageRoute(builder: (c) => TagView(item))),
                   onLongPress: () {
                     Navigator.of(context).push(MaterialPageRoute(
                         builder: (context) => ContainerAddEditView(
@@ -100,100 +97,6 @@ class _ContainerViewState extends ConsumerState<ContainerView> {
             color: Theme.of(context).primaryColor.withOpacity(0.2)),
         child: Text(reg,
             style: const TextStyle(fontSize: 12, fontFamily: "Consolas")));
-  }
-}
-
-class TagView extends ConsumerStatefulWidget {
-  final Container1 item;
-  const TagView(this.item, {super.key});
-
-  @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _TagViewState();
-}
-
-class _TagViewState extends ConsumerState<TagView> {
-  late Container1 item = widget.item;
-  late List<Tag> tags =
-      item.tags.entries.map((e) => e.value.copyWith(id: e.key)).toList();
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: DefaultTextStyle(
-            style: const TextStyle(fontSize: 18, color: Colors.black),
-            child: Row(
-              children: [
-                Text(item.namespace),
-                const Text(" / "),
-                Text(item.id)
-              ],
-            ),
-          ),
-          actions: [
-            IconButton(onPressed: () {}, icon: const Icon(Icons.add)),
-            const SizedBox(width: 5)
-          ],
-        ),
-        body: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          if (item.note.isNotEmpty)
-            Container(
-                width: double.infinity,
-                margin: const EdgeInsets.only(left: 8, right: 8, top: 3),
-                decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primaryContainer,
-                    borderRadius: BorderRadius.circular(5)),
-                padding: const EdgeInsets.only(left: 15, bottom: 10, top: 10),
-                child: Text(item.note,
-                    style: TextStyle(
-                        color:
-                            Theme.of(context).colorScheme.onPrimaryContainer))),
-          Expanded(
-              child: ListView.builder(
-                  itemBuilder: (context, idx) {
-                    final tag = tags[idx];
-                    return ListTile(
-                        title: Transform.translate(
-                            offset: const Offset(-3, 0),
-                            child: Row(children: [
-                              const Icon(Icons.tag_outlined, size: 17),
-                              Text(tag.id),
-                              const Spacer(),
-                              InkWell(
-                                  onTap: () {},
-                                  child: Container(
-                                      margin: const EdgeInsets.only(
-                                          left: 3, right: 3, bottom: 3),
-                                      child: const Text("+"))),
-                              Transform.translate(
-                                offset: const Offset(8, 0),
-                                child: InkWell(
-                                    onTap: () {},
-                                    child: Container(
-                                        margin: const EdgeInsets.only(
-                                            left: 3, right: 3, bottom: 3),
-                                        child: const Text("×"))),
-                              )
-                            ])),
-                        subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                tag.note,
-                                style: TextStyle(
-                                    fontSize: 12,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .secondary),
-                              ),
-                              const SizedBox(height: 9),
-                              ...tag.registry.map((e) => Padding(
-                                    padding: const EdgeInsets.only(bottom: 3),
-                                    child: BarView(registry: e),
-                                  ))
-                            ]));
-                  },
-                  itemCount: tags.length))
-        ]));
   }
 }
 

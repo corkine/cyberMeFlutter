@@ -108,6 +108,35 @@ class ImageDb extends _$ImageDb {
     return "删除镜像成功";
   }
 
+  Future<String> editOrAddTag(Container1 container, Tag tag) async {
+    final images = state.value;
+    if (images == null) return "未找到数据";
+    final newTags = {...container.tags, tag.id: tag};
+    state = AsyncData(images.copyWith(images: {
+      ...images.images,
+      container.namespace: {
+        ...?images.images[container.namespace],
+        container.id: container.copyWith(tags: newTags),
+      }
+    }));
+    return "更新标签成功";
+  }
+
+  Future<String> deleteTag(Container1 container, Tag tag) async {
+    final images = state.value;
+    if (images == null) return "未找到数据";
+    final newTags = {...container.tags};
+    newTags.remove(tag.id);
+    state = AsyncData(images.copyWith(images: {
+      ...images.images,
+      container.namespace: {
+        ...?images.images[container.namespace],
+        container.id: container.copyWith(tags: newTags),
+      }
+    }));
+    return "删除标签成功";
+  }
+
   Future<String> saveToRemote() async {
     await settingUpload(tag, state.value!.toJson());
     return "保存成功";
