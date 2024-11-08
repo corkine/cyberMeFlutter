@@ -85,7 +85,14 @@ class ImageDb extends _$ImageDb {
     return "删除仓库成功";
   }
 
-  Future<String> editContainer(Container1 container) async {
+  Future<String> editOrAddContainer(Container1 container) async {
+    final images = state.value;
+    final nsId = container.namespace;
+    if (images == null) return "未找到数据";
+    if (nsId.isEmpty) return "命名空间不能为空";
+    final newNsImages = {...?images.images[nsId], container.id: container};
+    final newImages = {...images.images, nsId: newNsImages};
+    state = AsyncData(images.copyWith(images: newImages));
     return "更新镜像成功";
   }
 

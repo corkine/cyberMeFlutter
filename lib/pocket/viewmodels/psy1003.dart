@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:http/http.dart';
-import 'package:intl/intl.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'psy1003.freezed.dart';

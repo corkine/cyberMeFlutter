@@ -32,7 +32,8 @@ class _ContainerViewState extends ConsumerState<ContainerView> {
                     return true;
                   }
                 } else {
-                  //showEditDialog(activity);
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => ContainerAddEditView(item)));
                   return false;
                 }
                 return false;
@@ -66,6 +67,12 @@ class _ContainerViewState extends ConsumerState<ContainerView> {
                   onTap: () {
                     Navigator.of(context)
                         .push(MaterialPageRoute(builder: (c) => TagView(item)));
+                  },
+                  onLongPress: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => ContainerAddEditView(
+                            item.copyWith(id: "", tags: {}),
+                            copyFromOld: true)));
                   },
                   dense: true,
                   subtitle: Column(
@@ -187,5 +194,74 @@ class _TagViewState extends ConsumerState<TagView> {
                   },
                   itemCount: tags.length))
         ]));
+  }
+}
+
+class ContainerAddEditView extends ConsumerStatefulWidget {
+  final Container1 item;
+  final bool copyFromOld;
+  const ContainerAddEditView(this.item, {super.key, this.copyFromOld = false});
+
+  @override
+  ConsumerState<ConsumerStatefulWidget> createState() =>
+      _ContainerAddEditViewState();
+}
+
+class _ContainerAddEditViewState extends ConsumerState<ContainerAddEditView> {
+  late Container1 item = widget.item;
+  late bool isEdit = item.id.isNotEmpty;
+  final key = GlobalKey<FormState>();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(
+            title: item.id.isEmpty
+                ? widget.copyFromOld
+                    ? const Text("从模板新建镜像")
+                    : const Text("新建镜像")
+                : const Text("修改镜像")),
+        body: Padding(
+            padding: const EdgeInsets.only(left: 8, right: 8),
+            child: Form(
+                key: key,
+                child: Column(children: [
+                  TextFormField(
+                    readOnly: isEdit,
+                    onSaved: (v) => item = item.copyWith(namespace: v ?? ""),
+                    validator: (value) =>
+                        value?.isEmpty ?? true ? "请输入名称" : null,
+                    initialValue: item.namespace,
+                    decoration: const InputDecoration(labelText: "命名空间"),
+                  ),
+                  const SizedBox(height: 3),
+                  TextFormField(
+                    readOnly: isEdit,
+                    onSaved: (v) => item = item.copyWith(id: v ?? ""),
+                    validator: (value) =>
+                        value?.isEmpty ?? true ? "请输入名称" : null,
+                    initialValue: item.id,
+                    decoration: const InputDecoration(labelText: "名称"),
+                  ),
+                  const SizedBox(height: 3),
+                  TextFormField(
+                    onSaved: (v) => item = item.copyWith(note: v ?? ""),
+                    validator: (value) => null,
+                    initialValue: item.note,
+                    decoration: const InputDecoration(labelText: "备注信息"),
+                  ),
+                  const SizedBox(height: 13),
+                  ElevatedButton(
+                      onPressed: () async {
+                        if (key.currentState!.validate()) {
+                          key.currentState!.save();
+                          await ref
+                              .read(imageDbProvider.notifier)
+                              .editOrAddContainer(item);
+                          Navigator.pop(context);
+                        }
+                      },
+                      child: const Text("保存"))
+                ]))));
   }
 }

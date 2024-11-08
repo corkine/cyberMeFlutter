@@ -37,6 +37,8 @@ class _ImageViewState extends ConsumerState<ImageView> {
               switch (_currentIndex) {
                 case 0:
                   view = RepoAddEditView(registry: Registry());
+                case 1:
+                  view = ContainerAddEditView(Container1());
                 default:
                   break;
               }

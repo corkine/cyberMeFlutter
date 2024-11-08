@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -57,7 +58,7 @@ class _RegistryViewState extends ConsumerState<RegistryView> {
                     return true;
                   }
                 } else {
-                  await handleEdit(item);
+                  await handleEdit(item, false);
                   return false;
                 }
                 return false;
@@ -89,6 +90,7 @@ class _RegistryViewState extends ConsumerState<RegistryView> {
                                   color: Colors.red, fontSize: 12))
                       ]),
                   onTap: () => handleBatch(item),
+                  onLongPress: () => handleEdit(item, true),
                   trailing: IconButton(
                       onPressed: () => launchUrlString(item.manageUrl),
                       icon: const Icon(Icons.open_in_browser_sharp)),
@@ -104,9 +106,11 @@ class _RegistryViewState extends ConsumerState<RegistryView> {
         MaterialPageRoute(builder: (context) => RepoBatchView(registry: item)));
   }
 
-  Future<void> handleEdit(Registry item) async {
+  Future<void> handleEdit(Registry item, bool asNew) async {
     Navigator.of(context).push(MaterialPageRoute(
-        builder: (context) => RepoAddEditView(registry: item)));
+        builder: (context) => RepoAddEditView(
+            copyFromOld: asNew,
+            registry: asNew ? item.copyWith(id: "", expiredAt: 0) : item)));
   }
 }
 
@@ -124,6 +128,7 @@ class _RepoBatchViewState extends ConsumerState<RepoBatchView> {
   final input2 = TextEditingController();
   final prefix = TextEditingController();
   bool showOriginal = true;
+  bool flat = false;
 
   @override
   void dispose() {
@@ -138,15 +143,13 @@ class _RepoBatchViewState extends ConsumerState<RepoBatchView> {
     return Scaffold(
         appBar: AppBar(
             title: DefaultTextStyle(
-              style: const TextStyle(fontSize: 13, color: Colors.black),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(registry.id.toUpperCase()),
-                  Text(registry.note)
-                ],
-              ),
-            ),
+                style: const TextStyle(fontSize: 13, color: Colors.black),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(registry.id.toUpperCase()),
+                      Text(registry.note)
+                    ])),
             actions: [
               IconButton(
                   onPressed: () =>
@@ -177,7 +180,25 @@ class _RepoBatchViewState extends ConsumerState<RepoBatchView> {
                     child: TextField(
                         controller: prefix,
                         style: const TextStyle(fontSize: 13),
-                        decoration: const InputDecoration(labelText: "前缀")))
+                        decoration: const InputDecoration(labelText: "前缀"))),
+                const SizedBox(width: 8),
+                Transform.translate(
+                    offset: const Offset(0, 8),
+                    child: Row(mainAxisSize: MainAxisSize.min, children: [
+                      Checkbox.adaptive(
+                          value: flat,
+                          onChanged: (v) {
+                            if (v == true && prefix.text.isEmpty) {
+                              showSimpleMessage(context,
+                                  content: "请输入前缀",
+                                  useSnackBar: true,
+                                  duration: 5000);
+                            } else {
+                              setState(() => flat = v!);
+                            }
+                          }),
+                      const Text("拍平")
+                    ]))
               ])),
           const SizedBox(height: 10),
           Wrap(children: [
@@ -234,7 +255,10 @@ class _RepoBatchViewState extends ConsumerState<RepoBatchView> {
                       .map((line) {
                         if (line.isEmpty) return "";
                         var origin = repoUrl2Normal(line);
-                        final repline = origin.split("/").skip(1).join("/");
+                        var repline = origin.split("/").skip(1).join("/");
+                        if (flat) {
+                          repline = repline.replaceAll("/", "_");
+                        }
                         return "docker tag $origin ${registry.url}/${prefix.text.isEmpty ? "" : prefix.text + "/"}$repline";
                       })
                       .where((e) => e.isNotEmpty)
@@ -262,7 +286,10 @@ class _RepoBatchViewState extends ConsumerState<RepoBatchView> {
                       .map((line) {
                         if (line.isEmpty) return "";
                         var origin = repoUrl2Normal(line);
-                        final repline = origin.split("/").skip(1).join("/");
+                        var repline = origin.split("/").skip(1).join("/");
+                        if (flat) {
+                          repline = repline.replaceAll("/", "_");
+                        }
                         return "docker push ${registry.url}/${prefix.text.isEmpty ? "" : prefix.text + "/"}$repline";
                       })
                       .where((e) => e.isNotEmpty)
@@ -305,7 +332,9 @@ class _RepoBatchViewState extends ConsumerState<RepoBatchView> {
 
 class RepoAddEditView extends ConsumerStatefulWidget {
   final Registry registry;
-  const RepoAddEditView({super.key, required this.registry});
+  final bool copyFromOld;
+  const RepoAddEditView(
+      {super.key, required this.registry, this.copyFromOld = false});
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() =>
@@ -329,7 +358,12 @@ class _RepoAddEditViewState extends ConsumerState<RepoAddEditView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: Text(isAdd ? "添加仓库" : "编辑仓库")),
+        appBar: AppBar(
+            title: Text(isAdd
+                ? widget.copyFromOld
+                    ? "从模板新建"
+                    : "添加仓库"
+                : "编辑仓库")),
         body: Form(
             key: formKey,
             autovalidateMode: AutovalidateMode.onUserInteraction,
