@@ -85,11 +85,15 @@ class ImageDb extends _$ImageDb {
     return "删除仓库成功";
   }
 
-  Future<String> editOrAddContainer(Container1 container) async {
+  Future<String> editOrAddContainer(Container1 container,
+      {bool skipWhenExist = false}) async {
     final images = state.value;
     final nsId = container.namespace;
     if (images == null) return "未找到数据";
     if (nsId.isEmpty) return "命名空间不能为空";
+    if (skipWhenExist && images.images[nsId]?[container.id] != null) {
+      return "镜像已存在，跳过添加";
+    }
     final newNsImages = {...?images.images[nsId], container.id: container};
     final newImages = {...images.images, nsId: newNsImages};
     state = AsyncData(images.copyWith(images: newImages));
@@ -108,15 +112,27 @@ class ImageDb extends _$ImageDb {
     return "删除镜像成功";
   }
 
-  Future<String> editOrAddTag(Container1 container, Tag tag) async {
+  Future<String> editOrAddTag(Container1 container, Tag tag,
+      {bool skipWhenNoContainer = true, bool skipWhenExist = false}) async {
     final images = state.value;
     if (images == null) return "未找到数据";
-    final newTags = {...container.tags, tag.id: tag};
+    var oldContainer = images.images[container.namespace]?[container.id];
+    if (oldContainer == null) {
+      if (skipWhenNoContainer) {
+        return "镜像不存在，跳过添加";
+      } else {
+        oldContainer = container;
+      }
+    }
+    if (skipWhenExist && oldContainer.tags[tag.id] != null) {
+      return "标签已存在，跳过添加";
+    }
     state = AsyncData(images.copyWith(images: {
       ...images.images,
       container.namespace: {
         ...?images.images[container.namespace],
-        container.id: container.copyWith(tags: newTags),
+        container.id:
+            oldContainer.copyWith(tags: {...oldContainer.tags, tag.id: tag}),
       }
     }));
     return "更新标签成功";

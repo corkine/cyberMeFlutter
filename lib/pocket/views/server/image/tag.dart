@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../viewmodels/image.dart';
 import 'bar.dart';
+import 'container.dart';
 
 class TagView extends ConsumerStatefulWidget {
   final Container1 item;
@@ -36,13 +37,16 @@ class _TagViewState extends ConsumerState<TagView> {
     });
     return Scaffold(
         appBar: AppBar(
-            title: DefaultTextStyle(
-                style: const TextStyle(fontSize: 18, color: Colors.black),
-                child: Row(children: [
-                  Text(item.namespace),
-                  const Text(" / "),
-                  Text(item.id)
-                ])),
+            title: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: DefaultTextStyle(
+                  style: const TextStyle(fontSize: 18, color: Colors.black),
+                  child: Row(children: [
+                    Text(item.namespace),
+                    const Text(" / "),
+                    Text(item.id)
+                  ])),
+            ),
             actions: [
               IconButton(
                   onPressed: () => showAddOrEditTag(item, Tag(), false),
@@ -50,63 +54,47 @@ class _TagViewState extends ConsumerState<TagView> {
               const SizedBox(width: 5)
             ]),
         body: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          if (item.note.isNotEmpty)
-            Container(
-                width: double.infinity,
-                margin: const EdgeInsets.only(left: 8, right: 8, top: 3),
-                decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primaryContainer,
-                    borderRadius: BorderRadius.circular(5)),
-                padding: const EdgeInsets.only(left: 15, bottom: 10, top: 10),
-                child: Text(item.note,
-                    style: TextStyle(
-                        color:
-                            Theme.of(context).colorScheme.onPrimaryContainer))),
           Expanded(
               child: ListView.builder(
                   itemBuilder: (context, idx) {
                     final tag = tags[idx];
                     return ListTile(
-                        title: Transform.translate(
-                            offset: const Offset(-3, 0),
-                            child: Row(children: [
-                              Transform.translate(
-                                  offset: const Offset(0, 2),
-                                  child:
-                                      const Icon(Icons.tag_outlined, size: 17)),
-                              Text(tag.id),
-                              const Spacer(),
-                              InkWell(
-                                  onTap: () => showAddOrEditTag(
-                                      item, tag.copyWith(id: ""), true),
-                                  child: Container(
-                                      margin: const EdgeInsets.only(
-                                          left: 4, right: 4, bottom: 0),
-                                      child: const Text("🖨",
-                                          style: TextStyle(fontSize: 10)))),
-                              InkWell(
-                                  onTap: () =>
-                                      showAddOrEditTag(item, tag, true),
-                                  child: Container(
-                                      margin: const EdgeInsets.only(
-                                          left: 4, right: 4, bottom: 0),
-                                      child: const Text("✏",
-                                          style: TextStyle(fontSize: 10)))),
-                              InkWell(
-                                  onTap: () => addTagRegistry(item, tag),
-                                  child: Container(
-                                      margin: const EdgeInsets.only(
-                                          left: 4, right: 4, bottom: 0),
-                                      child: const Text("➕",
-                                          style: TextStyle(fontSize: 10)))),
-                              InkWell(
-                                  onTap: () => deleteTag(item, tag),
-                                  child: Container(
-                                      margin: const EdgeInsets.only(
-                                          left: 3, right: 3, bottom: 0),
-                                      child: const Text("❌",
-                                          style: TextStyle(fontSize: 10))))
-                            ])),
+                        title: Row(children: [
+                          Transform.translate(
+                              offset: const Offset(-3, 1),
+                              child: const Icon(Icons.tag_outlined, size: 17)),
+                          Text(tag.id),
+                          const Spacer(),
+                          InkWell(
+                              onTap: () => showAddOrEditTag(
+                                  item, tag.copyWith(id: ""), true),
+                              child: Container(
+                                  margin: const EdgeInsets.only(
+                                      left: 4, right: 4, bottom: 0),
+                                  child: const Text("🖨",
+                                      style: TextStyle(fontSize: 10)))),
+                          InkWell(
+                              onTap: () => showAddOrEditTag(item, tag, true),
+                              child: Container(
+                                  margin: const EdgeInsets.only(
+                                      left: 4, right: 4, bottom: 0),
+                                  child: const Text("✏",
+                                      style: TextStyle(fontSize: 10)))),
+                          InkWell(
+                              onTap: () => addTagRegistry(item, tag),
+                              child: Container(
+                                  margin: const EdgeInsets.only(
+                                      left: 4, right: 4, bottom: 0),
+                                  child: const Text("➕",
+                                      style: TextStyle(fontSize: 10)))),
+                          InkWell(
+                              onTap: () => deleteTag(item, tag),
+                              child: Container(
+                                  margin: const EdgeInsets.only(
+                                      left: 3, right: 0, bottom: 0),
+                                  child: const Text("❌",
+                                      style: TextStyle(fontSize: 10))))
+                        ]),
                         subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -116,7 +104,8 @@ class _TagViewState extends ConsumerState<TagView> {
                                       color: Theme.of(context)
                                           .colorScheme
                                           .secondary)),
-                              const SizedBox(height: 9),
+                              if (tag.note.isNotEmpty)
+                                const SizedBox(height: 9),
                               ...tag.registry
                                   .where((e) => regMap.containsKey(e))
                                   .map((e) => Padding(
@@ -127,7 +116,28 @@ class _TagViewState extends ConsumerState<TagView> {
                                       ))
                             ]));
                   },
-                  itemCount: tags.length))
+                  itemCount: tags.length)),
+          if (item.note.isNotEmpty)
+            GestureDetector(
+                onTap: () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => ContainerAddEditView(item)));
+                },
+                child: Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.only(left: 6, right: 6, top: 3),
+                    decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primaryContainer,
+                        borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(10),
+                            topRight: Radius.circular(10))),
+                    padding:
+                        const EdgeInsets.only(left: 15, bottom: 10, top: 10),
+                    child: Text(item.note,
+                        style: TextStyle(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onPrimaryContainer))))
         ]));
   }
 
@@ -214,10 +224,11 @@ class _TagAddEditViewState extends ConsumerState<TagAddEditView> {
                     isEdit
                         ? "编辑 Tag"
                         : widget.copyFromOld
-                            ? "从其他 Tag 新建"
+                            ? "从 Tag 复制"
                             : "添加 Tag",
                     style: const TextStyle(fontSize: 17)),
                 TextField(
+                    readOnly: isEdit,
                     controller: tagName,
                     decoration: const InputDecoration(labelText: "Tag ID")),
                 const SizedBox(height: 10),

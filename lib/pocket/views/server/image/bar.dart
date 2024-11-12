@@ -62,6 +62,20 @@ class BarView extends ConsumerWidget {
           Expanded(
               child: InkWell(
                   child: Container(
+                      color: color,
+                      padding: const EdgeInsets.symmetric(vertical: 3),
+                      alignment: Alignment.center,
+                      child: const Text("COPY")),
+                  onTap: () {
+                    Clipboard.setData(ClipboardData(
+                        text:
+                            "${registry.url}/${container.namespace}/${container.id}:${tag.id}"));
+                    showSimpleMessage(context,
+                        content: "已拷贝到剪贴板", useSnackBar: true);
+                  })),
+          Expanded(
+              child: InkWell(
+                  child: Container(
                       color: Theme.of(context)
                           .colorScheme
                           .errorContainer

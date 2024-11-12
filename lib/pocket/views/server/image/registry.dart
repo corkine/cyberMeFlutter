@@ -129,7 +129,8 @@ class _RepoBatchViewState extends ConsumerState<RepoBatchView> {
   final prefix = TextEditingController();
   bool showOriginal = true;
   bool flat = false;
-
+  int useLocalhost = 0;
+  bool homeBrew = false;
   @override
   void dispose() {
     input.dispose();
@@ -174,32 +175,74 @@ class _RepoBatchViewState extends ConsumerState<RepoBatchView> {
                       style: const TextStyle(fontSize: 12),
                       autocorrect: true))),
           Padding(
-              padding: const EdgeInsets.only(left: 8, right: 8),
-              child: Row(children: [
-                Expanded(
-                    child: TextField(
-                        controller: prefix,
-                        style: const TextStyle(fontSize: 13),
-                        decoration: const InputDecoration(labelText: "前缀"))),
-                const SizedBox(width: 8),
-                Transform.translate(
-                    offset: const Offset(0, 8),
-                    child: Row(mainAxisSize: MainAxisSize.min, children: [
-                      Checkbox.adaptive(
-                          value: flat,
-                          onChanged: (v) {
-                            if (v == true && prefix.text.isEmpty) {
-                              showSimpleMessage(context,
-                                  content: "请输入前缀",
-                                  useSnackBar: true,
-                                  duration: 5000);
-                            } else {
-                              setState(() => flat = v!);
-                            }
-                          }),
-                      const Text("拍平")
-                    ]))
+              padding: const EdgeInsets.only(left: 5, right: 9),
+              child: Row(mainAxisSize: MainAxisSize.min, children: [
+                IgnorePointer(
+                  ignoring: homeBrew,
+                  child: Radio.adaptive(
+                      value: 0,
+                      groupValue: useLocalhost,
+                      onChanged: (v) {
+                        setState(() {
+                          useLocalhost = v!;
+                        });
+                      }),
+                ),
+                const Text("DockerHub"),
+                Radio.adaptive(
+                    value: 1,
+                    groupValue: useLocalhost,
+                    onChanged: (v) {
+                      setState(() {
+                        useLocalhost = v!;
+                      });
+                    }),
+                const Text("Localhost"),
+                const Spacer(),
+                Checkbox.adaptive(
+                    value: homeBrew,
+                    onChanged: (v) {
+                      setState(() {
+                        homeBrew = v!;
+                        if (homeBrew) {
+                          prefix.text = "";
+                          flat = false;
+                          useLocalhost = 1;
+                        }
+                      });
+                    }),
+                const Text("Homebrew")
               ])),
+          if (!homeBrew)
+            Padding(
+                padding: const EdgeInsets.only(left: 8, right: 8),
+                child: Row(children: [
+                  Expanded(
+                      child: TextField(
+                          readOnly: homeBrew,
+                          controller: prefix,
+                          style: const TextStyle(fontSize: 13),
+                          decoration: const InputDecoration(labelText: "前缀"))),
+                  const SizedBox(width: 8),
+                  Transform.translate(
+                      offset: const Offset(0, 8),
+                      child: Row(mainAxisSize: MainAxisSize.min, children: [
+                        Checkbox.adaptive(
+                            value: flat,
+                            onChanged: (v) {
+                              if (homeBrew) return;
+                              if (v == true && prefix.text.isEmpty) {
+                                showSimpleMessage(context,
+                                    content: "请输入前缀",
+                                    useSnackBar: true,
+                                    duration: 5000);
+                              } else {
+                                setState(() => flat = v!);
+                              }
+                            }),
+                        const Text("拍平")
+                      ]))
+                ])),
           const SizedBox(height: 10),
           Wrap(children: [
             TextButton(
@@ -211,8 +254,6 @@ class _RepoBatchViewState extends ConsumerState<RepoBatchView> {
                     showOriginal = false;
                   });
                   Clipboard.setData(ClipboardData(text: cmd));
-                  showSimpleMessage(context,
-                      content: "已复制到剪贴板", useSnackBar: true, duration: 1000);
                 },
                 child: const Text("登录")),
             TextButton(
@@ -237,8 +278,6 @@ class _RepoBatchViewState extends ConsumerState<RepoBatchView> {
                     input2.text = cmd;
                   });
                   Clipboard.setData(ClipboardData(text: cmd));
-                  showSimpleMessage(context,
-                      content: "已复制到剪贴板", useSnackBar: true, duration: 1000);
                 },
                 child: const Text("拉取")),
             TextButton(
@@ -268,8 +307,6 @@ class _RepoBatchViewState extends ConsumerState<RepoBatchView> {
                     showOriginal = false;
                   });
                   Clipboard.setData(ClipboardData(text: cmd));
-                  showSimpleMessage(context,
-                      content: "已复制到剪贴板", useSnackBar: true, duration: 1000);
                 },
                 child: const Text("打标签")),
             TextButton(
@@ -299,12 +336,10 @@ class _RepoBatchViewState extends ConsumerState<RepoBatchView> {
                     showOriginal = false;
                   });
                   Clipboard.setData(ClipboardData(text: cmd));
-                  showSimpleMessage(context,
-                      content: "已复制到剪贴板", useSnackBar: true, duration: 1000);
                 },
                 child: const Text("推送")),
             TextButton(
-                onPressed: () {
+                onPressed: () async {
                   if (input.text.isEmpty) {
                     showSimpleMessage(context,
                         content: "请输入仓库名称, 回车区分",
@@ -312,12 +347,50 @@ class _RepoBatchViewState extends ConsumerState<RepoBatchView> {
                         duration: 5000);
                     return;
                   }
-                  showSimpleMessage(context,
-                      content: "已创建记录", useSnackBar: true, duration: 1000);
+                  final n = ref.read(imageDbProvider.notifier);
+                  String collect = "";
+                  List<(Container1, Tag)> list = [];
+                  for (final line in input.text.split("\n")) {
+                    if (line.isEmpty) continue;
+                    var origin = repoUrl2Normal(line);
+                    var repline = origin.split("/").skip(1).join("/");
+                    if (flat) {
+                      repline = repline.replaceAll("/", "_");
+                    }
+                    String p;
+                    String l;
+                    String t;
+                    if (prefix.text.isNotEmpty) {
+                      p = prefix.text;
+                      l = repline.split("/").skip(0).join("/").split(":").first;
+                      t = repline.split(":").last;
+                    } else {
+                      p = repline.split("/").first;
+                      l = repline.split("/").skip(1).join("/").split(":").first;
+                      t = repline.split(":").last;
+                    }
+                    final time =
+                        DateFormat("yyyy-MM-dd").format(DateTime.now());
+                    final cc =
+                        Container1(namespace: p, id: l, note: "Add@$time");
+                    list.add((
+                      cc,
+                      Tag(id: t, registry: [registry.id], note: "Add@$time")
+                    ));
+                    collect += "\n$p/$l:$t";
+                  }
+                  final ok = await showSimpleMessage(context,
+                      content: "将创建以下记录：$collect");
+                  if (ok) {
+                    for (final (cc, tag) in list) {
+                      await n.editOrAddContainer(cc, skipWhenExist: true);
+                      await n.editOrAddTag(cc, tag);
+                    }
+                  }
                 },
                 child: const Text("记录"))
           ]),
-          const SizedBox(height: 60)
+          const SizedBox(height: 10)
         ]));
   }
 
@@ -325,8 +398,10 @@ class _RepoBatchViewState extends ConsumerState<RepoBatchView> {
     if (!url.contains(":")) url = url + ":latest";
     final sp = url.split("/");
     if (sp.length > 2) return url;
-    if (sp.length > 1) return "docker.io/$url";
-    return "docker.io/library/$url";
+    var host = useLocalhost == 0 ? "docker.io" : "localhost";
+    var defaultNS = useLocalhost == 0 ? "library" : "corkine";
+    if (sp.length > 1) return "$host/$url";
+    return "$host/$defaultNS/$url";
   }
 }
 
