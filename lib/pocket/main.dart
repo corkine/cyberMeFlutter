@@ -17,6 +17,7 @@ import 'package:cyberme_flutter/pocket/views/info/location.dart';
 import 'package:cyberme_flutter/pocket/views/server/dns/core.dart';
 import 'package:cyberme_flutter/pocket/views/server/service.dart';
 import 'package:cyberme_flutter/pocket/views/news/story.dart';
+import 'package:cyberme_flutter/pocket/views/server/wireguard/core.dart';
 import 'package:cyberme_flutter/pocket/views/think/block.dart';
 import 'package:cyberme_flutter/pocket/views/think/secret_block.dart';
 import 'views/info/blog.dart';
@@ -316,6 +317,13 @@ final apps = {
     "addToMenu": true,
     "addToContext": true,
     "icon": Icons.view_comfortable_outlined
+  },
+  "wireguard": {
+    "name": "Wireguard",
+    "view": (c) => const WireguardView(),
+    "addToMenu": true,
+    "addToContext": true,
+    "icon": Icons.vpn_key
   },
 };
 
