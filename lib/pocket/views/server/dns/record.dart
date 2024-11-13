@@ -42,7 +42,7 @@ class _ZoneDnsViewState extends ConsumerState<ZoneDnsView> with Loading {
       Expanded(
           child: ListView.builder(
               itemBuilder: (context, index) {
-                final d = dns.$2![index];
+                final Record d = dns.$2![index];
                 return Dismissible(
                     key: ValueKey(d.id),
                     confirmDismiss: (direction) async {
@@ -109,7 +109,15 @@ class _ZoneDnsViewState extends ConsumerState<ZoneDnsView> with Loading {
                                             color: Theme.of(context)
                                                 .colorScheme
                                                 .primary)))
-                              ])
+                              ]),
+                              if (d.comment.isNotEmpty)
+                                Text(d.comment,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .secondary))
                             ])));
               },
               itemCount: dns.$2!.length)),
@@ -261,6 +269,11 @@ class _RecordAddEditViewState extends ConsumerState<RecordAddEditView> {
           : await ref
               .read(dnsSettingDbProvider.notifier)
               .addRecord(widget.zone.id, record);
+      if (res == "Success") {
+        showSimpleMessage(context, content: res, useSnackBar: true);
+        Navigator.of(context).pop();
+        return;
+      }
       if (await showSimpleMessage(context, content: res)) {
         Navigator.of(context).pop();
       }

@@ -1,6 +1,5 @@
 import 'package:cyberme_flutter/pocket/views/server/common.dart';
 import 'package:flutter/material.dart';
-import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:uuid/uuid.dart';
@@ -21,18 +20,34 @@ class ServerEmbededView extends ConsumerWidget {
         itemBuilder: (context, index) {
           final server = servers[index];
           Widget subtitle;
-          subtitle =
+          subtitle = Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-            Text(server.band, style: const TextStyle(fontSize: 12)),
-            const SizedBox(width: 7),
-            Text("${server.cpuCount}C.${server.memoryGB}G.${server.diskGB}G",
-                style: TextStyle(
-                    fontSize: 11,
-                    color: Theme.of(context).colorScheme.primary)),
-            const Spacer()
-          ]);
+                Text(
+                    "${server.cpuCount}C.${server.memoryGB}G.${server.diskGB}G",
+                    style: TextStyle(
+                        fontSize: 11,
+                        color: Theme.of(context).colorScheme.primary)),
+                const SizedBox(width: 5),
+                if (expiredTo(server.expired)
+                    .subtract(const Duration(days: 30))
+                    .isBefore(DateTime.now()))
+                  Text(expiredAt(server.expired) + "到期",
+                      style: const TextStyle(fontSize: 11, color: Colors.red))
+              ]),
+              Text(server.sshUrl,
+                  style: TextStyle(
+                      fontSize: 11,
+                      color: Theme.of(context).colorScheme.secondary)),
+            ],
+          );
           return ListTile(
-              title: Text(server.name),
+              title: Row(
+                children: [
+                  Text(server.name),
+                ],
+              ),
               subtitle: subtitle,
               onTap: () => Navigator.of(context).push(MaterialPageRoute(
                   builder: (context) => ServerEditorView(server))),
@@ -44,13 +59,15 @@ class ServerEmbededView extends ConsumerWidget {
               contentPadding: const EdgeInsets.only(left: 20, right: 5),
               trailing: Padding(
                   padding: const EdgeInsets.only(right: 10),
-                  child: (expiredTo(server.expired)
-                          .subtract(const Duration(days: 30))
-                          .isBefore(DateTime.now()))
-                      ? Text(expiredAt(server.expired) + "到期",
-                          style:
-                              const TextStyle(fontSize: 11, color: Colors.red))
-                      : const Icon(Icons.check, color: Colors.green)));
+                  child: Container(
+                      padding: const EdgeInsets.only(
+                          left: 7, right: 7, bottom: 2, top: 2),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        color: Theme.of(context).colorScheme.primaryContainer,
+                      ),
+                      child: Text(server.band,
+                          style: const TextStyle(fontSize: 12)))));
         });
   }
 }
@@ -191,7 +208,6 @@ class _ServerEditorViewState extends ConsumerState<ServerEditorView> {
                           server = server.copyWith(manageUrl: newValue!),
                       decoration: InputDecoration(
                           labelText: 'Manage URL*',
-                          prefixText: "https://",
                           suffix: IconButton(
                               onPressed: () => launchUrlString(
                                   server.manageUrl.startsWith("http")
@@ -210,7 +226,6 @@ class _ServerEditorViewState extends ConsumerState<ServerEditorView> {
                           server = server.copyWith(sshUrl: newValue!),
                       decoration: InputDecoration(
                           labelText: 'Endpoint URL*',
-                          prefixText: "https://",
                           suffix: IconButton(
                               onPressed: () => launchUrlString(
                                   server.sshUrl.startsWith("http")
