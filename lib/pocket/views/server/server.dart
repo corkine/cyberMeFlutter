@@ -1,5 +1,6 @@
 import 'package:cyberme_flutter/pocket/views/server/common.dart';
 import 'package:flutter/material.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:uuid/uuid.dart';
@@ -13,42 +14,43 @@ class ServerEmbededView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final servers =
         ref.watch(serviceDbProvider).value?.servers.values.toList() ?? [];
-    servers.sort((a, b) => a.name.compareTo(b.name));
+    servers.sort((b, a) => a.priority.compareTo(b.priority));
     return ListView.builder(
         padding: const EdgeInsets.only(bottom: 80),
         itemCount: servers.length,
         itemBuilder: (context, index) {
           final server = servers[index];
           Widget subtitle;
-          if (expiredTo(server.expired)
-              .subtract(const Duration(days: 30))
-              .isBefore(DateTime.now())) {
-            subtitle = Text(expiredAt(server.expired) + " 到期",
-                style: const TextStyle(fontSize: 12, color: Colors.red));
-          } else {
-            subtitle = Text(server.band, style: const TextStyle(fontSize: 12));
-          }
+          subtitle =
+              Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+            Text(server.band, style: const TextStyle(fontSize: 12)),
+            const SizedBox(width: 7),
+            Text("${server.cpuCount}C.${server.memoryGB}G.${server.diskGB}G",
+                style: TextStyle(
+                    fontSize: 11,
+                    color: Theme.of(context).colorScheme.primary)),
+            const Spacer()
+          ]);
           return ListTile(
               title: Text(server.name),
               subtitle: subtitle,
-              //onTap: () => launchUrlString("https://" + server.manageUrl),
+              onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => ServerEditorView(server))),
+              onLongPress: () async {
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) =>
+                        ServerEditorView(server.copyWith(id: ""))));
+              },
               contentPadding: const EdgeInsets.only(left: 20, right: 5),
-              trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-                IconButton(
-                    icon: const Icon(Icons.edit),
-                    onPressed: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                            builder: (context) => ServerEditorView(server)))),
-                IconButton(
-                    icon: const Icon(Icons.delete),
-                    onPressed: () async {
-                      if (await confirm(context, "确定删除 ${server.name} ?")) {
-                        ref
-                            .read(serviceDbProvider.notifier)
-                            .deleteServer(server.id);
-                      }
-                    })
-              ]));
+              trailing: Padding(
+                  padding: const EdgeInsets.only(right: 10),
+                  child: (expiredTo(server.expired)
+                          .subtract(const Duration(days: 30))
+                          .isBefore(DateTime.now()))
+                      ? Text(expiredAt(server.expired) + "到期",
+                          style:
+                              const TextStyle(fontSize: 11, color: Colors.red))
+                      : const Icon(Icons.check, color: Colors.green)));
         });
   }
 }
@@ -64,87 +66,53 @@ class ServerEditorView extends ConsumerStatefulWidget {
 
 class _ServerEditorViewState extends ConsumerState<ServerEditorView> {
   final _formKey = GlobalKey<FormState>();
-  late TextEditingController _nameController;
-  late TextEditingController _cpuCountController;
-  late TextEditingController _memoryController;
-  late TextEditingController _diskController;
-  late TextEditingController _bandController;
-  late DateTime _expired;
-  late TextEditingController _noteController;
-  late TextEditingController _manageUrlController;
-  late TextEditingController _sshUrlController;
-
-  @override
-  void initState() {
-    super.initState();
-    _nameController = TextEditingController(text: widget.server?.name);
-    _cpuCountController =
-        TextEditingController(text: widget.server?.cpuCount.toString());
-    _memoryController =
-        TextEditingController(text: widget.server?.memoryGB.toString());
-    _diskController =
-        TextEditingController(text: widget.server?.diskGB.toString());
-    _bandController =
-        TextEditingController(text: widget.server?.band.toString());
-    if (widget.server?.expired != null) {
-      _expired = expiredTo(widget.server!.expired);
-    } else {
-      _expired = DateTime.now().add(const Duration(days: 30));
-    }
-    _noteController = TextEditingController(text: widget.server?.note);
-    _manageUrlController =
-        TextEditingController(text: widget.server?.manageUrl);
-    _sshUrlController = TextEditingController(text: widget.server?.sshUrl);
-  }
-
-  @override
-  void dispose() {
-    _clearForm();
-    super.dispose();
-  }
-
-  void _clearForm() {
-    _nameController.clear();
-    _cpuCountController.clear();
-    _memoryController.clear();
-    _diskController.clear();
-    _bandController.clear();
-    _manageUrlController.clear();
-    _sshUrlController.clear();
-    _noteController.clear();
-  }
+  late bool isAdd = widget.server?.id.isEmpty ?? true;
+  late bool addFromTemplate =
+      widget.server != null && widget.server!.id.isEmpty;
+  late Server server = widget.server != null
+      ? widget.server!.copyWith(
+          id: widget.server!.id.isEmpty ? const Uuid().v4() : widget.server!.id)
+      : Server(id: const Uuid().v4());
 
   void _addOrUpdateServer() {
     if (_formKey.currentState!.validate()) {
-      final newServer = (widget.server ?? Server(id: const Uuid().v4()))
-          .copyWith(
-              name: _nameController.text,
-              cpuCount: int.parse(_cpuCountController.text),
-              memoryGB: int.parse(_memoryController.text),
-              diskGB: int.parse(_diskController.text),
-              expired: _expired.millisecondsSinceEpoch ~/ 1000,
-              manageUrl: _manageUrlController.text,
-              band: _bandController.text,
-              note: _noteController.text,
-              sshUrl: _sshUrlController.text);
-      ref.read(serviceDbProvider.notifier).makeMemchangeOfServer(newServer);
-      _clearForm();
+      _formKey.currentState!.save();
+      ref.read(serviceDbProvider.notifier).makeMemchangeOfServer(server);
       Navigator.of(context).pop();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final isAdd = widget.server == null;
     return Scaffold(
-        appBar: AppBar(title: Text(isAdd ? "Add" : "Edit")),
+        appBar: AppBar(
+            title: Text(isAdd
+                ? addFromTemplate
+                    ? "Add From Template"
+                    : "Add"
+                : "Edit"),
+            actions: [
+              if (!isAdd)
+                IconButton(
+                    onPressed: () async {
+                      if (await confirm(context, "确定删除 ${server.name} ?")) {
+                        Navigator.of(context).pop();
+                        ref
+                            .read(serviceDbProvider.notifier)
+                            .deleteServer(server.id);
+                      }
+                    },
+                    icon: const Icon(Icons.delete)),
+              const SizedBox(width: 3)
+            ]),
         body: Form(
             key: _formKey,
             child: ListView(
                 padding: const EdgeInsets.only(left: 16, right: 16),
                 children: [
                   TextFormField(
-                      controller: _nameController,
+                      initialValue: server.name,
+                      onSaved: (v) => server = server.copyWith(name: v ?? ""),
                       decoration: const InputDecoration(labelText: 'Name*'),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -153,7 +121,9 @@ class _ServerEditorViewState extends ConsumerState<ServerEditorView> {
                         return null;
                       }),
                   TextFormField(
-                      controller: _cpuCountController,
+                      initialValue: server.cpuCount.toString(),
+                      onSaved: (v) =>
+                          server = server.copyWith(cpuCount: int.parse(v!)),
                       decoration: const InputDecoration(labelText: 'Cores*'),
                       validator: (value) {
                         if (value == null || int.tryParse(value) == null) {
@@ -162,7 +132,9 @@ class _ServerEditorViewState extends ConsumerState<ServerEditorView> {
                         return null;
                       }),
                   TextFormField(
-                      controller: _memoryController,
+                      initialValue: server.memoryGB.toString(),
+                      onSaved: (v) =>
+                          server = server.copyWith(memoryGB: int.parse(v!)),
                       decoration: const InputDecoration(
                           labelText: 'Memory*', suffixText: "GB"),
                       validator: (value) {
@@ -172,7 +144,9 @@ class _ServerEditorViewState extends ConsumerState<ServerEditorView> {
                         return null;
                       }),
                   TextFormField(
-                      controller: _diskController,
+                      initialValue: server.diskGB.toString(),
+                      onSaved: (v) =>
+                          server = server.copyWith(diskGB: int.parse(v!)),
                       decoration: const InputDecoration(
                           labelText: 'Disk*', suffixText: "GB"),
                       validator: (value) {
@@ -190,32 +164,39 @@ class _ServerEditorViewState extends ConsumerState<ServerEditorView> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   const Text('Expiry Date*'),
-                                  Text(expiredFormat(_expired))
+                                  Text(expiredFormat(expiredTo(server.expired)))
                                 ]),
                             IconButton(
                                 icon: const Icon(Icons.calendar_today),
                                 onPressed: () async {
                                   final DateTime? picked = await showDatePicker(
                                     context: context,
-                                    initialDate: _expired,
+                                    initialDate: server.expired != 0
+                                        ? expiredTo(server.expired)
+                                        : DateTime.now()
+                                            .add(const Duration(days: 30)),
                                     firstDate: DateTime.now(),
                                     lastDate: DateTime(2101),
                                   );
-                                  if (picked != null && picked != _expired) {
-                                    setState(() {
-                                      _expired = picked;
-                                    });
+                                  if (picked != null) {
+                                    server = server.copyWith(
+                                        expired: expiredFrom(picked));
+                                    setState(() {});
                                   }
                                 })
                           ])),
                   TextFormField(
-                      controller: _manageUrlController,
+                      initialValue: server.manageUrl,
+                      onSaved: (newValue) =>
+                          server = server.copyWith(manageUrl: newValue!),
                       decoration: InputDecoration(
                           labelText: 'Manage URL*',
                           prefixText: "https://",
                           suffix: IconButton(
                               onPressed: () => launchUrlString(
-                                  "https://" + _manageUrlController.text),
+                                  server.manageUrl.startsWith("http")
+                                      ? server.manageUrl
+                                      : "https://" + server.manageUrl),
                               icon: const Icon(Icons.launch))),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -224,13 +205,17 @@ class _ServerEditorViewState extends ConsumerState<ServerEditorView> {
                         return null;
                       }),
                   TextFormField(
-                      controller: _sshUrlController,
+                      initialValue: server.sshUrl,
+                      onSaved: (newValue) =>
+                          server = server.copyWith(sshUrl: newValue!),
                       decoration: InputDecoration(
                           labelText: 'Endpoint URL*',
                           prefixText: "https://",
                           suffix: IconButton(
                               onPressed: () => launchUrlString(
-                                  "https://" + _sshUrlController.text),
+                                  server.sshUrl.startsWith("http")
+                                      ? server.sshUrl
+                                      : "https://" + server.sshUrl),
                               icon: const Icon(Icons.launch))),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -240,11 +225,21 @@ class _ServerEditorViewState extends ConsumerState<ServerEditorView> {
                       }),
                   const SizedBox(height: 10),
                   TextFormField(
-                      controller: _bandController,
+                      initialValue: server.priority.toString(),
+                      validator: (v) =>
+                          int.tryParse(v ?? "") == null ? "请输入数字" : null,
+                      onSaved: (v) =>
+                          server = server.copyWith(priority: int.parse(v!)),
+                      decoration: const InputDecoration(labelText: 'Priority')),
+                  const SizedBox(height: 10),
+                  TextFormField(
+                      initialValue: server.band,
+                      onSaved: (v) => server = server.copyWith(band: v ?? ""),
                       decoration: const InputDecoration(labelText: 'Band')),
                   const SizedBox(height: 10),
                   TextFormField(
-                      controller: _noteController,
+                      initialValue: server.note,
+                      onSaved: (v) => server = server.copyWith(note: v ?? ""),
                       decoration: const InputDecoration(labelText: 'Note'),
                       maxLines: null),
                   const SizedBox(height: 100),

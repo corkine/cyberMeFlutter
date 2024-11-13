@@ -14,6 +14,7 @@ import 'package:cyberme_flutter/pocket/views/live/mass/mass.dart';
 import 'package:cyberme_flutter/pocket/views/live/sex.dart';
 import 'package:cyberme_flutter/pocket/views/info/link.dart';
 import 'package:cyberme_flutter/pocket/views/info/location.dart';
+import 'package:cyberme_flutter/pocket/views/server/dns/core.dart';
 import 'package:cyberme_flutter/pocket/views/server/service.dart';
 import 'package:cyberme_flutter/pocket/views/news/story.dart';
 import 'package:cyberme_flutter/pocket/views/think/block.dart';
@@ -125,13 +126,6 @@ final apps = {
     "addToContext": false,
     "icon": Icons.bookmark_add
   },
-  "esxi": {
-    "name": "ESXi",
-    "view": (c) => const EsxiView(),
-    "addToMenu": true,
-    "addToContext": true,
-    "icon": Icons.computer
-  },
   "gpt": {
     "name": "GPT",
     "view": (c) => const GPTView(),
@@ -159,13 +153,6 @@ final apps = {
     "addToContext": true,
     "icon": Icons.dashboard
   },
-  "server": {
-    "name": "服务管理",
-    "view": (c) => const ServiceManageView(),
-    "addToMenu": true,
-    "addToContext": false,
-    "icon": Icons.computer
-  },
   "dispatch": {
     "name": "应用分发",
     "view": (c) => const DispatchView(),
@@ -180,19 +167,15 @@ final apps = {
     "addToContext": true,
     "icon": Icons.link
   },
-  "cert-manager": {
-    "name": "证书管理",
-    "view": (c) => const CertConfigView(),
+  "blocks": {
+    "name": "思考笔记",
+    "view": (c) => const BlocksView(),
+    "secret": "secret_block",
+    "pass": "9445",
+    "fakePass": "9633",
     "addToMenu": true,
-    "addToContext": false,
-    "icon": Icons.security
-  },
-  "backup": {
-    "name": "数据备份",
-    "view": (c) => const BackupView(),
-    "addToMenu": true,
-    "addToContext": false,
-    "icon": Icons.backup
+    "addToContext": true,
+    "icon": Icons.bookmark
   },
   "blog": {
     "name": "博客",
@@ -271,15 +254,12 @@ final apps = {
     "addToContext": false,
     "icon": Icons.note
   },
-  "blocks": {
-    "name": "思考笔记",
-    "view": (c) => const BlocksView(),
-    "secret": "secret_block",
-    "pass": "9445",
-    "fakePass": "9633",
+  "work": {
+    "name": "工作日历",
+    "view": (c) => const WorkView(),
     "addToMenu": true,
-    "addToContext": true,
-    "icon": Icons.bookmark
+    "addToContext": false,
+    "icon": Icons.work
   },
   "secret_block": {
     "name": "私人思考笔记",
@@ -287,13 +267,6 @@ final apps = {
     "addToMenu": false,
     "addToContext": false,
     "icon": Icons.bookmark
-  },
-  "work": {
-    "name": "工作日历",
-    "view": (c) => const WorkView(),
-    "addToMenu": true,
-    "addToContext": false,
-    "icon": Icons.work
   },
   "psy1003": {
     "name": "实验1003",
@@ -308,7 +281,42 @@ final apps = {
     "addToMenu": true,
     "addToContext": false,
     "icon": Icons.view_in_ar
-  }
+  },
+  "server": {
+    "name": "服务管理",
+    "view": (c) => const ServiceManageView(),
+    "addToMenu": true,
+    "addToContext": false,
+    "icon": Icons.computer
+  },
+  "cert-manager": {
+    "name": "证书管理",
+    "view": (c) => const CertConfigView(),
+    "addToMenu": true,
+    "addToContext": false,
+    "icon": Icons.security
+  },
+  "dns": {
+    "name": "DNS管理",
+    "view": (c) => const DnsView(),
+    "addToMenu": true,
+    "addToContext": false,
+    "icon": Icons.dns
+  },
+  "backup": {
+    "name": "数据备份",
+    "view": (c) => const BackupView(),
+    "addToMenu": true,
+    "addToContext": false,
+    "icon": Icons.backup
+  },
+  "esxi": {
+    "name": "ESXi",
+    "view": (c) => const EsxiView(),
+    "addToMenu": true,
+    "addToContext": true,
+    "icon": Icons.view_comfortable_outlined
+  },
 };
 
 class PocketHome extends StatefulWidget {

@@ -22,6 +22,7 @@ class Server with _$Server {
   factory Server(
       {@Default("") String id,
       @Default("") String name,
+      @Default(0) int priority,
       @Default(0) int cpuCount,
       @Default(0) int memoryGB,
       @Default(0) int diskGB,
