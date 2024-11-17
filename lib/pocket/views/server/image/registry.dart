@@ -391,10 +391,12 @@ class _RepoBatchViewState extends ConsumerState<RepoBatchView> {
         })
         .where((e) => e.isNotEmpty)
         .join("\n");
+    final cmd = pullCmd + "\n\n" + tagCmd + "\n\n" + pushCmd;
     setState(() {
-      input2.text = pullCmd + "\n\n" + tagCmd + "\n\n" + pushCmd;
+      input2.text = cmd;
       showOriginal = false;
     });
+    Clipboard.setData(ClipboardData(text: cmd));
   }
 
   void handleRecord() async {
