@@ -1,7 +1,6 @@
 import 'package:cyberme_flutter/pocket/viewmodels/basic.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:uuid/uuid.dart';
 
 part 'wireguard.freezed.dart';
 part 'wireguard.g.dart';

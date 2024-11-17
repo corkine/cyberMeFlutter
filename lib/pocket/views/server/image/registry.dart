@@ -257,138 +257,12 @@ class _RepoBatchViewState extends ConsumerState<RepoBatchView> {
                 },
                 child: const Text("登录")),
             TextButton(
-                onPressed: () {
-                  if (input.text.isEmpty) {
-                    showSimpleMessage(context,
-                        content: "请输入仓库名称, 回车区分",
-                        useSnackBar: true,
-                        duration: 5000);
-                    return;
-                  }
-                  final cmd = input.text
-                      .split("\n")
-                      .map((line) {
-                        if (line.isEmpty) return "";
-                        return "docker pull ${repoUrl2Normal(line)}";
-                      })
-                      .where((e) => e.isNotEmpty)
-                      .join("\n");
-                  setState(() {
-                    showOriginal = false;
-                    input2.text = cmd;
-                  });
-                  Clipboard.setData(ClipboardData(text: cmd));
-                },
+                onLongPress: handlePullTagPush,
+                onPressed: handlePull,
                 child: const Text("拉取")),
-            TextButton(
-                onPressed: () {
-                  if (input.text.isEmpty) {
-                    showSimpleMessage(context,
-                        content: "请输入仓库名称, 回车区分",
-                        useSnackBar: true,
-                        duration: 5000);
-                    return;
-                  }
-                  final cmd = input.text
-                      .split("\n")
-                      .map((line) {
-                        if (line.isEmpty) return "";
-                        var origin = repoUrl2Normal(line);
-                        var repline = origin.split("/").skip(1).join("/");
-                        if (flat) {
-                          repline = repline.replaceAll("/", "_");
-                        }
-                        return "docker tag $origin ${registry.url}/${prefix.text.isEmpty ? "" : prefix.text + "/"}$repline";
-                      })
-                      .where((e) => e.isNotEmpty)
-                      .join("\n");
-                  setState(() {
-                    input2.text = cmd;
-                    showOriginal = false;
-                  });
-                  Clipboard.setData(ClipboardData(text: cmd));
-                },
-                child: const Text("打标签")),
-            TextButton(
-                onPressed: () {
-                  if (input.text.isEmpty) {
-                    showSimpleMessage(context,
-                        content: "请输入仓库名称, 回车区分",
-                        useSnackBar: true,
-                        duration: 5000);
-                    return;
-                  }
-                  final cmd = input.text
-                      .split("\n")
-                      .map((line) {
-                        if (line.isEmpty) return "";
-                        var origin = repoUrl2Normal(line);
-                        var repline = origin.split("/").skip(1).join("/");
-                        if (flat) {
-                          repline = repline.replaceAll("/", "_");
-                        }
-                        return "docker push ${registry.url}/${prefix.text.isEmpty ? "" : prefix.text + "/"}$repline";
-                      })
-                      .where((e) => e.isNotEmpty)
-                      .join("\n");
-                  setState(() {
-                    input2.text = cmd;
-                    showOriginal = false;
-                  });
-                  Clipboard.setData(ClipboardData(text: cmd));
-                },
-                child: const Text("推送")),
-            TextButton(
-                onPressed: () async {
-                  if (input.text.isEmpty) {
-                    showSimpleMessage(context,
-                        content: "请输入仓库名称, 回车区分",
-                        useSnackBar: true,
-                        duration: 5000);
-                    return;
-                  }
-                  final n = ref.read(imageDbProvider.notifier);
-                  String collect = "";
-                  List<(Container1, Tag)> list = [];
-                  for (final line in input.text.split("\n")) {
-                    if (line.isEmpty) continue;
-                    var origin = repoUrl2Normal(line);
-                    var repline = origin.split("/").skip(1).join("/");
-                    if (flat) {
-                      repline = repline.replaceAll("/", "_");
-                    }
-                    String p;
-                    String l;
-                    String t;
-                    if (prefix.text.isNotEmpty) {
-                      p = prefix.text;
-                      l = repline.split("/").skip(0).join("/").split(":").first;
-                      t = repline.split(":").last;
-                    } else {
-                      p = repline.split("/").first;
-                      l = repline.split("/").skip(1).join("/").split(":").first;
-                      t = repline.split(":").last;
-                    }
-                    final time =
-                        DateFormat("yyyy-MM-dd").format(DateTime.now());
-                    final cc =
-                        Container1(namespace: p, id: l, note: "Add@$time");
-                    list.add((
-                      cc,
-                      Tag(id: t, registry: [registry.id], note: "Add@$time")
-                    ));
-                    collect += "\n$p/$l:$t";
-                  }
-                  final ok = await showSimpleMessage(context,
-                      content: "将创建以下记录：$collect");
-                  if (ok) {
-                    for (final (cc, tag) in list) {
-                      await n.editOrAddContainer(cc, skipWhenExist: true);
-                      await n.editOrAddTag(cc, tag);
-                    }
-                  }
-                },
-                child: const Text("记录"))
+            TextButton(onPressed: handleTag, child: const Text("打标签")),
+            TextButton(onPressed: handlePush, child: const Text("推送")),
+            TextButton(onPressed: handleRecord, child: const Text("记录"))
           ]),
           const SizedBox(height: 10)
         ]));
@@ -402,6 +276,169 @@ class _RepoBatchViewState extends ConsumerState<RepoBatchView> {
     var defaultNS = useLocalhost == 0 ? "library" : "corkine";
     if (sp.length > 1) return "$host/$url";
     return "$host/$defaultNS/$url";
+  }
+
+  void handlePull() {
+    if (input.text.isEmpty) {
+      showSimpleMessage(context,
+          content: "请输入仓库名称, 回车区分", useSnackBar: true, duration: 5000);
+      return;
+    }
+    final cmd = input.text
+        .split("\n")
+        .map((line) {
+          if (line.isEmpty) return "";
+          return "docker pull ${repoUrl2Normal(line)}";
+        })
+        .where((e) => e.isNotEmpty)
+        .join("\n");
+    setState(() {
+      showOriginal = false;
+      input2.text = cmd;
+    });
+    Clipboard.setData(ClipboardData(text: cmd));
+  }
+
+  void handleTag() {
+    if (input.text.isEmpty) {
+      showSimpleMessage(context,
+          content: "请输入仓库名称, 回车区分", useSnackBar: true, duration: 5000);
+      return;
+    }
+    final cmd = input.text
+        .split("\n")
+        .map((line) {
+          if (line.isEmpty) return "";
+          var origin = repoUrl2Normal(line);
+          var repline = origin.split("/").skip(1).join("/");
+          if (flat) {
+            repline = repline.replaceAll("/", "_");
+          }
+          return "docker tag $origin ${registry.url}/${prefix.text.isEmpty ? "" : prefix.text + "/"}$repline";
+        })
+        .where((e) => e.isNotEmpty)
+        .join("\n");
+    setState(() {
+      input2.text = cmd;
+      showOriginal = false;
+    });
+    Clipboard.setData(ClipboardData(text: cmd));
+  }
+
+  void handlePush() {
+    if (input.text.isEmpty) {
+      showSimpleMessage(context,
+          content: "请输入仓库名称, 回车区分", useSnackBar: true, duration: 5000);
+      return;
+    }
+    final cmd = input.text
+        .split("\n")
+        .map((line) {
+          if (line.isEmpty) return "";
+          var origin = repoUrl2Normal(line);
+          var repline = origin.split("/").skip(1).join("/");
+          if (flat) {
+            repline = repline.replaceAll("/", "_");
+          }
+          return "docker push ${registry.url}/${prefix.text.isEmpty ? "" : prefix.text + "/"}$repline";
+        })
+        .where((e) => e.isNotEmpty)
+        .join("\n");
+    setState(() {
+      input2.text = cmd;
+      showOriginal = false;
+    });
+    Clipboard.setData(ClipboardData(text: cmd));
+  }
+
+  void handlePullTagPush() {
+    if (input.text.isEmpty) {
+      showSimpleMessage(context,
+          content: "请输入仓库名称, 回车区分", useSnackBar: true, duration: 5000);
+      return;
+    }
+    final pullCmd = input.text
+        .split("\n")
+        .map((line) {
+          if (line.isEmpty) return "";
+          return "docker pull ${repoUrl2Normal(line)}";
+        })
+        .where((e) => e.isNotEmpty)
+        .join("\n");
+    final tagCmd = input.text
+        .split("\n")
+        .map((line) {
+          if (line.isEmpty) return "";
+          var origin = repoUrl2Normal(line);
+          var repline = origin.split("/").skip(1).join("/");
+          if (flat) {
+            repline = repline.replaceAll("/", "_");
+          }
+          return "docker tag $origin ${registry.url}/${prefix.text.isEmpty ? "" : prefix.text + "/"}$repline";
+        })
+        .where((e) => e.isNotEmpty)
+        .join("\n");
+    final pushCmd = input.text
+        .split("\n")
+        .map((line) {
+          if (line.isEmpty) return "";
+          var origin = repoUrl2Normal(line);
+          var repline = origin.split("/").skip(1).join("/");
+          if (flat) {
+            repline = repline.replaceAll("/", "_");
+          }
+          return "docker push ${registry.url}/${prefix.text.isEmpty ? "" : prefix.text + "/"}$repline";
+        })
+        .where((e) => e.isNotEmpty)
+        .join("\n");
+    setState(() {
+      input2.text = pullCmd + "\n\n" + tagCmd + "\n\n" + pushCmd;
+      showOriginal = false;
+    });
+  }
+
+  void handleRecord() async {
+    if (input.text.isEmpty) {
+      showSimpleMessage(context,
+          content: "请输入仓库名称, 回车区分", useSnackBar: true, duration: 5000);
+      return;
+    }
+    final n = ref.read(imageDbProvider.notifier);
+    String collect = "";
+    List<(Container1, Tag)> list = [];
+    for (final line in input.text.split("\n")) {
+      if (line.isEmpty) continue;
+      var origin = repoUrl2Normal(line);
+      var repline = origin.split("/").skip(1).join("/");
+      if (flat) {
+        repline = repline.replaceAll("/", "_");
+      }
+      String p;
+      String l;
+      String t;
+      if (prefix.text.isNotEmpty) {
+        p = prefix.text;
+        l = repline.split("/").skip(0).join("/").split(":").first;
+        t = repline.split(":").last;
+      } else {
+        p = repline.split("/").first;
+        l = repline.split("/").skip(1).join("/").split(":").first;
+        t = repline.split(":").last;
+      }
+      final time = DateFormat("yyyy-MM-dd").format(DateTime.now());
+      final cc = Container1(namespace: p, id: l, note: "Add@$time");
+      list.add((cc, Tag(id: t, registry: [registry.id], note: "Add@$time")));
+      collect += "\n$p/$l:$t";
+    }
+    final ok = await showSimpleMessage(context, content: "将创建以下记录：$collect");
+    if (ok) {
+      for (final (cc, tag) in list) {
+        await n.editOrAddContainer(cc, skipWhenExist: true);
+        await n.editOrAddTag(cc, tag);
+      }
+      final res = await n.saveToRemote();
+      await showSimpleMessage(context, content: res, useSnackBar: true);
+    }
   }
 }
 
