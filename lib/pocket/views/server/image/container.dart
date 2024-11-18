@@ -1,5 +1,7 @@
+import 'package:cyberme_flutter/learn/flame/brickbreaker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../viewmodels/image.dart';
 import '../../util.dart';
@@ -15,103 +17,139 @@ class ContainerView extends ConsumerStatefulWidget {
 class _ContainerViewState extends ConsumerState<ContainerView> {
   final TextEditingController _controller = TextEditingController();
   final FocusNode _focusNode = FocusNode();
+  bool showSearch = false;
   @override
   Widget build(BuildContext context) {
     final data = ref.watch(getContainerProvider(_controller.text)).value ?? [];
-    return Column(children: [
-      Padding(
-          padding: const EdgeInsets.only(left: 8, right: 8, top: 8, bottom: 3),
-          child: CupertinoTextField(
-              focusNode: _focusNode,
-              placeholder: "搜索镜像名称",
-              autofocus: true,
-              controller: _controller,
-              onSubmitted: (v) {
-                setState(() {});
-                FocusScope.of(context).requestFocus(_focusNode);
-              },
-              suffix: InkWell(
-                  onTap: () => setState(() {
-                        _controller.text = "";
-                      }),
-                  child: Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: Icon(Icons.clear,
-                          color: Theme.of(context).colorScheme.error,
-                          size: 16))),
-              style: const TextStyle(fontSize: 12),
-              decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceContainer,
-                  borderRadius: BorderRadius.circular(8)))),
-      Expanded(
-          child: ListView.builder(
-              itemCount: data.length,
-              itemBuilder: (context, index) {
-                final item = data[index];
-                return Dismissible(
-                    key: ValueKey(item.id),
-                    confirmDismiss: (direction) async {
-                      if (direction == DismissDirection.endToStart) {
-                        if (await showSimpleMessage(context,
-                            content: "确定删除此镜像吗?")) {
-                          final res = await ref
-                              .read(imageDbProvider.notifier)
-                              .deleteContainer(item);
-                          await showSimpleMessage(context,
-                              content: res, useSnackBar: true);
-                          return true;
-                        }
-                      } else {
-                        Navigator.of(context).push(MaterialPageRoute(
-                            builder: (context) => ContainerAddEditView(item)));
-                        return false;
-                      }
-                      return false;
+    return Stack(children: [
+      ListView.builder(
+          itemCount: data.length,
+          itemBuilder: (context, index) {
+            final item = data[index];
+            return Dismissible(
+                key: ValueKey(item.id),
+                confirmDismiss: (direction) async {
+                  if (direction == DismissDirection.endToStart) {
+                    if (await showSimpleMessage(context,
+                        content: "确定删除此镜像吗?")) {
+                      final res = await ref
+                          .read(imageDbProvider.notifier)
+                          .deleteContainer(item);
+                      await showSimpleMessage(context,
+                          content: res, useSnackBar: true);
+                      return true;
+                    }
+                  } else {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => ContainerAddEditView(item)));
+                    return false;
+                  }
+                  return false;
+                },
+                secondaryBackground: Container(
+                    color: Colors.red,
+                    child: const Align(
+                        alignment: Alignment.centerRight,
+                        child: Padding(
+                            padding: EdgeInsets.only(right: 20),
+                            child: Text("删除",
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 15))))),
+                background: Container(
+                    color: Colors.blue,
+                    child: const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Padding(
+                            padding: EdgeInsets.only(left: 20),
+                            child: Text("编辑",
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 15))))),
+                child: ListTile(
+                    title: Row(children: [
+                      Text(item.namespace),
+                      const Text(" / "),
+                      Text(item.id, style: const TextStyle(fontSize: 14))
+                    ]),
+                    onTap: () => Navigator.of(context)
+                        .push(MaterialPageRoute(builder: (c) => TagView(item))),
+                    onLongPress: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => ContainerAddEditView(
+                              item.copyWith(id: "", tags: {}),
+                              copyFromOld: true)));
                     },
-                    secondaryBackground: Container(
-                        color: Colors.red,
-                        child: const Align(
-                            alignment: Alignment.centerRight,
+                    dense: true,
+                    subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(item.note.isEmpty ? "无备注信息" : item.note),
+                          const SizedBox(height: 3),
+                          Wrap(
+                              children: item.tags.entries
+                                  .map((e) => buildContainer(e.key))
+                                  .toList())
+                        ])));
+          }),
+      AnimatedPositioned(
+          duration: const Duration(milliseconds: 100),
+          child: showSearch
+              ? Padding(
+                  padding: const EdgeInsets.only(
+                      left: 8, right: 8, top: 8, bottom: 3),
+                  child: CupertinoTextField(
+                      focusNode: _focusNode,
+                      placeholder: "搜索镜像名称",
+                      autofocus: true,
+                      controller: _controller,
+                      onSubmitted: (v) {
+                        setState(() {});
+                        FocusScope.of(context).requestFocus(_focusNode);
+                      },
+                      suffix: Row(children: [
+                        InkWell(
+                            onTap: () => setState(() {
+                                  _controller.text = "";
+                                }),
                             child: Padding(
-                                padding: EdgeInsets.only(right: 20),
-                                child: Text("删除",
-                                    style: TextStyle(
-                                        color: Colors.white, fontSize: 15))))),
-                    background: Container(
-                        color: Colors.blue,
-                        child: const Align(
-                            alignment: Alignment.centerLeft,
+                                padding: const EdgeInsets.only(right: 8),
+                                child: Icon(Icons.clear,
+                                    color: Theme.of(context).colorScheme.error,
+                                    size: 16))),
+                        InkWell(
+                            onTap: () => setState(() {
+                                  showSearch = false;
+                                }),
                             child: Padding(
-                                padding: EdgeInsets.only(left: 20),
-                                child: Text("编辑",
-                                    style: TextStyle(
-                                        color: Colors.white, fontSize: 15))))),
-                    child: ListTile(
-                        title: Row(children: [
-                          Text(item.namespace),
-                          const Text(" / "),
-                          Text(item.id, style: const TextStyle(fontSize: 14))
-                        ]),
-                        onTap: () => Navigator.of(context).push(
-                            MaterialPageRoute(builder: (c) => TagView(item))),
-                        onLongPress: () {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => ContainerAddEditView(
-                                  item.copyWith(id: "", tags: {}),
-                                  copyFromOld: true)));
-                        },
-                        dense: true,
-                        subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(item.note.isEmpty ? "无备注信息" : item.note),
-                              const SizedBox(height: 3),
-                              Wrap(
-                                  children: item.tags.entries
-                                      .map((e) => buildContainer(e.key))
-                                      .toList())
-                            ])));
-              }))
+                                padding: const EdgeInsets.only(right: 8),
+                                child: Icon(Icons.arrow_back,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
+                                    size: 16)))
+                      ]),
+                      style: const TextStyle(fontSize: 12),
+                      decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.surfaceContainer,
+                          borderRadius: BorderRadius.circular(8))))
+              : Row(children: [
+                  InkWell(
+                      onTap: () {
+                        setState(() {
+                          showSearch = true;
+                        });
+                      },
+                      child: Container(
+                          padding: const EdgeInsets.only(
+                              left: 5, right: 5, top: 5, bottom: 5),
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              color: Colors.black54),
+                          child:
+                              const Icon(Icons.search, color: Colors.white))),
+                  const Spacer()
+                ]),
+          bottom: 15,
+          left: !showSearch ? -7 : 5,
+          right: 75)
     ]);
   }
 
