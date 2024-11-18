@@ -172,14 +172,22 @@ Future<List<Registry>> getRegistry(GetRegistryRef ref) async {
 }
 
 @riverpod
-Future<List<Container1>> getContainer(GetContainerRef ref) async {
+Future<List<Container1>> getContainer(
+    GetContainerRef ref, String search) async {
+  search = search.toLowerCase();
   final res =
       await ref.watch(imageDbProvider.selectAsync((data) => data.images));
   List<Container1> list = [];
   for (var item in res.entries) {
     for (var item2 in item.value.entries) {
+      if (search.isNotEmpty && !item2.key.contains(search)) continue;
       list.add(item2.value.copyWith(id: item2.key, namespace: item.key));
     }
   }
+  list.sort((a, b) {
+    final f = a.namespace.compareTo(b.namespace);
+    if (f == 0) return a.id.compareTo(b.id);
+    return f;
+  });
   return list;
 }
