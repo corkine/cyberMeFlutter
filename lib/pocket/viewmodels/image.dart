@@ -116,6 +116,7 @@ class ImageDb extends _$ImageDb {
       {bool skipWhenNoContainer = true, bool skipWhenExist = false}) async {
     final images = state.value;
     if (images == null) return "未找到数据";
+    // note: oldContainer 取出时可能没有 id 和 namespace 数据
     var oldContainer = images.images[container.namespace]?[container.id];
     if (oldContainer == null) {
       if (skipWhenNoContainer) {
@@ -131,8 +132,12 @@ class ImageDb extends _$ImageDb {
       ...images.images,
       container.namespace: {
         ...?images.images[container.namespace],
-        container.id:
-            oldContainer.copyWith(tags: {...oldContainer.tags, tag.id: tag}),
+        container.id: oldContainer.copyWith(
+            id: oldContainer.id.isEmpty ? container.id : oldContainer.id,
+            namespace: oldContainer.namespace.isEmpty
+                ? container.namespace
+                : oldContainer.namespace,
+            tags: {...oldContainer.tags, tag.id: tag}),
       }
     }));
     return "更新标签成功";
