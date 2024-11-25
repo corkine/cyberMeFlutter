@@ -1,10 +1,10 @@
-import 'package:cyberme_flutter/pocket/views/server/common.dart';
+import 'package:cyberme_flutter/pocket/views/server/service/common.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../viewmodels/service.dart';
+import '../../../viewmodels/service.dart';
 
 class ServerEmbededView extends ConsumerWidget {
   const ServerEmbededView({super.key});

@@ -15,7 +15,7 @@ import 'package:cyberme_flutter/pocket/views/live/sex.dart';
 import 'package:cyberme_flutter/pocket/views/info/link.dart';
 import 'package:cyberme_flutter/pocket/views/info/location.dart';
 import 'package:cyberme_flutter/pocket/views/server/dns/core.dart';
-import 'package:cyberme_flutter/pocket/views/server/service.dart';
+import 'package:cyberme_flutter/pocket/views/server/service/service.dart';
 import 'package:cyberme_flutter/pocket/views/news/story.dart';
 import 'package:cyberme_flutter/pocket/views/server/wireguard/core.dart';
 import 'package:cyberme_flutter/pocket/views/think/block.dart';
@@ -269,10 +269,17 @@ final apps = {
     "addToContext": false,
     "icon": Icons.bookmark
   },
+  "esxi": {
+    "name": "ESXi",
+    "view": (c) => const EsxiView(),
+    "addToMenu": true,
+    "addToContext": true,
+    "icon": Icons.view_comfortable_outlined
+  },
   "psy1003": {
     "name": "实验1003",
     "view": (c) => const Psy1003View(),
-    "addToMenu": true,
+    "addToMenu": false,
     "addToContext": false,
     "icon": Icons.psychology
   },
@@ -310,13 +317,6 @@ final apps = {
     "addToMenu": true,
     "addToContext": false,
     "icon": Icons.backup
-  },
-  "esxi": {
-    "name": "ESXi",
-    "view": (c) => const EsxiView(),
-    "addToMenu": true,
-    "addToContext": true,
-    "icon": Icons.view_comfortable_outlined
   },
   "wireguard": {
     "name": "Wireguard",

@@ -1,5 +1,5 @@
 import 'package:cyberme_flutter/pocket/viewmodels/sticky.dart';
-import 'package:cyberme_flutter/pocket/views/server/common.dart';
+import 'package:cyberme_flutter/pocket/views/server/service/common.dart';
 import 'package:cyberme_flutter/pocket/views/util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

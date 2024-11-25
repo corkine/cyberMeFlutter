@@ -1,10 +1,10 @@
-import 'package:cyberme_flutter/pocket/views/server/common.dart';
+import 'package:cyberme_flutter/pocket/views/server/service/common.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../viewmodels/service.dart';
+import '../../../viewmodels/service.dart';
 
 class TokenEmbededView extends ConsumerWidget {
   const TokenEmbededView({super.key});
@@ -31,24 +31,9 @@ class TokenEmbededView extends ConsumerWidget {
           return ListTile(
               title: Text(token.name),
               subtitle: subtitle,
-              contentPadding: const EdgeInsets.only(left: 20, right: 5),
-              trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-                IconButton(
-                    icon: const Icon(Icons.edit),
-                    onPressed: () {
-                      Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => TokenEditorView(token)));
-                    }),
-                IconButton(
-                    icon: const Icon(Icons.delete),
-                    onPressed: () async {
-                      if (await confirm(context, "确定删除 ${token.name} ?")) {
-                        ref
-                            .read(serviceDbProvider.notifier)
-                            .deleteToken(token.id);
-                      }
-                    })
-              ]));
+              onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => TokenEditorView(token))),
+              contentPadding: const EdgeInsets.only(left: 20, right: 5));
         });
   }
 }
@@ -125,7 +110,17 @@ class _TokenEditorViewState extends ConsumerState<TokenEditorView> {
   Widget build(BuildContext context) {
     final isAdd = widget.token == null;
     return Scaffold(
-        appBar: AppBar(title: Text(isAdd ? "Add" : "Edit")),
+        appBar: AppBar(title: Text(isAdd ? "Add" : "Edit"), actions: [
+          IconButton(
+              onPressed: () async {
+                var token = widget.token!;
+                if (await confirm(context, "确定删除 ${token.name} ?")) {
+                  ref.read(serviceDbProvider.notifier).deleteToken(token.id);
+                }
+              },
+              icon: const Icon(Icons.delete)),
+          const SizedBox(width: 10)
+        ]),
         body: Form(
             key: _formKey,
             child: ListView(

@@ -1,11 +1,11 @@
-import 'package:cyberme_flutter/pocket/views/server/common.dart';
+import 'package:cyberme_flutter/pocket/views/server/service/common.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sticky_grouped_list/sticky_grouped_list.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../viewmodels/service.dart';
+import '../../../viewmodels/service.dart';
 import 'server.dart';
 import 'token.dart';
 
@@ -65,7 +65,7 @@ class _ServiceViewState extends ConsumerState<ServiceManageView> {
             items: const [
               BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: "服务"),
               BottomNavigationBarItem(icon: Icon(Icons.dns), label: "主机"),
-              BottomNavigationBarItem(icon: Icon(Icons.key), label: "OAuth密钥"),
+              BottomNavigationBarItem(icon: Icon(Icons.key), label: "密钥"),
             ]));
   }
 }
@@ -114,19 +114,8 @@ class _ServiceEmbededViewState extends ConsumerState<ServiceEmbededView> {
           itemComparator: (a, b) => a.type.index.compareTo(b.type.index),
           indexedItemBuilder: (context, service, index) {
             return ListTile(
-                onTap: () => showDialog(
-                    context: context,
-                    builder: (context) => SimpleDialog(
-                        title: const Text("可用端点"),
-                        children: service.endpoints.isEmpty
-                            ? [const SimpleDialogOption(child: Text("无可用端点"))]
-                            : [
-                                for (var e in service.endpoints)
-                                  SimpleDialogOption(
-                                      child: Text(e),
-                                      onPressed: () =>
-                                          launchUrlString("https://" + e))
-                              ])),
+                onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => ServiceEditorView(service))),
                 dense: true,
                 title: Row(children: [
                   Transform.translate(
@@ -134,8 +123,15 @@ class _ServiceEmbededViewState extends ConsumerState<ServiceEmbededView> {
                       child: Icon(service.type.icon, size: 18)),
                   const SizedBox(width: 3),
                   Text(service.name,
-                      style: const TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 16))
+                      style: TextStyle(
+                          decoration: service.disabled
+                              ? TextDecoration.lineThrough
+                              : null,
+                          decorationColor:
+                              const Color.fromARGB(255, 247, 107, 107),
+                          decorationThickness: 2,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16))
                 ]),
                 contentPadding: const EdgeInsets.only(left: 13, right: 5),
                 subtitle: Column(
@@ -151,21 +147,24 @@ class _ServiceEmbededViewState extends ConsumerState<ServiceEmbededView> {
                     ]),
                 trailing: Row(mainAxisSize: MainAxisSize.min, children: [
                   IconButton(
-                      icon: const Icon(Icons.edit),
-                      onPressed: () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  ServiceEditorView(service)))),
-                  IconButton(
-                      icon: const Icon(Icons.delete),
-                      onPressed: () async {
-                        if (await confirm(
-                            context, "确定删除服务 ${service.name} 吗？")) {
-                          ref
-                              .read(serviceDbProvider.notifier)
-                              .deleteService(service.id);
-                        }
-                      })
+                      icon: const Icon(Icons.api),
+                      onPressed: () => showDialog(
+                          context: context,
+                          builder: (context) => SimpleDialog(
+                              title: const Text("可用端点"),
+                              children: service.endpoints.isEmpty
+                                  ? [
+                                      const SimpleDialogOption(
+                                          child: Text("无可用端点"))
+                                    ]
+                                  : [
+                                      for (var e in service.endpoints)
+                                        SimpleDialogOption(
+                                            child: Text(e),
+                                            onPressed: () =>
+                                                launchUrlString("https://" + e))
+                                    ]))),
+                  const SizedBox(width: 6)
                 ]));
           },
           groupSeparatorBuilder: (element) {
@@ -233,6 +232,7 @@ class _ServiceEditorViewState extends ConsumerState<ServiceEditorView> {
   List<String> endpoints = [];
   List<String> tokens = [];
   String? server;
+  bool disabled = false;
 
   @override
   void initState() {
@@ -244,6 +244,7 @@ class _ServiceEditorViewState extends ConsumerState<ServiceEditorView> {
     endpoints = [...?widget.service?.endpoints];
     tokens = [...?widget.service?.tokenIds];
     server = widget.service?.serverId;
+    disabled = widget.service?.disabled ?? false;
     if (server != null && server!.isEmpty) server = null;
   }
 
@@ -269,6 +270,7 @@ class _ServiceEditorViewState extends ConsumerState<ServiceEditorView> {
               tokenIds: tokens,
               serverId: server ?? "",
               implDetails: _implController.text,
+              disabled: disabled,
               type: _type);
       ref.read(serviceDbProvider.notifier).makeMemchangeOfService(newService);
       _clearForm();
@@ -284,7 +286,27 @@ class _ServiceEditorViewState extends ConsumerState<ServiceEditorView> {
     if (!serversMap.containsKey(server)) server = null;
     tokens.removeWhere((element) => !tokensMap.containsKey(element));
     return Scaffold(
-        appBar: AppBar(title: Text(isAdd ? "Add" : "Edit")),
+        appBar: AppBar(title: Text(isAdd ? "Add" : "Edit"), actions: [
+          TextButton(
+              child: Text(disabled ? "Off" : "On"),
+              onPressed: () {
+                setState(() {
+                  disabled = !disabled;
+                });
+              }),
+          IconButton(
+              icon: const Icon(Icons.delete),
+              onPressed: () async {
+                var service = widget.service!;
+                if (await confirm(context, "确定删除服务 ${service.name} 吗？")) {
+                  Navigator.of(context).pop();
+                  ref
+                      .read(serviceDbProvider.notifier)
+                      .deleteService(service.id);
+                }
+              }),
+          const SizedBox(width: 10)
+        ]),
         body: Form(
             key: _formKey,
             child: ListView(

@@ -45,6 +45,7 @@ class ServerService with _$ServerService {
       @Default("") String implDetails,
       @Default([]) List<String> tokenIds,
       @Default(ServiceType.http) ServiceType type,
+      @Default(false) bool disabled,
       @Default("") String serverId}) = _ServerService;
 
   factory ServerService.fromJson(Map<String, dynamic> json) =>
