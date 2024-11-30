@@ -1,5 +1,8 @@
 import 'package:cyberme_flutter/pocket/views/server/service/common.dart';
+import 'package:cyberme_flutter/pocket/views/server/xterm.dart';
+import 'package:cyberme_flutter/pocket/views/util.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:uuid/uuid.dart';
@@ -20,28 +23,28 @@ class ServerEmbededView extends ConsumerWidget {
         itemBuilder: (context, index) {
           final server = servers[index];
           Widget subtitle;
-          subtitle = Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-                Text(
-                    "${server.cpuCount}C.${server.memoryGB}G.${server.diskGB}G",
-                    style: TextStyle(
-                        fontSize: 11,
-                        color: Theme.of(context).colorScheme.primary)),
-                const SizedBox(width: 5),
-                if (expiredTo(server.expired)
-                    .subtract(const Duration(days: 30))
-                    .isBefore(DateTime.now()))
-                  Text(expiredAt(server.expired) + "到期",
-                      style: const TextStyle(fontSize: 11, color: Colors.red))
-              ]),
-              Text(server.sshUrl,
+          subtitle =
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+              Text("${server.cpuCount}C.${server.memoryGB}G.${server.diskGB}G",
                   style: TextStyle(
                       fontSize: 11,
-                      color: Theme.of(context).colorScheme.secondary)),
-            ],
-          );
+                      color: Theme.of(context).colorScheme.primary)),
+              const SizedBox(width: 5),
+              if (expiredTo(server.expired)
+                  .subtract(const Duration(days: 30))
+                  .isBefore(DateTime.now()))
+                Text(expiredAt(server.expired) + "到期",
+                    style: const TextStyle(fontSize: 11, color: Colors.red))
+            ]),
+            Text(
+                server.sshUser.isNotEmpty
+                    ? "${server.sshUrl} · ssh"
+                    : server.sshUrl,
+                style: TextStyle(
+                    fontSize: 11,
+                    color: Theme.of(context).colorScheme.secondary))
+          ]);
           return ListTile(
               title: Row(
                 children: [
@@ -90,6 +93,7 @@ class _ServerEditorViewState extends ConsumerState<ServerEditorView> {
       ? widget.server!.copyWith(
           id: widget.server!.id.isEmpty ? const Uuid().v4() : widget.server!.id)
       : Server(id: const Uuid().v4());
+  var sshPassObservable = false;
 
   void _addOrUpdateServer() {
     if (_formKey.currentState!.validate()) {
@@ -208,36 +212,89 @@ class _ServerEditorViewState extends ConsumerState<ServerEditorView> {
                           server = server.copyWith(manageUrl: newValue!),
                       decoration: InputDecoration(
                           labelText: 'Manage URL*',
-                          suffix: IconButton(
+                          suffix: TextButton(
                               onPressed: () => launchUrlString(
                                   server.manageUrl.startsWith("http")
                                       ? server.manageUrl
                                       : "https://" + server.manageUrl),
-                              icon: const Icon(Icons.launch))),
+                              child: const Text("Open"))),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter a manage URL';
                         }
                         return null;
                       }),
+                  const SizedBox(height: 10),
                   TextFormField(
                       initialValue: server.sshUrl,
                       onSaved: (newValue) =>
                           server = server.copyWith(sshUrl: newValue!),
                       decoration: InputDecoration(
-                          labelText: 'Endpoint URL*',
-                          suffix: IconButton(
-                              onPressed: () => launchUrlString(
-                                  server.sshUrl.startsWith("http")
-                                      ? server.sshUrl
-                                      : "https://" + server.sshUrl),
-                              icon: const Icon(Icons.launch))),
+                          labelText: 'SSH IP*',
+                          suffix: TextButton(
+                              onPressed: () => Clipboard.setData(
+                                    ClipboardData(text: server.sshUrl),
+                                  ),
+                              child: const Text("Copy"))),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter a valid URL';
                         }
                         return null;
                       }),
+                  const SizedBox(height: 10),
+                  Row(children: [
+                    Expanded(
+                      child: TextFormField(
+                          initialValue: server.sshUser,
+                          onSaved: (newValue) =>
+                              server = server.copyWith(sshUser: newValue!),
+                          decoration:
+                              const InputDecoration(labelText: 'SSH User'),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter a valid UserName';
+                            }
+                            return null;
+                          }),
+                    ),
+                    const SizedBox(height: 10),
+                    Expanded(
+                        child: TextFormField(
+                            initialValue: server.sshPassword,
+                            onSaved: (newValue) => server =
+                                server.copyWith(sshPassword: newValue!),
+                            obscureText: !sshPassObservable,
+                            decoration: InputDecoration(
+                                suffix: Padding(
+                                  padding: const EdgeInsets.only(right: 8),
+                                  child: InkWell(
+                                      onTap: () {
+                                        setState(() {
+                                          sshPassObservable =
+                                              !sshPassObservable;
+                                        });
+                                      },
+                                      child: sshPassObservable
+                                          ? const Icon(Icons.visibility_off,
+                                              size: 15)
+                                          : const Icon(Icons.visibility,
+                                              size: 15)),
+                                ),
+                                labelText: 'SSH Password'),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter a valid URL';
+                              }
+                              return null;
+                            })),
+                    IconButton(
+                        icon: const Icon(Icons.terminal),
+                        onPressed:
+                            server.sshUser.isEmpty || server.sshPassword.isEmpty
+                                ? null
+                                : handleLogin)
+                  ]),
                   const SizedBox(height: 10),
                   TextFormField(
                       initialValue: server.priority.toString(),
@@ -263,5 +320,31 @@ class _ServerEditorViewState extends ConsumerState<ServerEditorView> {
             onPressed: _addOrUpdateServer,
             label: Text(isAdd ? "添加服务器" : "更新服务器"),
             icon: Icon(isAdd ? Icons.add : Icons.save)));
+  }
+
+  void handleLogin() {
+    if (server.sshUser.isEmpty ||
+        server.sshPassword.isEmpty ||
+        server.sshUrl.isEmpty) {
+      showSimpleMessage(context, content: "缺失登录信息", useSnackBar: true);
+      return;
+    }
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: (_) => Scaffold(
+                body: Stack(children: [
+              XTermView(
+                  ip: server.sshUrl,
+                  username: server.sshUser,
+                  password: server.sshPassword),
+              Positioned(
+                right: 10,
+                top: 10,
+                child: IconButton.filled(
+                    padding: const EdgeInsets.all(0),
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon:
+                        const Icon(Icons.close, color: Colors.white, size: 17)),
+              )
+            ]))));
   }
 }

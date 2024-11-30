@@ -29,6 +29,8 @@ class Server with _$Server {
       @Default(0) int expired,
       @Default("") String manageUrl,
       @Default("") String sshUrl,
+      @Default("") String sshUser,
+      @Default("") String sshPassword,
       @Default("") String note,
       @Default("") String band}) = _Server;
 
