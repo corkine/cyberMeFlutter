@@ -152,8 +152,10 @@ class _TodoViewState extends ConsumerState<TodoView>
                   fontWeight: FontWeight.bold,
                   color: Theme.of(context).colorScheme.primary))));
 
-  String _groupByWeek(todo) =>
-      weekOfYear(todo.date ?? DateTime.now()).toString().padLeft(3, '0');
+  String _groupByWeek(Todo todo) {
+    final date = todo.date ?? DateTime.now();
+    return date.year.toString() + weekOfYear(date).toString().padLeft(3, '0');
+  }
 
   Widget _groupBySeparatorWeek(todo) => Container(
       color: Theme.of(context).colorScheme.surfaceContainer,
