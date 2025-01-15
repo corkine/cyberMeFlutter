@@ -58,13 +58,10 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^1.0.0
   json_serializable: ^6.7.1
   build_runner: ^2.4.6
   riverpod_generator: ^2.3.6
   freezed: ^2.4.5
-  custom_lint: ^0.5.6
-  riverpod_lint: ^2.3.4
 
 flutter:
   uses-material-design: true
