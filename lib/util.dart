@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:clipboard/clipboard.dart';
+import 'package:cyberme_flutter/pocket/viewmodels/tray.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:sprintf/sprintf.dart';
@@ -89,6 +90,8 @@ Future<void> initSystemTray() async {
 
   await systemTray.initSystemTray(iconPath: icoPath);
 
+  final customItems = await TraySettings.readTraySettings();
+
   final Menu menu = Menu();
   await menu.buildFrom([
     ...apps.entries
@@ -110,9 +113,21 @@ Future<void> initSystemTray() async {
     MenuItemLabel(
         label: '剪贴板图片上传',
         onClicked: (menuItem) => readClipboardAndUploadImage()),
-    MenuItemLabel(
-        label: 'Web 版本',
-        onClicked: (a) => launchUrlString("https://cyber.mazhangjing.com")),
+    ...customItems
+        .map((item) => MenuItemLabel(
+            label: item.name,
+            onClicked: (menuItem) {
+              if (item.isSink) {
+                if (appHide) {
+                  appHide = false;
+                  appWindow.show();
+                }
+                routeStream?.sink.add(item.url);
+              } else {
+                launchUrlString(item.url);
+              }
+            }))
+        .toList(),
     MenuSeparator(),
     MenuItemLabel(
         label: '更改点按动作',
@@ -261,9 +276,17 @@ void installWindowsRouteStream(BuildContext context) {
     if (routeStream == null) {
       routeStream = StreamController();
       routeStream?.stream.listen((event) {
-        debugPrint("Go to $event");
+        final uri = Uri.parse(event);
+        final path = uri.path;
+        final queryParams = uri.queryParameters;
+
+        debugPrint("Go to $path with params: $queryParams");
+
         Navigator.of(context).popUntil(ModalRoute.withName('/menu'));
-        Navigator.of(context).pushNamed(event);
+        Navigator.of(context).pushNamed(
+          path,
+          arguments: queryParams.isNotEmpty ? queryParams : null,
+        );
       });
     }
   }

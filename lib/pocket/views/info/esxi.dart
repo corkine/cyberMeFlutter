@@ -6,6 +6,7 @@ import 'package:cyberme_flutter/pocket/views/util.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter/material.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
@@ -39,6 +40,64 @@ class EsxiView extends ConsumerStatefulWidget {
 }
 
 class _EsxiViewState extends ConsumerState<EsxiView> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _handleRouteParameters();
+    });
+  }
+
+  void _handleRouteParameters() async {
+    final Map<String, String>? args =
+        ModalRoute.of(context)?.settings.arguments as Map<String, String>?;
+
+    if (args != null && args.containsKey('host') && args.containsKey('power')) {
+      final String host = args['host']!;
+      final String power = args['power']!;
+
+      final data = await ref.read(esxiInfosProvider.future);
+      final vm = data.$1!.vms
+          .where((vm) => vm.name == host || vm.vmid == host)
+          .firstOrNull;
+
+      if (vm != null) {
+        showSimpleMessage(context,
+            content: "正在对虚拟机 ${vm.name} 执行动作：${power.toUpperCase()}",
+            useSnackBar: true,
+            duration: 1500);
+        VmPower powerAction;
+        switch (power.toLowerCase()) {
+          case 'on':
+            powerAction = VmPower.on;
+            break;
+          case 'off':
+            powerAction = VmPower.off;
+            break;
+          case 'suspended':
+            powerAction = VmPower.suspended;
+            break;
+          default:
+            powerAction = VmPower.on; // 默认为开机
+        }
+
+        ref
+            .read(esxiInfosProvider.notifier)
+            .changeState(vm, powerAction)
+            .then((res) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(res),
+            duration: const Duration(seconds: 2),
+          ));
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('未找到指定的虚拟机: $host'),
+            duration: const Duration(seconds: 2)));
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final data = ref.watch(esxiInfosProvider).value;

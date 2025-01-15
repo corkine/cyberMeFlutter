@@ -47,6 +47,7 @@ import 'views/info/ticket.dart';
 import 'views/info/express.dart';
 import 'views/think/todo/todo.dart';
 import 'views/info/track/track.dart';
+import 'views/tray.dart';
 
 final apps = {
   "dashboard": {
@@ -325,6 +326,13 @@ final apps = {
     "addToContext": true,
     "icon": Icons.vpn_key
   },
+  "traySetting": {
+    "name": "TraySetting",
+    "view": (c) => const TraySettingView(),
+    "addToMenu": true,
+    "addToContext": false,
+    "icon": Icons.settings
+  }
 };
 
 class PocketHome extends StatefulWidget {
