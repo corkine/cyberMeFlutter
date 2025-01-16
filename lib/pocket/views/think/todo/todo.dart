@@ -42,6 +42,31 @@ class _TodoViewState extends ConsumerState<TodoView>
     listener = ItemPositionsListener.create();
     listener.itemPositions.addListener(fetchNextHandler);
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _handleRouteParameters();
+    });
+  }
+
+  void _handleRouteParameters() async {
+    final Map<String, String>? args =
+        ModalRoute.of(context)?.settings.arguments as Map<String, String>?;
+
+    if (args != null && args.containsKey('action')) {
+      final String action = args['action']!;
+      final String hintList = args['list'] ?? "";
+
+      if (action == "add") {
+        await ref.read(todoDBProvider.future);
+        final lists = ref.read(todoListsProvider);
+        if (hintList.isNotEmpty) {
+          final list = lists.where((l) => l.contains(hintList)).firstOrNull ??
+              lists.first;
+          handleAddNewTask(lists, hintList: list);
+        } else {
+          handleAddNewTask(lists);
+        }
+      }
+    }
   }
 
   @override
