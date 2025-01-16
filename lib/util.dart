@@ -94,22 +94,22 @@ Future<void> initSystemTray() async {
 
   final Menu menu = Menu();
   await menu.buildFrom([
-    ...apps.entries
-        .where((element) => (element.value["addToContext"] as bool?) ?? true)
-        .map((e) {
-      final url = "/app/${e.key}";
-      final name = e.value["name"] as String;
-      return MenuItemLabel(
-          label: name,
-          onClicked: (_) {
-            if (appHide) {
-              appHide = false;
-              appWindow.show();
-            }
-            routeStream?.sink.add(url);
-          });
-    }),
-    MenuSeparator(),
+    // ...apps.entries
+    //     .where((element) => (element.value["addToContext"] as bool?) ?? true)
+    //     .map((e) {
+    //   final url = "/app/${e.key}";
+    //   final name = e.value["name"] as String;
+    //   return MenuItemLabel(
+    //       label: name,
+    //       onClicked: (_) {
+    //         if (appHide) {
+    //           appHide = false;
+    //           appWindow.show();
+    //         }
+    //         routeStream?.sink.add(url);
+    //       });
+    // }),
+    // MenuSeparator(),
     MenuItemLabel(
         label: '剪贴板图片上传',
         onClicked: (menuItem) => readClipboardAndUploadImage()),
