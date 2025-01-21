@@ -10,6 +10,7 @@ import 'package:cyberme_flutter/pocket/views/info/counter.dart';
 import 'package:cyberme_flutter/pocket/views/info/esxi.dart';
 import 'package:cyberme_flutter/pocket/views/info/gallery.dart';
 import 'package:cyberme_flutter/pocket/views/info/gitea.dart';
+import 'package:cyberme_flutter/pocket/views/info/serverless.dart';
 import 'package:cyberme_flutter/pocket/views/live/mass/mass.dart';
 import 'package:cyberme_flutter/pocket/views/live/sex.dart';
 import 'package:cyberme_flutter/pocket/views/info/link.dart';
@@ -21,7 +22,7 @@ import 'package:cyberme_flutter/pocket/views/server/wireguard/core.dart';
 import 'package:cyberme_flutter/pocket/views/think/block.dart';
 import 'package:cyberme_flutter/pocket/views/think/secret_block.dart';
 import 'views/info/blog.dart';
-import 'views/info/disaptch.dart';
+import 'views/info/clj-ui.dart';
 import 'views/info/psy1003.dart';
 import 'views/info/psych.dart';
 import 'views/info/work.dart';
@@ -161,6 +162,20 @@ final apps = {
     "addToMenu": true,
     "addToContext": false,
     "icon": Icons.send
+  },
+  "serverless": {
+    "name": "服务脚本",
+    "view": (c) => const ServerlessServiceView(),
+    "addToMenu": true,
+    "addToContext": false,
+    "icon": Icons.send
+  },
+  "traySetting": {
+    "name": "TraySetting",
+    "view": (c) => const TraySettingView(),
+    "addToMenu": true,
+    "addToContext": false,
+    "icon": Icons.settings
   },
   "link": {
     "name": "短链接管理",

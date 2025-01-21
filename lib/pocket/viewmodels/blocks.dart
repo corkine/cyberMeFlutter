@@ -1,5 +1,5 @@
 import 'package:cyberme_flutter/pocket/viewmodels/basic.dart';
-import 'package:cyberme_flutter/pocket/views/info/disaptch.dart';
+import 'package:cyberme_flutter/pocket/views/info/clj-ui.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 

@@ -13,8 +13,6 @@ import 'package:http/http.dart' as http;
 import 'package:pasteboard/pasteboard.dart' as pb;
 import 'package:window_manager/window_manager.dart';
 
-import 'pocket/main.dart';
-
 class Util {
   /// 返回常用的时间信息
   static String clock(
