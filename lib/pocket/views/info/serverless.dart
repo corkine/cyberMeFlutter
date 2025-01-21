@@ -17,7 +17,7 @@ class _ServerlessServiceViewState extends ConsumerState<ServerlessServiceView> {
   Widget build(BuildContext context) {
     final items = ref.watch(serverlessDbProvider).value ?? [];
     return Scaffold(
-        appBar: AppBar(title: const Text('Serverless DB'), actions: [
+        appBar: AppBar(title: const Text('Serverless Function'), actions: [
           IconButton(onPressed: handleAdd, icon: const Icon(Icons.add)),
           const SizedBox(width: 5)
         ]),
