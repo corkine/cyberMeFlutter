@@ -1,23 +1,26 @@
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cyberme_flutter/pocket/viewmodels/expired.dart';
+import 'package:cyberme_flutter/pocket/views/info/expired.dart';
 import 'package:cyberme_flutter/pocket/views/think/note.dart';
 import 'package:cyberme_flutter/interface/channel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screen_lock/flutter_screen_lock.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../util.dart';
 import 'main.dart';
 
-class MenuView extends StatefulWidget {
+class MenuView extends ConsumerStatefulWidget {
   const MenuView({super.key});
 
   @override
-  State<MenuView> createState() => _MenuViewState();
+  ConsumerState<MenuView> createState() => _MenuViewState();
 }
 
-class _MenuViewState extends State<MenuView> {
+class _MenuViewState extends ConsumerState<MenuView> {
   @override
   Widget build(BuildContext context) {
     // final appsGrid = GridView(
@@ -50,6 +53,8 @@ class _MenuViewState extends State<MenuView> {
     ]);
     final now = DateTime.now();
     final today = "${now.year}-${now.month}-${now.day}";
+    final expired =
+        ref.watch(getExpiredItemsProvider.call()).value ?? ExpiredItems();
     return Scaffold(
         backgroundColor: Colors.white,
         body: CustomScrollView(slivers: [
@@ -57,6 +62,20 @@ class _MenuViewState extends State<MenuView> {
               stretch: true,
               title: const Text("Cyber Apps",
                   style: TextStyle(color: Colors.white)),
+              actions: [
+                if (!expired.isEmpty)
+                  IconButton(
+                      onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                              builder: (context) => const ExpiredView())),
+                      icon: Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: const Icon(Icons.warning,
+                              color: Color.fromARGB(255, 255, 187, 0),
+                              shadows: [
+                                Shadow(color: Colors.black87, blurRadius: 13)
+                              ])))
+              ],
               flexibleSpace: Container(
                   decoration: BoxDecoration(
                       image: DecorationImage(

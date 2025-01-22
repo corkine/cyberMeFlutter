@@ -340,13 +340,6 @@ final apps = {
     "addToMenu": true,
     "addToContext": true,
     "icon": Icons.vpn_key
-  },
-  "traySetting": {
-    "name": "TraySetting",
-    "view": (c) => const TraySettingView(),
-    "addToMenu": true,
-    "addToContext": false,
-    "icon": Icons.settings
   }
 };
 

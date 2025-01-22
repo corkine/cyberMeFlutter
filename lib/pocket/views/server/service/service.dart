@@ -18,6 +18,20 @@ class ServiceManageView extends ConsumerStatefulWidget {
 
 class _ServiceViewState extends ConsumerState<ServiceManageView> {
   int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final params = ModalRoute.of(context)!.settings.arguments as Map?;
+      if (params != null) {
+        setState(() {
+          _currentIndex = params['index'] ?? 0;
+        });
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
