@@ -131,9 +131,9 @@ class _BodyMassViewState extends ConsumerState<BodyMassView> {
     await ref.read(massDbProvider.notifier).add(MassData(
         time: time.millisecondsSinceEpoch / 1000, kgValue: value, title: ""));
     if (!kIsWeb && Platform.isIOS) {
-      final (ok, msg) = await addBodyMassRecord(time, value);
-      await showSimpleMessage(context,
-          content: ok ? "记录成功！" : msg, useSnackBar: true);
+      // final (ok, msg) = await addBodyMassRecord(time, value);
+      // await showSimpleMessage(context,
+      //     content: ok ? "记录成功！" : msg, useSnackBar: true);
     }
   }
 }

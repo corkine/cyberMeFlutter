@@ -629,14 +629,6 @@ packages:
       url: "https://mirrors.tuna.tsinghua.edu.cn/dart-pub/"
     source: hosted
     version: "2.3.2"
-  health_kit_reporter:
-    dependency: "direct main"
-    description:
-      name: health_kit_reporter
-      sha256: "655809f5a38f95ce7728b7c3f1ecbf050ff41127c9af38615f1dfc1c22bff10b"
-      url: "https://mirrors.tuna.tsinghua.edu.cn/dart-pub/"
-    source: hosted
-    version: "2.3.1"
   hooks_riverpod:
     dependency: "direct main"
     description:
@@ -1828,4 +1820,4 @@ packages:
     version: "0.0.6"
 sdks:
   dart: ">=3.6.0 <4.0.0"
-  flutter: ">=3.24.0"
+  flutter: ">=3.27.0"

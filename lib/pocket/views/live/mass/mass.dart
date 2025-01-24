@@ -2,9 +2,9 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart' as f;
 import 'package:flutter/material.dart';
-import 'package:health_kit_reporter/health_kit_reporter.dart';
-import 'package:health_kit_reporter/model/predicate.dart';
-import 'package:health_kit_reporter/model/type/quantity_type.dart';
+// import 'package:health_kit_reporter/health_kit_reporter.dart';
+// import 'package:health_kit_reporter/model/predicate.dart';
+// import 'package:health_kit_reporter/model/type/quantity_type.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sticky_grouped_list/sticky_grouped_list.dart';
 import '../../../viewmodels/mass.dart';
@@ -40,29 +40,29 @@ class _MassActivityViewState extends ConsumerState<MassActivityView> {
   }
 
   doSync() async {
-    if (f.kIsWeb || !Platform.isIOS) return;
-    await ref.read(massDbProvider.future);
-    final ok = await requestAuthorization(
-        readTypes: [QuantityType.bodyMass.identifier],
-        writeTypes: [QuantityType.bodyMass.identifier]);
-    if (ok.$1) {
-      final now = DateTime.now().add(const Duration(hours: 1));
-      final threeMonthsAgo = now.subtract(const Duration(days: 90));
-      final activities = await HealthKitReporter.quantityQuery(
-          QuantityType.bodyMass, "kg", Predicate(threeMonthsAgo, now));
-      final healthKitMiss =
-          await ref.read(massDbProvider.notifier).sync(activities);
-      if (healthKitMiss.isNotEmpty) {
-        debugPrint('kit missed: ${healthKitMiss.length}');
-        for (var e in healthKitMiss) {
-          addBodyMassRecord(
-              DateTime.fromMillisecondsSinceEpoch((e.time * 1000).toInt()),
-              e.kgValue);
-        }
-      }
-    } else {
-      await showSimpleMessage(context, content: ok.$2);
-    }
+    // if (f.kIsWeb || !Platform.isIOS) return;
+    // await ref.read(massDbProvider.future);
+    // final ok = await requestAuthorization(
+    //     readTypes: [QuantityType.bodyMass.identifier],
+    //     writeTypes: [QuantityType.bodyMass.identifier]);
+    // if (ok.$1) {
+    //   final now = DateTime.now().add(const Duration(hours: 1));
+    //   final threeMonthsAgo = now.subtract(const Duration(days: 90));
+    //   final activities = await HealthKitReporter.quantityQuery(
+    //       QuantityType.bodyMass, "kg", Predicate(threeMonthsAgo, now));
+    //   final healthKitMiss =
+    //       await ref.read(massDbProvider.notifier).sync(activities);
+    //   if (healthKitMiss.isNotEmpty) {
+    //     debugPrint('kit missed: ${healthKitMiss.length}');
+    //     for (var e in healthKitMiss) {
+    //       addBodyMassRecord(
+    //           DateTime.fromMillisecondsSinceEpoch((e.time * 1000).toInt()),
+    //           e.kgValue);
+    //     }
+    //   }
+    // } else {
+    //   await showSimpleMessage(context, content: ok.$2);
+    // }
   }
 
   ScrollController controller = ScrollController();
@@ -162,8 +162,8 @@ class _MassActivityViewState extends ConsumerState<MassActivityView> {
           if (direction == DismissDirection.endToStart) {
             if (await showSimpleMessage(context, content: "确定删除此记录吗?")) {
               await ref.read(massDbProvider.notifier).delete(activity.time);
-              await deleteSample(
-                  QuantityType.bodyMass.identifier, activity.time);
+              // await deleteSample(
+              //     QuantityType.bodyMass.identifier, activity.time);
               return true;
             }
           } else {

@@ -4,9 +4,9 @@ import 'package:cyberme_flutter/pocket/viewmodels/sex.dart';
 import 'package:cyberme_flutter/pocket/views/util.dart';
 import 'package:flutter/foundation.dart' as f;
 import 'package:flutter/material.dart';
-import 'package:health_kit_reporter/health_kit_reporter.dart';
-import 'package:health_kit_reporter/model/predicate.dart';
-import 'package:health_kit_reporter/model/type/category_type.dart';
+// import 'package:health_kit_reporter/health_kit_reporter.dart';
+// import 'package:health_kit_reporter/model/predicate.dart';
+// import 'package:health_kit_reporter/model/type/category_type.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -53,29 +53,29 @@ class _SexualActivityViewState extends ConsumerState<SexualActivityView> {
   }
 
   doSync() async {
-    if (f.kIsWeb || !Platform.isIOS) return;
-    await ref.read(bluesDbProvider.future);
-    final ok = await requestAuthorization(
-        readTypes: [CategoryType.sexualActivity.identifier],
-        writeTypes: [CategoryType.sexualActivity.identifier]);
-    if (ok.$1) {
-      final now = DateTime.now();
-      final threeMonthsAgo = now.subtract(const Duration(days: 90));
-      final activities = await HealthKitReporter.categoryQuery(
-          CategoryType.sexualActivity, Predicate(threeMonthsAgo, now));
-      final healthKitMiss =
-          await ref.read(bluesDbProvider.notifier).sync(activities);
-      if (healthKitMiss.isNotEmpty) {
-        debugPrint('kit missed: ${healthKitMiss.length}');
-        for (var e in healthKitMiss) {
-          addSexualActivity(
-              DateTime.fromMillisecondsSinceEpoch((e.time * 1000).toInt()),
-              e.protected);
-        }
-      }
-    } else {
-      await showSimpleMessage(context, content: ok.$2);
-    }
+    // if (f.kIsWeb || !Platform.isIOS) return;
+    // await ref.read(bluesDbProvider.future);
+    // final ok = await requestAuthorization(
+    //     readTypes: [CategoryType.sexualActivity.identifier],
+    //     writeTypes: [CategoryType.sexualActivity.identifier]);
+    // if (ok.$1) {
+    //   final now = DateTime.now();
+    //   final threeMonthsAgo = now.subtract(const Duration(days: 90));
+    //   final activities = await HealthKitReporter.categoryQuery(
+    //       CategoryType.sexualActivity, Predicate(threeMonthsAgo, now));
+    //   final healthKitMiss =
+    //       await ref.read(bluesDbProvider.notifier).sync(activities);
+    //   if (healthKitMiss.isNotEmpty) {
+    //     debugPrint('kit missed: ${healthKitMiss.length}');
+    //     for (var e in healthKitMiss) {
+    //       addSexualActivity(
+    //           DateTime.fromMillisecondsSinceEpoch((e.time * 1000).toInt()),
+    //           e.protected);
+    //     }
+    //   }
+    // } else {
+    //   await showSimpleMessage(context, content: ok.$2);
+    // }
   }
 
   @override
@@ -127,8 +127,8 @@ class _SexualActivityViewState extends ConsumerState<SexualActivityView> {
                     await ref
                         .read(bluesDbProvider.notifier)
                         .delete(activity.time);
-                    await deleteSample(CategoryType.sexualActivity.identifier,
-                        activity.time.toDouble());
+                    // await deleteSample(CategoryType.sexualActivity.identifier,
+                    //     activity.time.toDouble());
                     return true;
                   }
                 } else {
@@ -239,7 +239,7 @@ class _SexualActivityEditViewState
                 TextButton(
                     onPressed: () async {
                       if (widget.isAdd) {
-                        addSexualActivity(dateTime, useProtected);
+                        // addSexualActivity(dateTime, useProtected);
                         await ref.read(bluesDbProvider.notifier).add(
                             data.copyWith(
                                 note: noteController.text,

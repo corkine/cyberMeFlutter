@@ -2,7 +2,7 @@ import 'package:cyberme_flutter/pocket/viewmodels/basic.dart';
 import 'package:cyberme_flutter/pocket/views/live/health.dart';
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:health_kit_reporter/model/payload/category.dart';
+// import 'package:health_kit_reporter/model/payload/category.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'sex.freezed.dart';
@@ -52,28 +52,28 @@ class BluesDb extends _$BluesDb {
     return "success";
   }
 
-  Future<Set<BlueData>> sync(List<Category> fromHealthKit) async {
-    final c = fromHealthKit.map((e) => e.startTimestamp).toSet();
-    final cm = Map.fromEntries(
-        fromHealthKit.map((f) => MapEntry(f.startTimestamp, f)));
-    final cloudMiss =
-        c.difference(state.value?.map((e) => e.time).toSet() ?? {});
-    final healthMiss =
-        state.value?.map((e) => e.time).toSet().difference(c) ?? {};
-    if (cloudMiss.isNotEmpty) {
-      List<BlueData> newData = [
-        ...(state.value ?? []),
-        ...cloudMiss.map((i) {
-          return BlueData(
-              time: i.toDouble(), protected: sexualAcitvityProtected(cm[i]));
-        })
-      ]..sort(sort);
-      debugPrint("sync: $cloudMiss");
-      await _set(Map.fromEntries(newData.map((e) => MapEntry(e.time, e))));
-      state = AsyncData(newData);
-    }
-    return state.value?.where((e) => healthMiss.contains(e.time)).toSet() ?? {};
-  }
+  // Future<Set<BlueData>> sync(List<Category> fromHealthKit) async {
+  //   final c = fromHealthKit.map((e) => e.startTimestamp).toSet();
+  //   final cm = Map.fromEntries(
+  //       fromHealthKit.map((f) => MapEntry(f.startTimestamp, f)));
+  //   final cloudMiss =
+  //       c.difference(state.value?.map((e) => e.time).toSet() ?? {});
+  //   final healthMiss =
+  //       state.value?.map((e) => e.time).toSet().difference(c) ?? {};
+  //   if (cloudMiss.isNotEmpty) {
+  //     List<BlueData> newData = [
+  //       ...(state.value ?? []),
+  //       ...cloudMiss.map((i) {
+  //         return BlueData(
+  //             time: i.toDouble(), protected: sexualAcitvityProtected(cm[i]));
+  //       })
+  //     ]..sort(sort);
+  //     debugPrint("sync: $cloudMiss");
+  //     await _set(Map.fromEntries(newData.map((e) => MapEntry(e.time, e))));
+  //     state = AsyncData(newData);
+  //   }
+  //   return state.value?.where((e) => healthMiss.contains(e.time)).toSet() ?? {};
+  // }
 
   FutureOr<Map<double, BlueData>> _fetch() async {
     final res = await settingFetch(

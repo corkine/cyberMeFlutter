@@ -5,7 +5,7 @@ import 'package:cyberme_flutter/pocket/viewmodels/basic.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:health_kit_reporter/model/payload/quantity.dart';
+// import 'package:health_kit_reporter/model/payload/quantity.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'mass.freezed.dart';
@@ -130,26 +130,26 @@ class MassDb extends _$MassDb {
     return "success";
   }
 
-  Future<Set<MassData>> sync(List<Quantity> fromHealthKit) async {
-    final c = fromHealthKit.map((e) => e.startTimestamp).toSet();
-    final cm = Map.fromEntries(
-        fromHealthKit.map((f) => MapEntry(f.startTimestamp, f)));
-    final cloudMiss =
-        c.difference(state.value?.map((e) => e.time).toSet() ?? {});
-    final healthMiss =
-        state.value?.map((e) => e.time).toSet().difference(c) ?? {};
-    if (cloudMiss.isNotEmpty) {
-      List<MassData> newData = [
-        ...(state.value ?? []),
-        ...cloudMiss.map((i) => MassData(
-            time: i.toDouble(), kgValue: cm[i]!.harmonized.value.toDouble()))
-      ];
-      debugPrint("sync: $cloudMiss");
-      await _set(Map.fromEntries(newData.map((e) => MapEntry(e.time, e))));
-      state = AsyncData(sortAndCompute(newData));
-    }
-    return state.value?.where((e) => healthMiss.contains(e.time)).toSet() ?? {};
-  }
+  // Future<Set<MassData>> sync(List<Quantity> fromHealthKit) async {
+  //   final c = fromHealthKit.map((e) => e.startTimestamp).toSet();
+  //   final cm = Map.fromEntries(
+  //       fromHealthKit.map((f) => MapEntry(f.startTimestamp, f)));
+  //   final cloudMiss =
+  //       c.difference(state.value?.map((e) => e.time).toSet() ?? {});
+  //   final healthMiss =
+  //       state.value?.map((e) => e.time).toSet().difference(c) ?? {};
+  //   if (cloudMiss.isNotEmpty) {
+  //     List<MassData> newData = [
+  //       ...(state.value ?? []),
+  //       ...cloudMiss.map((i) => MassData(
+  //           time: i.toDouble(), kgValue: cm[i]!.harmonized.value.toDouble()))
+  //     ];
+  //     debugPrint("sync: $cloudMiss");
+  //     await _set(Map.fromEntries(newData.map((e) => MapEntry(e.time, e))));
+  //     state = AsyncData(sortAndCompute(newData));
+  //   }
+  //   return state.value?.where((e) => healthMiss.contains(e.time)).toSet() ?? {};
+  // }
 
   FutureOr<Map<double, MassData>> _fetch() async {
     final res = await settingFetch(
