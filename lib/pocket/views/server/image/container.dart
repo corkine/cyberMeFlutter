@@ -82,10 +82,22 @@ class _ContainerViewState extends ConsumerState<ContainerView> {
                         children: [
                           Text(item.note.isEmpty ? "无备注信息" : item.note),
                           const SizedBox(height: 3),
-                          Wrap(
-                              children: item.tags.entries
+                          Row(children: [
+                            Wrap(
+                                children: [
+                              ...item.tags.entries
                                   .map((e) => buildContainer(e.key))
-                                  .toList())
+                            ].toList()),
+                            Spacer(),
+                            Wrap(
+                                children: [
+                              ...item.tags.entries
+                                  .map((e) => e.value.registry)
+                                  .fold([], (agg, item) => [...agg, ...item])
+                                  .toSet()
+                                  .map((e) => buildRegistry(e))
+                            ].toList())
+                          ])
                         ])));
           }),
       AnimatedPositioned(
@@ -163,6 +175,21 @@ class _ContainerViewState extends ConsumerState<ContainerView> {
             color: Theme.of(context).primaryColor.withOpacity(0.2)),
         child: Text(reg,
             style: const TextStyle(fontSize: 12, fontFamily: "Consolas")));
+  }
+
+  Widget buildRegistry(String reg) {
+    return Container(
+        padding: const EdgeInsets.only(
+          left: 4,
+          right: 4,
+        ),
+        margin: const EdgeInsets.only(right: 4),
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(5),
+            color: Theme.of(context).colorScheme.tertiaryContainer),
+        child: Text(reg.toUpperCase(),
+            style: const TextStyle(
+                fontSize: 12, fontFamily: "Consolas", color: Colors.black)));
   }
 }
 
