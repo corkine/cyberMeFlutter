@@ -1,5 +1,6 @@
 import 'package:cyberme_flutter/main.dart';
 import 'package:cyberme_flutter/pocket/viewmodels/expired.dart';
+import 'package:cyberme_flutter/pocket/views/util.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -60,6 +61,11 @@ class _ExpiredViewState extends ConsumerState<ExpiredView> {
                               Navigator.pushNamed(context, "/app/cert-manager"),
                           leading: items.cert.isEmpty ? good : bad,
                           title: Text("HTTPS证书"),
+                          subtitle: buildHint(items.cert)),
+                      ListTile(
+                          onTap: () => handleFinishDaywork(items.dayWork),
+                          leading: items.dayWork.isEmpty ? good : bad,
+                          title: Text("工作日报"),
                           subtitle: buildHint(items.cert))
                     ]))));
   }
@@ -69,5 +75,19 @@ class _ExpiredViewState extends ConsumerState<ExpiredView> {
       return Text("OK");
     else
       return Text(items.join("\n"));
+  }
+
+  void handleFinishDaywork(List<String> items) async {
+    if (items.isEmpty) {
+      if (await showSimpleMessage(context, content: "确定要撤销完成日报吗?")) {
+        final res = await markDayWorkFinished(reverse: true);
+        await showSimpleMessage(context, content: res, useSnackBar: true);
+      }
+    } else {
+      if (await showSimpleMessage(context, content: "确定要完成日报吗?")) {
+        final res = await markDayWorkFinished();
+        await showSimpleMessage(context, content: res, useSnackBar: true);
+      }
+    }
   }
 }

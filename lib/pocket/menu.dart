@@ -63,18 +63,19 @@ class _MenuViewState extends ConsumerState<MenuView> {
               title: const Text("Cyber Apps",
                   style: TextStyle(color: Colors.white)),
               actions: [
-                if (!expired.isEmpty)
-                  IconButton(
-                      onPressed: () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                              builder: (context) => const ExpiredView())),
-                      icon: Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: const Icon(Icons.warning,
-                              color: Color.fromARGB(255, 255, 187, 0),
-                              shadows: [
-                                Shadow(color: Colors.black87, blurRadius: 13)
-                              ])))
+                IconButton(
+                    onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                            builder: (context) => const ExpiredView())),
+                    icon: Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: Icon(Icons.warning,
+                            color: expired.isEmpty
+                                ? Color.fromARGB(15, 255, 187, 0)
+                                : Color.fromARGB(255, 255, 187, 0),
+                            shadows: [
+                              Shadow(color: Colors.black87, blurRadius: 13)
+                            ])))
               ],
               flexibleSpace: Container(
                   decoration: BoxDecoration(

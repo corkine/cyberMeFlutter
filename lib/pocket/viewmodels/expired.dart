@@ -1,3 +1,5 @@
+// ignore_for_file: invalid_annotation_target
+
 import 'package:cyberme_flutter/pocket/viewmodels/basic.dart';
 import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -14,6 +16,7 @@ class ExpiredItems with _$ExpiredItems {
     @Default([]) List<String> server,
     @Default([]) List<String> cert,
     @Default([]) List<String> registry,
+    @JsonKey(name: "daywork") @Default([]) List<String> dayWork,
   }) = _ExpiredItems;
 
   factory ExpiredItems.fromJson(Map<String, dynamic> json) =>
@@ -22,7 +25,11 @@ class ExpiredItems with _$ExpiredItems {
 
 extension ExpiredItemsX on ExpiredItems {
   bool get isEmpty =>
-      token.isEmpty && server.isEmpty && cert.isEmpty && registry.isEmpty;
+      token.isEmpty &&
+      server.isEmpty &&
+      cert.isEmpty &&
+      registry.isEmpty &&
+      dayWork.isEmpty;
 }
 
 @riverpod
@@ -35,4 +42,10 @@ FutureOr<ExpiredItems> getExpiredItems(Ref ref, {bool force = false}) async {
     debugPrintStack(stackTrace: st);
     return ExpiredItems();
   }
+}
+
+Future<String> markDayWorkFinished({bool reverse = false}) async {
+  final res = await postFrom(
+      "/cyber/dashboard/day-work", {"status": reverse ? null : "已完成日报"});
+  return res.$2;
 }
