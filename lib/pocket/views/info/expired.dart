@@ -12,23 +12,17 @@ class ExpiredView extends ConsumerStatefulWidget {
 }
 
 class _ExpiredViewState extends ConsumerState<ExpiredView> {
-  bool force = false;
   Widget good = Icon(Icons.check, color: Colors.green);
   Widget bad = Icon(Icons.close, color: Colors.red);
   @override
   Widget build(BuildContext context) {
-    final items = ref.watch(getExpiredItemsProvider.call(force: force)).value ??
-        ExpiredItems();
+    final items =
+        ref.watch(getExpiredItemsProvider.call()).value ?? ExpiredItems();
     return Theme(
         data: appThemeData,
         child: Scaffold(
             appBar: AppBar(title: Text("过期提醒"), actions: [
-              IconButton(
-                  onPressed: () {
-                    force = true;
-                    ref.invalidate(getExpiredItemsProvider);
-                  },
-                  icon: Icon(Icons.refresh)),
+              IconButton(onPressed: handleRefresh, icon: Icon(Icons.refresh)),
               const SizedBox(width: 10)
             ]),
             body: Padding(
@@ -70,6 +64,11 @@ class _ExpiredViewState extends ConsumerState<ExpiredView> {
                     ]))));
   }
 
+  Future<void> handleRefresh() async {
+    final _ = await ref.refresh(getExpiredItemsProvider.call(force: true));
+    ref.invalidate(getExpiredItemsProvider);
+  }
+
   Widget buildHint(List<String> items) {
     if (items.isEmpty)
       return Text("OK");
@@ -89,5 +88,6 @@ class _ExpiredViewState extends ConsumerState<ExpiredView> {
         await showSimpleMessage(context, content: res, useSnackBar: true);
       }
     }
+    await handleRefresh();
   }
 }

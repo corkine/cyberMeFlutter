@@ -74,7 +74,7 @@ class _MenuViewState extends ConsumerState<MenuView> {
                                 ? Color.fromARGB(15, 255, 187, 0)
                                 : Color.fromARGB(255, 255, 187, 0),
                             shadows: [
-                              Shadow(color: Colors.black87, blurRadius: 13)
+                              Shadow(color: Colors.black12, blurRadius: 13)
                             ])))
               ],
               flexibleSpace: Container(
